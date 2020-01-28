@@ -1,8 +1,10 @@
+#[macro_use]
+mod mount;
+
+pub use mount::Mount;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::BufRead;
-use std::string::String;
-use std::vec::Vec;
 
 #[derive(Default)]
 pub struct ParseError;
@@ -21,41 +23,6 @@ impl Debug for ParseError {
 
 impl Error for ParseError {}
 
-#[derive(Clone, Default, Debug)]
-pub struct Mount {
-  pub device: String,
-  pub mount_point: String,
-  pub file_system_type: String,
-  pub options: Vec<String>,
-}
-
-/// Implements `Display` for `Mount` to simulate behavior of Unix mount command.
-///
-/// # Examples
-/// ```
-/// # use wld::Mount;
-/// # use std::string::String;
-/// let mount = Mount {
-/// 	device: String::from("/dev/sda1"),
-/// 	mount_point: String::from("/mnt/disk"),
-/// 	file_system_type: String::from("ext4"),
-/// 	options: vec![String::from("ro"), String::from("nosuid")]
-/// };
-/// assert!(mount.to_string() == "/dev/sda1 on /mnt/disk type ext4 (ro,nosuid)");
-/// ```
-impl std::fmt::Display for Mount {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    write!(
-      f,
-      "{} on {} type {} ({})",
-      self.device,
-      self.mount_point,
-      self.file_system_type,
-      self.options.join(",")
-    )
-  }
-}
-
 pub fn mounts() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error>> {
   let file = std::fs::File::open("/proc/mounts")?;
   let buf_reader = std::io::BufReader::new(file);
@@ -71,7 +38,7 @@ pub fn mounts() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error
 }
 
 pub(self) mod parsers {
-  use super::Mount;
+  use super::*;
   use nom::bytes::complete::{escaped_transform, is_not, tag};
   use nom::character::complete::{char, space0, space1};
   use nom::combinator::{all_consuming, map_parser, recognize, value};
@@ -120,7 +87,7 @@ pub(self) mod parsers {
     let (i, _) = space1(i)?;
     let (i, mount_point) = map_parser(not_whitespace, transform_escaped)(i)?; // mount_point
     let (i, _) = space1(i)?;
-    let (i, file_system_type) = not_whitespace(i)?; // file_system_type
+    let (i, file_system_type) = map_parser(not_whitespace, transform_escaped)(i)?; // file_system_type
     let (i, _) = space1(i)?;
     let (i, options) = mount_opts(i)?; // options
     let (i, _) = all_consuming(tuple((space1, char('0'), space1, char('0'), space0)))(i)?;
@@ -129,7 +96,7 @@ pub(self) mod parsers {
       Mount {
         device: device,
         mount_point: mount_point,
-        file_system_type: file_system_type.to_string(),
+        file_system_type: file_system_type,
         options: options,
       },
     ))
@@ -207,17 +174,15 @@ pub(self) mod parsers {
 
     #[test]
     fn test_parse_line() {
-      let mount1 = Mount {
-        device: "device".to_string(),
-        mount_point: "mount_point".to_string(),
-        file_system_type: "file_system_type".to_string(),
-        options: vec![
-          "options".to_string(),
-          "a".to_string(),
-          "b=c".to_string(),
-          "d e".to_string(),
-        ],
-      };
+      let mount1 = mount!(
+        "device",
+        "mount_point",
+        "file_system_type",
+        "options",
+        "a",
+        "b=c",
+        "d e"
+      );
       let (_, mount2) =
         parse_line("device mount_point file_system_type options,a,b=c,d\\040e 0 0").unwrap();
       assert_eq!(mount1.device, mount2.device);
@@ -228,23 +193,21 @@ pub(self) mod parsers {
 
     #[test]
     fn test_parse_line_wsl2() {
-      let mount3 = Mount {
-        device: "C:\\".to_string(),
-        mount_point: "/mnt/c".to_string(),
-        file_system_type: "9p".to_string(),
-        options: vec![
-          "rw".to_string(),
-          "dirsync".to_string(),
-          "noatime".to_string(),
-          "aname=drvfs;path=C:\\;uid=1000;gid=1000;symlinkroot=/mnt/".to_string(),
-          "mmap".to_string(),
-          "access=client".to_string(),
-          "msize=65536".to_string(),
-          "trans=fd".to_string(),
-          "rfd=8".to_string(),
-          "wfd=8".to_string(),
-        ],
-      };
+      let mount3 = mount!(
+        "C:\\",
+        "/mnt/c",
+        "9p",
+        "rw",
+        "dirsync",
+        "noatime",
+        "aname=drvfs;path=C:\\;uid=1000;gid=1000;symlinkroot=/mnt/",
+        "mmap",
+        "access=client",
+        "msize=65536",
+        "trans=fd",
+        "rfd=8",
+        "wfd=8"
+      );
       let (_, mount4) =
         parse_line("C:\\134 /mnt/c 9p rw,dirsync,noatime,aname=drvfs;path=C:\\;uid=1000;gid=1000;symlinkroot=/mnt/,mmap,access=client,msize=65536,trans=fd,rfd=8,wfd=8 0 0").unwrap();
       assert_eq!(mount3.device, mount4.device);
