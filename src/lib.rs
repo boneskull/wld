@@ -72,53 +72,58 @@ pub fn mounts() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error
 
 pub(self) mod parsers {
   use super::Mount;
+  use nom::bytes::complete::{escaped_transform, is_not, tag};
+  use nom::character::complete::{char, space0, space1};
+  use nom::combinator::{all_consuming, map_parser, recognize, value};
+  use nom::multi::separated_list;
+  use nom::sequence::tuple;
 
   fn not_whitespace(i: &str) -> nom::IResult<&str, &str> {
-    nom::bytes::complete::is_not(" \t")(i)
+    is_not(" \t")(i)
   }
 
   fn escaped_space(i: &str) -> nom::IResult<&str, &str> {
-    nom::combinator::value(" ", nom::bytes::complete::tag("040"))(i)
+    value(" ", tag("040"))(i)
   }
 
   fn windows_backslash(i: &str) -> nom::IResult<&str, &str> {
-    nom::combinator::value("\\", nom::bytes::complete::tag("134"))(i)
+    value("\\", tag("134"))(i)
+  }
+
+  fn windows_options_backslash(i: &str) -> nom::IResult<&str, &str> {
+    value("\\;", tag(";"))(i)
   }
 
   fn escaped_backslash(i: &str) -> nom::IResult<&str, &str> {
-    nom::combinator::recognize(nom::character::complete::char('\\'))(i)
+    recognize(char('\\'))(i)
   }
 
   fn transform_escaped(i: &str) -> nom::IResult<&str, std::string::String> {
-    nom::bytes::complete::escaped_transform(
-      nom::bytes::complete::is_not("\\"),
+    escaped_transform(
+      is_not("\\"),
       '\\',
-      nom::branch::alt((escaped_backslash, windows_backslash, escaped_space)),
+      nom::branch::alt((
+        escaped_backslash,
+        windows_backslash,
+        escaped_space,
+        windows_options_backslash,
+      )),
     )(i)
   }
 
   fn mount_opts(i: &str) -> nom::IResult<&str, std::vec::Vec<std::string::String>> {
-    nom::multi::separated_list(
-      nom::character::complete::char(','),
-      nom::combinator::map_parser(nom::bytes::complete::is_not(", \t"), transform_escaped),
-    )(i)
+    separated_list(char(','), map_parser(is_not(", \t"), transform_escaped))(i)
   }
 
   pub fn parse_line(i: &str) -> nom::IResult<&str, Mount> {
-    let (i, device) = nom::combinator::map_parser(not_whitespace, transform_escaped)(i)?; // device
-    let (i, _) = nom::character::complete::space1(i)?;
-    let (i, mount_point) = nom::combinator::map_parser(not_whitespace, transform_escaped)(i)?; // mount_point
-    let (i, _) = nom::character::complete::space1(i)?;
+    let (i, device) = map_parser(not_whitespace, transform_escaped)(i)?; // device
+    let (i, _) = space1(i)?;
+    let (i, mount_point) = map_parser(not_whitespace, transform_escaped)(i)?; // mount_point
+    let (i, _) = space1(i)?;
     let (i, file_system_type) = not_whitespace(i)?; // file_system_type
-    let (i, _) = nom::character::complete::space1(i)?;
+    let (i, _) = space1(i)?;
     let (i, options) = mount_opts(i)?; // options
-    let (i, _) = nom::combinator::all_consuming(nom::sequence::tuple((
-      nom::character::complete::space1,
-      nom::character::complete::char('0'),
-      nom::character::complete::space1,
-      nom::character::complete::char('0'),
-      nom::character::complete::space0,
-    )))(i)?;
+    let (i, _) = all_consuming(tuple((space1, char('0'), space1, char('0'), space0)))(i)?;
     Ok((
       i,
       Mount {
@@ -168,6 +173,13 @@ pub(self) mod parsers {
     #[test]
     fn test_windows_backslash() {
       assert_eq!(windows_backslash("134"), Ok(("", "\\")));
+      assert_eq!(
+        windows_backslash("not a backslash"),
+        Err(nom::Err::Error((
+          "not a backslash",
+          nom::error::ErrorKind::Tag
+        )))
+      );
     }
 
     #[test]
@@ -230,7 +242,7 @@ pub(self) mod parsers {
           "msize=65536".to_string(),
           "trans=fd".to_string(),
           "rfd=8".to_string(),
-          "wfd=8".to_string()
+          "wfd=8".to_string(),
         ],
       };
       let (_, mount4) =
