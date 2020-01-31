@@ -2,9 +2,12 @@
 mod mount;
 
 pub use mount::Mount;
+use std::collections::HashMap;
 use std::error::Error;
 use std::fmt::{Debug, Display, Formatter};
 use std::io::BufRead;
+#[macro_use]
+use lazy_static::*;
 
 #[derive(Default)]
 pub struct ParseError;
@@ -35,6 +38,103 @@ pub fn mounts() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error
     }
   }
   Ok(())
+}
+
+pub(self) mod props {
+  use nom::combinator::{map, rest};
+  use nom::multi::length_value;
+  use nom::number::complete::le_u16;
+  use nom::IResult;
+
+  fn name(buf: &[u8]) -> IResult<&[u8], &str> {
+    map(length_value(le_u16, rest), |s: &[u8]| {
+      std::str::from_utf8(s).unwrap()
+    })(buf)
+  }
+}
+
+pub(self) mod header {
+  use nom::combinator::map;
+  use nom::multi::many0_count;
+  use nom::multi::{length_value, many0};
+  use nom::number::complete::le_u8;
+  use nom::number::complete::{le_i32, le_u16, le_u32, le_u64};
+  use nom::IResult;
+  use std::mem::size_of;
+
+  fn version(buf: &[u8]) -> IResult<&[u8], i32> {
+    le_i32(buf)
+  }
+
+  fn metadata(buf: &[u8]) -> IResult<&[u8], u64> {
+    le_u64(buf)
+  }
+
+  fn revision(buf: &[u8]) -> IResult<&[u8], u32> {
+    le_u32(buf)
+  }
+
+  fn favorite(buf: &[u8]) -> IResult<&[u8], bool> {
+    map(le_u64, |flag: u64| flag > 0)(buf)
+  }
+
+  fn positions(buf: &[u8]) -> IResult<&[u8], Vec<i32>> {
+    length_value(
+      map(le_u16, |count: u16| count * size_of::<i32>() as u16),
+      many0(le_i32),
+    )(buf)
+  }
+
+  fn importances(buf: &[u8]) -> IResult<&[u8], Vec<u8>> {
+    map(
+      length_value(
+        map(le_u16, |count: u16| count * size_of::<i32>() as u16),
+        many0(le_u8),
+      ),
+      |i| i.iter().cloned().map(|v| v + 1).collect(),
+    )(buf)
+  }
+
+  #[cfg(test)]
+  mod tests {
+    use super::*;
+    use std::fs::read;
+    #[macro_use]
+    use lazy_static::*;
+
+    lazy_static! {
+      static ref WORLD: std::vec::Vec<u8> =
+        read("./src/tests/fixtures/Foon.wld").expect("Unable to read file");
+    }
+
+    #[test]
+    fn test_version() {
+      assert_eq!(version(&WORLD[0..4]).unwrap().1, 194);
+    }
+
+    #[test]
+    fn test_metadata() {
+      assert_eq!(metadata(&WORLD[4..12]).unwrap().1, 172097103742133618);
+    }
+
+    #[test]
+    fn test_revision() {
+      assert_eq!(revision(&WORLD[12..16]).unwrap().1, 160);
+    }
+
+    #[test]
+    fn test_favorite() {
+      assert_eq!(favorite(&WORLD[16..24]).unwrap().1, false);
+    }
+
+    #[test]
+    fn test_positions() {
+      assert_eq!(
+        positions(&WORLD[24..66]).unwrap().1,
+        &[127, 2802, 2860224, 2879758, 2880141, 2880453, 2880457, 2880461, 2880489, 0]
+      );
+    }
+  }
 }
 
 pub(self) mod parsers {
