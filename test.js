@@ -1579,6 +1579,7 @@ function readFileFormatHeader(reader, world) {
 
   // read importances
   var importanceLength = reader.readInt16();
+  // console.error(importanceLength);process.exit();
   world.importance = new Array(importanceLength);
   var b = 0;
   var b2 = 128;
@@ -1592,14 +1593,14 @@ function readFileFormatHeader(reader, world) {
     }
 
     if ((b & b2) == b2) {
-      console.error(`b: ${b} b2: ${b2} i: ${i}`)
       world.importance[i] = true;
+      // console.error(true)
     } else {
-      console.error(`b: ${b} b2: ${b2}`)
+      world.importance[i] = false;
+      // console.error(false)
     }
   }
-  console.error(world.importance);
-  process.exit();
+  
 }
 
 function readProperties(reader, world) {
