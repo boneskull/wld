@@ -1,4 +1,4 @@
-use crate::model::point::Point;
+use crate::model::common::*;
 use nom::{
   combinator::map,
   multi::{count, length_value, many0, many1},

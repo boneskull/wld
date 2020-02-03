@@ -9,6 +9,7 @@ edition = "2018"
 [dependencies]
 nom = "5.1.0"
 uuid = "0.8.1"
+derive-new = "0.5.8"
+lazy_static = "1.4.0"
 
 [dev-dependencies]
-lazy_static = "1.4.0"
