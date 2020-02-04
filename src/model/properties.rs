@@ -1,6 +1,6 @@
 use derive_new::new;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
 pub enum MoonStyle {
   White,
   Orange,
@@ -44,6 +44,12 @@ impl GeneratorInfo {
       version,
     }
   }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
+pub enum EvilType {
+  Crimson,
+  Corruption
 }
 
 #[cfg(test)]

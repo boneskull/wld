@@ -66,11 +66,11 @@ pub fn world_size(buf: &[u8]) -> IResult<&[u8], Point> {
   point(buf)
 }
 
-fn is_expert(buf: &[u8]) -> IResult<&[u8], bool> {
+pub fn is_expert(buf: &[u8]) -> IResult<&[u8], bool> {
   bool(buf)
 }
 
-fn created_on(buf: &[u8]) -> IResult<&[u8], i64> {
+pub fn created_on(buf: &[u8]) -> IResult<&[u8], i64> {
   // see https://docs.microsoft.com/en-us/dotnet/api/system.datetime.frombinary?view=netframework-4.8#System_DateTime_FromBinary_System_Int64_
   // first 2 bits: Kind (UTC, local, unknown)
   // 62 bits: Ticks
@@ -79,7 +79,7 @@ fn created_on(buf: &[u8]) -> IResult<&[u8], i64> {
   le_i64(buf)
 }
 
-fn world_style(buf: &[u8]) -> IResult<&[u8], WorldStyle> {
+pub fn world_style(buf: &[u8]) -> IResult<&[u8], WorldStyle> {
   map(
     tuple((
       map_res(le_u8, |value| match value {
@@ -100,6 +100,10 @@ fn world_style(buf: &[u8]) -> IResult<&[u8], WorldStyle> {
   )(buf)
 }
 
+pub fn spawn_point(buf: &[u8]) -> IResult<&[u8], Point> {
+  point(buf)
+}
+
 #[cfg(test)]
 mod test {
   use super::*;
@@ -107,7 +111,7 @@ mod test {
 
   #[test]
   fn test_name() {
-    assert_eq!(unwrap(name(&WORLD[127..133])), "Foon");
+    assert_eq!(unwrap(name(&p_string("Foon"))), "Foon");
   }
 
   #[test]
@@ -115,6 +119,10 @@ mod test {
     assert_eq!(
       unwrap(positions(&WORLD[24..66])),
       &[127, 2802, 2860224, 2879758, 2880141, 2880453, 2880457, 2880461, 2880489, 0]
+      // unwrap(positions(
+      //   &[1u16.to_le_bytes(), 2i32.to_le_bytes()].concat()
+      // )),
+      // &[2]
     );
   }
 
@@ -210,6 +218,14 @@ mod test {
         underground_jungle: 0,
         hell: 0
       }
+    )
+  }
+
+  #[test]
+  fn test_spawn_point() {
+    assert_eq!(
+      unwrap(world_size(&WORLD[273..281])),
+      Point { x: 229, y: 2098 }
     )
   }
 }

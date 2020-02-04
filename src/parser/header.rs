@@ -1,17 +1,16 @@
-use super::common::*;
-use nom::combinator::{value, verify};
-use nom::multi::many_m_n;
-use nom::number::complete::le_u8;
-use nom::sequence::tuple;
+use crate::model::world::Header;
+use crate::parser::common::*;
 use std::str::from_utf8;
 
 use nom::{
-  combinator::map_res,
-  number::complete::{le_i32, le_u32, le_u64},
+  combinator::{map_res, value, verify},
+  multi::many_m_n,
+  number::complete::{le_i32, le_u32, le_u8},
+  sequence::tuple,
   IResult,
 };
 
-pub fn version(buf: &[u8]) -> IResult<&[u8], &str> {
+fn version(buf: &[u8]) -> IResult<&[u8], &str> {
   map_res(le_i32, |v| match v {
     71 => Ok("1.2.0.3.1"),
     77 => Ok("1.2.2"),
@@ -30,7 +29,7 @@ pub fn version(buf: &[u8]) -> IResult<&[u8], &str> {
   })(buf)
 }
 
-pub fn metadata(buf: &[u8]) -> IResult<&[u8], (bool, u8)> {
+fn metadata(buf: &[u8]) -> IResult<&[u8], (bool, u8)> {
   tuple((
     value(
       true,
@@ -43,43 +42,79 @@ pub fn metadata(buf: &[u8]) -> IResult<&[u8], (bool, u8)> {
   ))(buf)
 }
 
-pub fn revision(buf: &[u8]) -> IResult<&[u8], u32> {
+fn revision(buf: &[u8]) -> IResult<&[u8], u32> {
   le_u32(buf)
 }
 
-pub fn favorite(buf: &[u8]) -> IResult<&[u8], bool> {
+fn is_favorite(buf: &[u8]) -> IResult<&[u8], bool> {
   bool(buf)
+}
+
+pub fn parse_header(buf: &[u8]) -> IResult<&[u8], Header> {
+  let (buf, version) = version(buf)?;
+  let (buf, _) = metadata(buf)?;
+  let (buf, revision) = revision(buf)?;
+  let (buf, is_favorite) = is_favorite(buf)?;
+  Ok((
+    buf,
+    Header::new(String::from(version), revision, is_favorite),
+  ))
 }
 
 #[cfg(test)]
 mod test {
   use super::*;
-  use crate::test_helpers::*;
+  use crate::test_helpers::{*, unwrap as ok};
+
+  #[test]
+  fn test_parse_header() {
+    assert_eq!(
+      ok(parse_header(
+        &[
+          &194i32.to_le_bytes(),
+          "relogic".as_bytes(),
+          &2u8.to_le_bytes(),
+          &160u32.to_le_bytes(),
+          &1u8.to_le_bytes()
+        ]
+        .concat()
+      )),
+      Header::new(String::from("1.3.5.3"), 160, true)
+    );
+  }
 
   #[test]
   fn test_version() {
-    assert_eq!(unwrap(version(&WORLD[0..4])), "1.3.5.3");
+    assert_eq!(ok(version(&178i32.to_le_bytes())), "1.3.4");
+    assert_eq!(
+      version(&123i32.to_le_bytes()),
+      Err(NomError((&123i32.to_le_bytes()[..], ErrorKind::MapRes)))
+    );
   }
 
   #[test]
   fn test_metadata() {
-    assert_eq!(unwrap(metadata(&WORLD[4..12])), (true, 2));
     assert_eq!(
-      metadata(&["rel0gic".as_bytes(), &[2u8]].concat()),
+      ok(metadata(&["relogic".as_bytes(), &[0x02]].concat())),
+      (true, 2)
+    );
+    assert_eq!(
+      metadata(&["rel0gic".as_bytes(), &[0x02]].concat()),
       Err(nom::Err::Error((
-        &[114u8, 101u8, 108u8, 48u8, 103u8, 105u8, 99u8, 2u8][..],
-        nom::error::ErrorKind::Verify
+        &["rel0gic".as_bytes(), &[0x02]].concat()[..],
+        ErrorKind::Verify
       )))
     );
   }
 
   #[test]
   fn test_revision() {
-    assert_eq!(unwrap(revision(&WORLD[12..16])), 160);
+    assert_eq!(ok(revision(&160u32.to_le_bytes())), 160);
   }
 
   #[test]
-  fn test_favorite() {
-    assert_eq!(unwrap(favorite(&WORLD[16..24])), false);
+  fn test_is_favorite() {
+    assert_eq!(ok(is_favorite(&1u8.to_le_bytes())), true);
+    assert_eq!(ok(is_favorite(&0u8.to_le_bytes())), false);
   }
 }
