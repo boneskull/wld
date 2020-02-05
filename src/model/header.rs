@@ -1,7 +1,10 @@
 use derive_new::new;
-use scroll::{ctx::TryIntoCtx, Endian, Pwrite};
+use scroll::{
+  ctx::{StrCtx, TryFromCtx, TryIntoCtx},
+  Endian, Pread, Pwrite, LE,
+};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pwrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pwrite, Pread)]
 pub struct Offsets {
   pub header: i32,
   pub tiles: i32,
@@ -33,6 +36,62 @@ impl Header {
       is_favorite,
       offsets,
     }
+  }
+}
+
+impl<'a> TryFromCtx<'a, Endian> for Header {
+  type Error = scroll::Error;
+
+  fn try_from_ctx(buf: &'a [u8], _ctx: Endian) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let raw_version = buf.gread_with::<i32>(offset, LE)?;
+    let _raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
+    let _ = buf.gread_with::<u8>(offset, LE)?;
+    let revision = buf.gread_with::<u32>(offset, LE)?;
+    let raw_is_favorite = buf.gread::<u8>(offset)?;
+    let raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
+    let mut raw_offsets: Vec<i32> = vec![];
+    for _ in 0..raw_offset_lengths {
+      let raw_offset = buf.gread_with::<i32>(offset, LE)?;
+      raw_offsets.push(raw_offset);
+    }
+
+    let version = match raw_version {
+      71 => Ok("1.2.0.3.1"),
+      77 => Ok("1.2.2"),
+      104 => Ok("1.2.3"),
+      140 => Ok("1.3.0.1"),
+      151 => Ok("1.3.0.4"),
+      153 => Ok("1.3.0.5"),
+      154 => Ok("1.3.0.6"),
+      155 => Ok("1.3.0.7"),
+      156 => Ok("1.3.0.8"),
+      170 => Ok("1.3.2"),
+      174 => Ok("1.3.3"),
+      178 => Ok("1.3.4"),
+      194 => Ok("1.3.5.3"),
+      _ => Err(scroll::Error::Custom("unrecognized version".to_string())),
+    }?;
+    let is_favorite = raw_is_favorite == 1;
+
+    let header = Header::new(
+      version,
+      revision,
+      is_favorite,
+      Offsets::new(
+        raw_offsets[0],
+        raw_offsets[1],
+        raw_offsets[2],
+        raw_offsets[3],
+        raw_offsets[4],
+        raw_offsets[5],
+        raw_offsets[6],
+        raw_offsets[7],
+        raw_offsets[8],
+      ),
+    );
+
+    Ok((header, *offset))
   }
 }
 
@@ -70,6 +129,7 @@ impl TryIntoCtx<Endian> for Header {
     count += 2u8.try_into_ctx(&mut buf[count..], ctx)?;
     count += revision.try_into_ctx(&mut buf[count..], ctx)?;
     count += if is_favorite { 1u8 } else { 0u8 }.try_into_ctx(&mut buf[count..], ctx)?;
+    // TODO: there may be extra cruft at the end of offsets.
     count += 9u16.try_into_ctx(&mut buf[count..], ctx)?;
     count += offsets.try_into_ctx(&mut buf[count..], ctx)?;
     Ok(count)
@@ -125,5 +185,25 @@ mod test_header {
         },
       )
     );
+
+    assert_eq!(
+      Header::try_from_ctx(&bytes[..], LE).unwrap(),
+      (Header::new(
+        "1.3.5.3",
+        160,
+        true,
+        Offsets {
+          header: 0,
+          tiles: 2,
+          chests: 4,
+          signs: 6,
+          npcs: 8,
+          tile_entities: 10,
+          pressure_plates: 12,
+          town_manager: 14,
+          footer: 16
+        },
+      ), 55)
+    )
   }
 }
