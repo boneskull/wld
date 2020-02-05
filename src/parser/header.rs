@@ -1,14 +1,14 @@
-use crate::model::world::Header;
+use crate::model::header::*;
 use crate::parser::common::*;
-use std::str::from_utf8;
-
 use nom::{
-  combinator::{map_res, value, verify},
-  multi::many_m_n,
-  number::complete::{le_i32, le_u32, le_u8},
+  combinator::{map, map_res, value, verify},
+  multi::{length_value, many0, many_m_n},
+  number::complete::{le_i32, le_u16, le_u32, le_u8},
   sequence::tuple,
   IResult,
 };
+use std::mem::size_of;
+use std::str::from_utf8;
 
 fn version(buf: &[u8]) -> IResult<&[u8], &str> {
   map_res(le_i32, |v| match v {
@@ -50,24 +50,68 @@ fn is_favorite(buf: &[u8]) -> IResult<&[u8], bool> {
   bool(buf)
 }
 
+pub fn offsets(buf: &[u8]) -> IResult<&[u8], Offsets> {
+  map(
+    length_value(
+      map(le_u16, |count: u16| count * size_of::<i32>() as u16),
+      many0(le_i32),
+    ),
+    |v| Offsets::new(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]),
+  )(buf)
+}
+
 pub fn parse_header(buf: &[u8]) -> IResult<&[u8], Header> {
   let (buf, version) = version(buf)?;
   let (buf, _) = metadata(buf)?;
   let (buf, revision) = revision(buf)?;
   let (buf, is_favorite) = is_favorite(buf)?;
+  let (buf, offsets) = offsets(buf)?;
   Ok((
     buf,
-    Header::new(String::from(version), revision, is_favorite),
+    Header::new(String::from(version), revision, is_favorite, offsets),
   ))
 }
 
 #[cfg(test)]
-mod test {
+mod test_header {
   use super::*;
-  use crate::test_helpers::{*, unwrap as ok};
+  use crate::test_helpers::{unwrap as ok, *};
+
+  #[test]
+  fn test_offsets() {
+    let len = &9u16.to_le_bytes();
+    let offs = &[0i32.to_le_bytes(); 9].concat();
+    let mut v = vec![];
+    v.extend_from_slice(len);
+    v.extend(offs);
+
+    assert_eq!(
+      // unwrap(positions(&WORLD[24..66])),
+      // &[127, 2802, 2860224, 2879758, 2880141, 2880453, 2880457, 2880461, 2880489, 0]
+      ok(offsets(&v)),
+      Offsets {
+        header: 0,
+        tiles: 0,
+        chests: 0,
+        signs: 0,
+        npcs: 0,
+        tile_entities: 0,
+        pressure_plates: 0,
+        town_manager: 0,
+        footer: 0
+      }
+    );
+  }
 
   #[test]
   fn test_parse_header() {
+    let mut v = vec![];
+    {
+      let len = &9u16.to_le_bytes();
+      let offs = &[0i32.to_le_bytes(); 9].concat();
+      v.extend_from_slice(len);
+      v.extend(offs);
+    }
     assert_eq!(
       ok(parse_header(
         &[
@@ -75,11 +119,27 @@ mod test {
           "relogic".as_bytes(),
           &2u8.to_le_bytes(),
           &160u32.to_le_bytes(),
-          &1u8.to_le_bytes()
+          &1u8.to_le_bytes(),
+          &v[..]
         ]
         .concat()
       )),
-      Header::new(String::from("1.3.5.3"), 160, true)
+      Header::new(
+        String::from("1.3.5.3"),
+        160,
+        true,
+        Offsets {
+          header: 0,
+          tiles: 0,
+          chests: 0,
+          signs: 0,
+          npcs: 0,
+          tile_entities: 0,
+          pressure_plates: 0,
+          town_manager: 0,
+          footer: 0
+        }
+      )
     );
   }
 

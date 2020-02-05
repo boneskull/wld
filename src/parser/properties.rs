@@ -2,30 +2,22 @@ use super::common::{bool, point, string0, string1};
 use crate::model::{common::*, properties::*};
 use nom::{
   bits::{bits, complete::take as take_bits},
-  combinator::{map, map_res},
+  combinator::map,
   multi::{count, length_value, many0},
   number::complete::{le_i32, le_i64, le_u128, le_u16, le_u32, le_u64, le_u8},
   sequence::tuple,
   IResult,
 };
-use std::mem::size_of;
 use uuid::Uuid;
 
-fn split_style(buf: &[u8]) -> IResult<&[u8], SplitStyle> {
+fn split_style(buf: &[u8]) -> IResult<&[u8], QuadrantStyle> {
   map(count(le_i32, 7), |v| {
-    SplitStyle::new(v[0], v[1], v[2], v[3], v[4], v[5], v[6])
+    QuadrantStyle::new(v[0], v[1], v[2], v[3], v[4], v[5], v[6])
   })(buf)
 }
 
 pub fn name(buf: &[u8]) -> IResult<&[u8], String> {
   string1(buf)
-}
-
-pub fn positions(buf: &[u8]) -> IResult<&[u8], Vec<i32>> {
-  length_value(
-    map(le_u16, |count: u16| count * size_of::<i32>() as u16),
-    many0(le_i32),
-  )(buf)
 }
 
 pub fn importances(buf: &[u8]) -> IResult<&[u8], Vec<bool>> {
@@ -81,19 +73,7 @@ pub fn created_on(buf: &[u8]) -> IResult<&[u8], i64> {
 
 pub fn world_style(buf: &[u8]) -> IResult<&[u8], WorldStyle> {
   map(
-    tuple((
-      map_res(le_u8, |value| match value {
-        0 => Ok(MoonStyle::White),
-        1 => Ok(MoonStyle::Orange),
-        2 => Ok(MoonStyle::Green),
-        _ => Err(()),
-      }),
-      split_style,
-      split_style,
-      le_i32,
-      le_i32,
-      le_i32,
-    )),
+    tuple((le_u8, split_style, split_style, le_i32, le_i32, le_i32)),
     |(moon, trees, moss, underground_ice, underground_jungle, hell)| {
       WorldStyle::new(moon, trees, moss, underground_ice, underground_jungle, hell)
     },
@@ -115,59 +95,56 @@ mod test {
   }
 
   #[test]
-  fn test_positions() {
-    assert_eq!(
-      unwrap(positions(&WORLD[24..66])),
-      &[127, 2802, 2860224, 2879758, 2880141, 2880453, 2880457, 2880461, 2880489, 0]
-      // unwrap(positions(
-      //   &[1u16.to_le_bytes(), 2i32.to_le_bytes()].concat()
-      // )),
-      // &[2]
-    );
-  }
-
-  #[test]
-  fn test_importances() {
-    assert_eq!(
-      unwrap(importances(&WORLD[66..127]))[..32],
-      [
-        false, false, false, true, true, true, false, false, false, false, true, true, true, true,
-        true, true, true, true, true, true, true, true, false, false, true, false, true, true,
-        true, true, false, true
-      ]
-    );
-  }
-
-  #[test]
   fn test_generator_info() {
     assert_eq!(
-      unwrap(generator_info(&WORLD[132..151])),
-      GeneratorInfo::new("1451234789", 833223655425)
+      // unwrap(generator_info(&WORLD[132..151])),
+      // GeneratorInfo::new("1451234789", 833223655425)
+      unwrap(generator_info(
+        &[&p_string("McMonkey")[..], &12345u64.to_le_bytes()[..]].concat()
+      )),
+      GeneratorInfo::new("McMonkey", 12345)
     );
   }
 
   #[test]
   fn test_uuid() {
-    assert_eq!(
-      unwrap(uuid(&WORLD[151..167])),
-      Uuid::parse_str("d578e106-3827-f648-a224-254c06ca78cb").unwrap()
-    );
+    let u = Uuid::parse_str("d578e106-3827-f648-a224-254c06ca78cb").unwrap();
+
+    assert_eq!(unwrap(uuid(&u.to_u128_le().to_le_bytes())), u);
   }
 
   #[test]
   fn test_id() {
-    assert_eq!(unwrap(id(&WORLD[167..171])), 1468463142)
+    // assert_eq!(unwrap(id(&WORLD[167..171])), 1468463142)
+    assert_eq!(unwrap(id(&2020u32.to_le_bytes())), 2020);
   }
 
   #[test]
   fn test_bounds() {
+    // assert_eq!(
+    //   unwrap(bounds(&WORLD[171..188])),
+    //   Rect {
+    //     left: 0,
+    //     right: 67200,
+    //     top: 0,
+    //     bottom: 19200
+    //   }
+    // )
     assert_eq!(
-      unwrap(bounds(&WORLD[171..188])),
+      unwrap(bounds(
+        &[
+          1i32.to_le_bytes(),
+          2i32.to_le_bytes(),
+          3i32.to_le_bytes(),
+          4i32.to_le_bytes()
+        ]
+        .concat()
+      )),
       Rect {
-        left: 0,
-        top: 0,
-        right: 67200,
-        bottom: 19200
+        left: 1,
+        right: 2,
+        top: 3,
+        bottom: 4
       }
     )
   }
@@ -175,19 +152,26 @@ mod test {
   #[test]
   fn test_world_size() {
     assert_eq!(
-      unwrap(world_size(&WORLD[187..195])),
+      // unwrap(world_size(&WORLD[187..195])),
+      // Point { x: 4200, y: 1200 }
+      unwrap(world_size(
+        &[1200i32.to_le_bytes(), 4200i32.to_le_bytes()].concat()
+      )),
       Point { x: 4200, y: 1200 }
     )
   }
 
   #[test]
   fn test_is_expert() {
-    assert_eq!(unwrap(is_expert(&WORLD[195..196])), false)
+    // assert_eq!(unwrap(is_expert(&WORLD[195..196])), false)
+    assert_eq!(unwrap(is_expert(&[0u8])), false);
+    assert_eq!(unwrap(is_expert(&[1u8])), true);
   }
 
   #[test]
   fn test_created_on() {
-    assert_eq!(unwrap(created_on(&WORLD[196..204])), -8586698140971848152)
+    assert_eq!(unwrap(created_on(&0i64.to_le_bytes())), 0);
+    // assert_eq!(unwrap(created_on(&WORLD[196..204])), -8586698140971848152)
   }
 
   #[test]
@@ -195,8 +179,8 @@ mod test {
     assert_eq!(
       unwrap(world_style(&WORLD[204..273])),
       WorldStyle {
-        moon: MoonStyle::Orange,
-        trees: SplitStyle {
+        moon: 1,
+        trees: QuadrantStyle {
           x1: 3072,
           x2: 4200,
           x3: 4200,
@@ -205,7 +189,7 @@ mod test {
           near_right: 0,
           far_right: 0
         },
-        moss: SplitStyle {
+        moss: QuadrantStyle {
           x1: 1210,
           x2: 4200,
           x3: 4200,
@@ -224,8 +208,10 @@ mod test {
   #[test]
   fn test_spawn_point() {
     assert_eq!(
-      unwrap(world_size(&WORLD[273..281])),
-      Point { x: 229, y: 2098 }
+      unwrap(spawn_point(
+        &[1200i32.to_le_bytes(), 4200i32.to_le_bytes()].concat()
+      )),
+      Point { x: 4200, y: 1200 }
     )
   }
 }

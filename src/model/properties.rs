@@ -1,14 +1,13 @@
+use crate::model::common::Point;
 use derive_new::new;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
-pub enum MoonStyle {
-  White,
-  Orange,
-  Green,
-}
+pub type MoonStyle = u8;
+pub type UndergroundIceStyle = i32;
+pub type UndergroundJungleStyle = i32;
+pub type HellStyle = i32;
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new)]
-pub struct SplitStyle {
+pub struct QuadrantStyle {
   pub x1: i32,
   pub x2: i32,
   pub x3: i32,
@@ -21,11 +20,11 @@ pub struct SplitStyle {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
 pub struct WorldStyle {
   pub moon: MoonStyle,
-  pub trees: SplitStyle,
-  pub moss: SplitStyle,
-  pub underground_ice: i32,
-  pub underground_jungle: i32,
-  pub hell: i32,
+  pub trees: QuadrantStyle,
+  pub moss: QuadrantStyle,
+  pub underground_ice: UndergroundIceStyle,
+  pub underground_jungle: UndergroundJungleStyle,
+  pub hell: HellStyle,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -49,11 +48,17 @@ impl GeneratorInfo {
 #[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
 pub enum EvilType {
   Crimson,
-  Corruption
+  Corruption,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new)]
+pub struct Properties {
+  pub dungeon_point: Point,
+  pub evil_type: EvilType,
 }
 
 #[cfg(test)]
-mod test {
+mod test_generator_info {
   use super::GeneratorInfo;
 
   #[test]
