@@ -4,6 +4,8 @@ use scroll::{
   Endian, Pread, Pwrite, LE,
 };
 
+static RELOGIC: &str = "relogic";
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pwrite, Pread)]
 pub struct Offsets {
   pub header: i32,
@@ -42,19 +44,18 @@ impl Header {
 impl<'a> TryFromCtx<'a, Endian> for Header {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], _ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_version = buf.gread_with::<i32>(offset, LE)?;
     let _raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
     let _ = buf.gread_with::<u8>(offset, LE)?;
     let revision = buf.gread_with::<u32>(offset, LE)?;
-    let raw_is_favorite = buf.gread::<u8>(offset)?;
-    let raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
-    let mut raw_offsets: Vec<i32> = vec![];
-    for _ in 0..raw_offset_lengths {
-      let raw_offset = buf.gread_with::<i32>(offset, LE)?;
-      raw_offsets.push(raw_offset);
-    }
+    let raw_is_favorite = buf.gread_with::<u64>(offset, LE)?;
+    let is_favorite = raw_is_favorite != 0;
+    // the following might be needed.
+    let _raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
+    let (offsets, size) = Offsets::try_from_ctx(&buf[*offset..], ctx)?;
+    *offset += size;
 
     let version = match raw_version {
       71 => Ok("1.2.0.3.1"),
@@ -72,30 +73,15 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
       194 => Ok("1.3.5.3"),
       _ => Err(scroll::Error::Custom("unrecognized version".to_string())),
     }?;
-    let is_favorite = raw_is_favorite == 1;
 
-    let header = Header::new(
-      version,
-      revision,
-      is_favorite,
-      Offsets::new(
-        raw_offsets[0],
-        raw_offsets[1],
-        raw_offsets[2],
-        raw_offsets[3],
-        raw_offsets[4],
-        raw_offsets[5],
-        raw_offsets[6],
-        raw_offsets[7],
-        raw_offsets[8],
-      ),
-    );
-
-    Ok((header, *offset))
+    Ok((
+      Header::new(version, revision, is_favorite, offsets),
+      *offset,
+    ))
   }
 }
 
-impl TryIntoCtx<Endian> for Header {
+impl<'a> TryIntoCtx<Endian> for &'a Header {
   type Error = scroll::Error;
 
   fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
@@ -105,7 +91,7 @@ impl TryIntoCtx<Endian> for Header {
       is_favorite,
       offsets,
     } = self;
-    let mut count = 0;
+    let mut size = 0;
 
     let v: i32 = match version.as_str() {
       "1.2.0.3.1" => 71,
@@ -121,30 +107,28 @@ impl TryIntoCtx<Endian> for Header {
       "1.3.3" => 174,
       "1.3.4" => 178,
       "1.3.5.3" => 194,
-      _ => 0,
+      _ => 0, // TODO error
     };
 
-    count += v.try_into_ctx(&mut buf[count..], ctx)?;
-    count += "relogic".as_bytes().try_into_ctx(&mut buf[count..], ())?;
-    count += 2u8.try_into_ctx(&mut buf[count..], ctx)?;
-    count += revision.try_into_ctx(&mut buf[count..], ctx)?;
-    count += if is_favorite { 1u8 } else { 0u8 }.try_into_ctx(&mut buf[count..], ctx)?;
+    size += v.try_into_ctx(&mut buf[size..], ctx)?;
+    size += RELOGIC.as_bytes().try_into_ctx(&mut buf[size..], ())?;
+    size += 2u8.try_into_ctx(&mut buf[size..], ctx)?;
+    size += revision.try_into_ctx(&mut buf[size..], ctx)?;
+    size += if *is_favorite { 1u64 } else { 0u64 }.try_into_ctx(&mut buf[size..], ctx)?;
     // TODO: there may be extra cruft at the end of offsets.
-    count += 9u16.try_into_ctx(&mut buf[count..], ctx)?;
-    count += offsets.try_into_ctx(&mut buf[count..], ctx)?;
-    Ok(count)
+    size += 9u16.try_into_ctx(&mut buf[size..], ctx)?;
+    size += offsets.try_into_ctx(&mut buf[size..], ctx)?;
+    Ok(size)
   }
 }
 
 #[cfg(test)]
 mod test_header {
   use super::*;
-  use crate::parser::header::parse_header;
-  use crate::test_helpers::*;
 
   #[test]
-  fn test_header_write() {
-    let header = Header::new(
+  fn test_header_rw() {
+    let header = &Header::new(
       "1.3.5.3",
       160,
       true,
@@ -161,49 +145,8 @@ mod test_header {
       },
     );
     let mut bytes = [0; 70];
-
-    let _res = bytes
-      .pwrite_with::<Header>(header, 0, Endian::Little)
-      .unwrap();
-
-    assert_eq!(
-      unwrap(parse_header(&bytes[..])),
-      Header::new(
-        "1.3.5.3",
-        160,
-        true,
-        Offsets {
-          header: 0,
-          tiles: 2,
-          chests: 4,
-          signs: 6,
-          npcs: 8,
-          tile_entities: 10,
-          pressure_plates: 12,
-          town_manager: 14,
-          footer: 16
-        },
-      )
-    );
-
-    assert_eq!(
-      Header::try_from_ctx(&bytes[..], LE).unwrap(),
-      (Header::new(
-        "1.3.5.3",
-        160,
-        true,
-        Offsets {
-          header: 0,
-          tiles: 2,
-          chests: 4,
-          signs: 6,
-          npcs: 8,
-          tile_entities: 10,
-          pressure_plates: 12,
-          town_manager: 14,
-          footer: 16
-        },
-      ), 55)
-    )
+    let _res = bytes.pwrite_with::<&Header>(header, 0, LE).unwrap();
+    let parsed = &Header::try_from_ctx(&bytes[..], LE).unwrap().0;
+    assert_eq!(parsed, header);
   }
 }

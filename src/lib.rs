@@ -1,12 +1,10 @@
 #![allow(dead_code)]
 
-use crate::parser::header::parse_header;
 use crate::model::world::World;
 use std::boxed::Box;
 use std::error::Error;
 
 pub mod model;
-mod parser;
 
 #[cfg(test)]
 pub(crate) mod test_helpers {
@@ -15,6 +13,7 @@ pub(crate) mod test_helpers {
   use std::fs::read;
   use std::convert::TryInto;
   use std::vec::Vec;
+
   pub use nom::{error::ErrorKind, Err::Error as NomError};
 
   pub fn unwrap<T>(res: IResult<&[u8], T>) -> T {
@@ -34,7 +33,6 @@ pub(crate) mod test_helpers {
   }
 }
 
-pub fn parse_world(world: &'static [u8]) -> Result<World, Box<dyn Error>> {
-  let (_buf, header) = parse_header(world)?;
-  Ok(World { header })
+pub fn parse_world<'a>(bytes: &'a [u8]) -> Result<World, Box<dyn Error>> {
+  Ok(World::read(bytes)?)
 }
