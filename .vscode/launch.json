@@ -9,58 +9,56 @@
       "request": "launch",
       "name": "Debug unit tests in library 'wld'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--lib"
-        ],
+        "args": ["test", "--no-run", "--lib", "--package=wld"],
         "filter": {
           "name": "wld",
           "kind": "lib"
         }
       },
       "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
+      "cwd": "${workspaceFolder}"
     },
     {
       "type": "lldb",
       "request": "launch",
       "name": "Debug executable 'wld'",
       "cargo": {
-        "args": [
-          "build",
-          "--bin=wld",
-          "--package=wld"
-        ],
+        "args": ["build", "--bin=wld", "--package=wld"],
         "filter": {
           "name": "wld",
           "kind": "bin"
         }
       },
       "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
+      "cwd": "${workspaceFolder}"
     },
     {
       "type": "lldb",
       "request": "launch",
       "name": "Debug unit tests in executable 'wld'",
       "cargo": {
-        "args": [
-          "test",
-          "--no-run",
-          "--bin=wld",
-          "--package=wld"
-        ],
+        "args": ["test", "--no-run", "--bin=wld", "--package=wld"],
         "filter": {
           "name": "wld",
           "kind": "bin"
         }
       },
       "args": [],
-      "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["rust"]
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug integration test 'wld'",
+      "cargo": {
+        "args": ["test", "--no-run", "--test=wld", "--package=wld"],
+        "filter": {
+          "name": "wld",
+          "kind": "test"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
