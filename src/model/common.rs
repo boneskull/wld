@@ -16,8 +16,8 @@ pub struct Rect {
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct Point {
-  pub x: i32,
   pub y: i32,
+  pub x: i32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, new)]

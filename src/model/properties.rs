@@ -1,5 +1,4 @@
 use crate::model::common::*;
-use bit_vec::BitVec;
 use derive_new::new;
 use scroll::{
   ctx::{TryFromCtx, TryIntoCtx},
@@ -8,6 +7,7 @@ use scroll::{
 use std::convert::TryInto;
 use std::fmt::Debug;
 pub use uuid::Uuid;
+use bitvec::prelude::*;
 
 pub type MoonStyle = u8;
 pub type UndergroundIceStyle = i32;
@@ -56,7 +56,10 @@ impl GeneratorInfo {
 impl<'a> TryFromCtx<'a, Endian> for GeneratorInfo {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let seed = buf.gread_with::<TString>(offset, ctx)?;
     let version = buf.gread_with::<u64>(offset, ctx)?;
@@ -67,7 +70,11 @@ impl<'a> TryFromCtx<'a, Endian> for GeneratorInfo {
 impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let GeneratorInfo { seed, version } = self;
     let mut size = 0;
     size += seed.try_into_ctx(&mut buf[size..], ctx)?;
@@ -77,23 +84,34 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct TBitVec(BitVec);
+pub struct TBitVec(BitVec::<Lsb0,u8>);
 
 impl From<Vec<bool>> for TBitVec {
   fn from(v: Vec<bool>) -> Self {
-    Self(BitVec::from_fn(v.len(), |i| v[i]))
+    Self(BitVec::<Lsb0,u8>::from(&v[..]))
   }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TBitVec {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let len = buf.gread_with::<i16>(offset, ctx)?;
-    let len = (len as f32 / 8.0).ceil() as usize;
-    let bits = BitVec::from_bytes(&buf[*offset..(*offset + len)]);
-    *offset += len;
+    let byte_len = (len as f32 / 8.0).ceil() as usize;
+    let bits = BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset+byte_len]);
+
+    // let mut bits: BitVec<u8> = BitVec::new();
+    // for _ in 0..len {
+    //   let byte = buf.gread::<u8>(offset)?;
+    //   let mut bv = BitVec::from_bytes(&[byte]);
+    //   // let mut bv = BitVec::from_iter(bv.iter().rev());
+    //   bits.append(&mut bv);
+    // }
+    *offset += byte_len;
     Ok((Self(bits), *offset))
   }
 }
@@ -101,12 +119,16 @@ impl<'a> TryFromCtx<'a, Endian> for TBitVec {
 impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let bits = &self.0;
     let mut size = 0;
     let tfi_size: i16 = bits.len().try_into().unwrap();
     size += tfi_size.try_into_ctx(&mut buf[size..], ctx)?;
-    size += bits.to_bytes().try_into_ctx(&mut buf[size..], ())?;
+    size += bits.as_slice().try_into_ctx(&mut buf[size..], ())?;
     Ok(size)
   }
 }
@@ -117,7 +139,10 @@ pub struct TUuid(Uuid);
 impl<'a> TryFromCtx<'a, Endian> for TUuid {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_uuid = buf.gread_with::<u128>(offset, ctx)?;
 
@@ -128,10 +153,59 @@ impl<'a> TryFromCtx<'a, Endian> for TUuid {
 impl<'a> TryIntoCtx<Endian> for &'a TUuid {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let uuid = self.0;
     let mut size = 0;
     size += uuid.to_u128_le().try_into_ctx(&mut buf[size..], ctx)?;
+    Ok(size)
+  }
+}
+
+impl From<Uuid> for TUuid {
+  fn from(uuid: Uuid) -> Self {
+    Self(uuid)
+  }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum EvilType {
+  Corruption,
+  Crimson,
+}
+
+impl<'a> TryFromCtx<'a, Endian> for EvilType {
+  type Error = scroll::Error;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let raw_value = buf.gread::<u8>(offset)?;
+    let evil_type = if raw_value != 0 {
+      Self::Crimson
+    } else {
+      Self::Corruption
+    };
+    Ok((evil_type, *offset))
+  }
+}
+
+impl<'a> TryIntoCtx<Endian> for &'a EvilType {
+  type Error = scroll::Error;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
+    let mut size = 0;
+    let value = *self as u8;
+    size += value.try_into_ctx(&mut buf[size..], ctx)?;
     Ok(size)
   }
 }
@@ -146,11 +220,18 @@ pub struct Properties {
   pub bounds: Rect,
   pub size: Point,
   pub is_expert: TBool,
-  pub created_on: u128, // TODO
+  pub created_on: u64, // TODO
   pub style: WorldStyle,
   pub spawn_point: Point,
   pub underground_level: f64,
   pub cavern_level: f64,
+  pub time: f64,
+  pub is_daytime: TBool,
+  pub moon_phase: u32,
+  pub is_blood_moon: TBool,
+  pub is_eclipse: TBool,
+  pub dungeon_point: Point,
+  pub evil_type: EvilType,
 }
 
 #[cfg(test)]
@@ -162,15 +243,61 @@ mod test_properties {
   fn test_properties_rw() {
     let props = &Properties {
       tile_frame_importances: TBitVec::from(vec![
-        true, false, true, false, true, false, true, false,
+        false, false, false, true, true, true, false, false, false, false,
+        true, true, true, true, true, true, true, true, true, true, true, true,
+        false, false, true, false, true, true, true, true, false, true, false,
+        true, true, true, true, false, false, false, false, false, true, false,
+        false, false, false, false, false, false, true, false, false, false,
+        false, true, false, false, false, false, false, true, false, false,
+        false, false, false, false, false, false, false, true, true, true,
+        true, false, false, true, true, true, false, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, false,
+        false, false, true, false, false, true, true, false, false, false,
+        false, false, false, false, false, false, false, true, true, false,
+        true, true, false, false, true, true, true, true, true, true, true,
+        true, false, true, true, true, true, false, false, false, false, true,
+        false, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, true, false, false, false, false,
+        false, true, true, true, true, false, false, false, true, false, false,
+        false, false, false, true, true, true, true, false, false, false,
+        false, false, false, false, false, false, false, false, false, false,
+        true, false, false, false, false, false, true, false, true, true,
+        false, true, false, false, true, true, true, true, true, true, false,
+        false, false, false, false, false, true, true, false, false, true,
+        false, true, false, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, false, false, false, false, false, false,
+        true, false, false, false, false, false, false, false, false, false,
+        false, false, false, false, false, true, true, true, false, false,
+        false, true, true, true, true, true, true, true, true, true, false,
+        true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, true, true, true, true, true, true, true, true, true, true,
+        true, true, false, false, false, true, false, true, true, true, true,
+        true, false, false, true, true, false, false, false, false, false,
+        false, false, false, false, true, true, false, true, true, true, false,
+        false, false, false, false, false, false, false, false, true, false,
+        false, false, false, true, true, true, false, true, true, true, true,
+        true, true, true, false, false, false, false, false, false, false,
+        true, true, true, true, true, true, true, false, true, false, false,
+        false, false, false, true, true, true, true, true, true, true, true,
+        true, true, false, false, false, false, false, false, false, false,
+        false, true, true, false, false, false, true, true, true, true, true,
+        false, false, false, false, true, true, false, false, true, true, true,
+        false, true, true, true, false, false, false, false, false, true, true,
+        true, true, true, true, true, true, true, true, true, false, false,
+        false, false, false, false, true, true, true, true, true, true, false,
+        false, false, true, true, true, true, true, true, true, true, true,
+        false, false,
       ]),
-      name: TString::from("boneskullandia"),
+      name: TString::from("Foon"),
       generator: GeneratorInfo {
-        seed: TString::from("herp"),
-        version: 123456789,
+        seed: TString::from("1451234789"),
+        version: 9860045932737703464,
       },
-      uuid: TUuid(Uuid::NAMESPACE_DNS), // why not
-      id: 12345678,
+      uuid: TUuid(
+        Uuid::parse_str("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap(),
+      ), // why not
+      id: 1468463142,
       bounds: Rect {
         left: 0,
         right: 67200,
@@ -179,22 +306,30 @@ mod test_properties {
       },
       size: Point::new(4200, 1200),
       is_expert: TBool::from(false),
-      created_on: 444444,
+      created_on: 8518612034984415,
       style: WorldStyle {
         moon: 1,
-        trees: QuadrantStyle::new(1, 2, 3, 4, 5, 6, 7),
-        moss: QuadrantStyle::new(1, 2, 3, 4, 5, 6, 7),
-        underground_ice: 1,
+        trees: QuadrantStyle::new(4, 5, 0, 0, 3072, 4200, 4200),
+        moss: QuadrantStyle::new(1, 0, 3, 3, 1210, 4200, 4200),
+        underground_ice: 3,
         underground_jungle: 0,
-        hell: 1,
+        hell: 0,
       },
       spawn_point: Point::new(2098, 229),
       underground_level: 300.0,
       cavern_level: 528.0,
+      time: 0.0,
+      is_daytime: TBool::from(true),
+      moon_phase: 0u32,
+      is_blood_moon: TBool::from(false),
+      is_eclipse: TBool::from(true),
+      dungeon_point: Point::new(3426, 211),
+      evil_type: EvilType::Corruption,
     };
-    let mut bytes = [0; 200];
+    let mut bytes = [0; 255];
     let _res = bytes.pwrite_with::<&Properties>(props, 0, LE).unwrap();
-    let parsed = &Properties::try_from_ctx(&bytes[..], LE).unwrap().0;
+    let (parsed, size) = &Properties::try_from_ctx(&bytes[..], LE).unwrap();
     assert_eq!(parsed, props);
+    assert_eq!(*size, 255);
   }
 }

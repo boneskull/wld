@@ -1,7 +1,7 @@
 use derive_new::new;
 use scroll::{
   ctx::{StrCtx, TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite, LE,
+  Endian, Pread, Pwrite
 };
 
 static RELOGIC: &str = "relogic";
@@ -16,7 +16,7 @@ pub struct Offsets {
   pub tile_entities: i32,
   pub pressure_plates: i32,
   pub town_manager: i32,
-  pub footer: i32,
+  pub footer: i32
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -46,16 +46,18 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
 
   fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let raw_version = buf.gread_with::<i32>(offset, LE)?;
+    let raw_version = buf.gread_with::<i32>(offset, ctx)?;
     let _raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
-    let _ = buf.gread_with::<u8>(offset, LE)?;
-    let revision = buf.gread_with::<u32>(offset, LE)?;
-    let raw_is_favorite = buf.gread_with::<u64>(offset, LE)?;
-    let is_favorite = raw_is_favorite != 0;
+    let _ = buf.gread::<u8>(offset)?;
+    let revision = buf.gread_with::<u32>(offset, ctx)?;
+    let is_favorite = buf.gread_with::<u64>(offset, ctx)? != 0 ;
     // the following might be needed.
-    let _raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
-    let (offsets, size) = Offsets::try_from_ctx(&buf[*offset..], ctx)?;
-    *offset += size;
+    let raw_offset_lengths = buf.gread_with::<u16>(offset, ctx)?;
+    let offsets = buf.gread_with::<Offsets>(offset, ctx)?;
+
+    for _ in 9..raw_offset_lengths {
+      buf.gread_with::<i32>(offset, ctx)?;
+    }
 
     let version = match raw_version {
       71 => Ok("1.2.0.3.1"),
@@ -125,6 +127,7 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
 #[cfg(test)]
 mod test_header {
   use super::*;
+  use scroll::LE;
 
   #[test]
   fn test_header_rw() {
