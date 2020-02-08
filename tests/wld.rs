@@ -5,6 +5,7 @@ use wld::{
   model::common::*,
   model::header::{Header, Offsets},
   model::properties::*,
+  model::common::TBool::*,
   model::world::World,
   parse_world,
 };
@@ -20,11 +21,11 @@ fn test_parse() {
   assert_eq!(
     parse_world(&WORLD).unwrap(),
     World {
-      header: Header::new(
-        "1.3.5.3".to_string(),
-        160,
-        false,
-        Offsets {
+      header: Header {
+        version: "1.3.5.3".to_string(),
+        revision: 160,
+        is_favorite: false,
+        offsets: Offsets {
           header: 127,
           tiles: 2802,
           chests: 2860224,
@@ -35,7 +36,7 @@ fn test_parse() {
           town_manager: 2880461,
           footer: 2880489
         }
-      ),
+      },
       properties: Properties {
         tile_frame_importances: TBitVec::from(vec![
           false, false, false, true, true, true, false, false, false, false,
@@ -101,7 +102,7 @@ fn test_parse() {
           bottom: 19200,
         },
         size: Point { x: 4200, y: 1200 },
-        is_expert: TBool::from(false),
+        is_expert: False,
         created_on: 9860045932737703464,
         style: WorldStyle {
           moon: 1,
@@ -123,7 +124,7 @@ fn test_parse() {
             x2: 4200,
             x3: 4200
           },
-          underground_ice: 3,
+          underground_snow: 3,
           underground_jungle: 0,
           hell: 0,
         },
@@ -131,10 +132,10 @@ fn test_parse() {
         underground_level: 300.0,
         cavern_level: 528.0,
         time: 34958.0,
-        is_daytime: TBool::from(true),
+        is_daytime: True,
         moon_phase: 1,
-        is_blood_moon: TBool::from(false),
-        is_eclipse: TBool::from(false),
+        is_blood_moon: False,
+        is_eclipse: False,
         dungeon_point: Point::new(3426, 211),
         evil_type: EvilType::Corruption,
       }

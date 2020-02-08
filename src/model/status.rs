@@ -2,7 +2,7 @@ use crate::model::common::*;
 use derive_new::new;
 use scroll::{Pread, Pwrite};
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct BossesSlain {
   pub eye_of_cthulhu: TBool,
   pub eater_of_world: TBool,
@@ -17,14 +17,14 @@ pub struct BossesSlain {
   pub king_slime: TBool,
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct SavedNPCs {
   pub goblin_tinkerer: TBool,
   pub wizard: TBool,
   pub mechanic: TBool
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct EventsCompleted {
   pub goblin_army: TBool,
   pub clown: TBool,
@@ -32,14 +32,14 @@ pub struct EventsCompleted {
   pub pirates: TBool
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct ShadowOrbStatus {
   pub smashed: TBool,
   pub meteorite_spawned: TBool,
   pub evil_boss_counter: i32
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
 pub struct RainStatus {
   pub is_active: TBool,
   pub time_left: i32,
@@ -50,7 +50,7 @@ pub struct RainStatus {
 type HardmodeOre = i32;
 type InvasionType = i32;
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
 pub struct Status {
   pub bosses_slain: BossesSlain,
   pub saved_npcs: SavedNPCs,
@@ -68,5 +68,11 @@ pub struct Status {
   pub hardmode_ore_1: HardmodeOre,
   pub hardmode_ore_2: HardmodeOre,
   pub hardmode_ore_3: HardmodeOre,
-  // bg_forest ...
+  pub bg_forest: u8,
+  pub bg_corruption: u8,
+  pub bg_snow: u8,
+  pub bg_hallow: u8,
+  pub bg_crimson: u8,
+  pub bg_desert: u8,
+  pub bg_ocean: u8
 }

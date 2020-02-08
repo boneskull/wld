@@ -26,10 +26,16 @@ pub struct TString(String);
 impl<'a> TryFromCtx<'a, Endian> for TString {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], _ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let str_len = Uleb128::read(buf, offset)?;
-    let value = buf.gread_with::<&str>(offset, StrCtx::Length(str_len.try_into().unwrap()))?;
+    let value = buf.gread_with::<&str>(
+      offset,
+      StrCtx::Length(str_len.try_into().unwrap()),
+    )?;
     Ok((Self(value.to_string()), *offset))
   }
 }
@@ -37,7 +43,11 @@ impl<'a> TryFromCtx<'a, Endian> for TString {
 impl<'a> TryIntoCtx<Endian> for &'a TString {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], _ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let value = &self.0;
     let mut size = 0;
     let str_len = match u64::try_from(value.len()) {
@@ -65,32 +75,41 @@ impl From<String> for TString {
   }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
-pub struct TBool(bool);
-
-impl From<bool> for TBool {
-  fn from(v: bool) -> Self {
-    Self(v)
-  }
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum TBool {
+  False,
+  True,
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TBool {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], _ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread::<u8>(offset)? != 0;
-    Ok((Self(value), *offset))
+    let value = buf.gread::<u8>(offset)?;
+    let value = if value == 0 {
+      TBool::False
+    } else {
+      TBool::True
+    };
+    Ok((value, *offset))
   }
 }
 
 impl<'a> TryIntoCtx<Endian> for &'a TBool {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let mut size = 0;
-    let value: bool = self.0;
-    size += if value { 1u8 } else { 0u8 }.try_into_ctx(&mut buf[size..], ctx)?;
+    size += if *self == TBool::True { 1u8 } else { 0u8 }
+      .try_into_ctx(&mut buf[size..], ctx)?;
     Ok(size)
   }
 }
@@ -102,20 +121,20 @@ mod test_common {
 
   #[test]
   fn test_tbool_rw() {
-    let t = &TBool(true);
+    let t = &TBool::True;
     let mut bytes = [0; 1];
     let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();
     assert_eq!(
       TBool::try_from_ctx(&bytes[..], LE).unwrap(),
-      (TBool(true), 1)
+      (TBool::True, 1)
     );
 
-    let t = &TBool(false);
+    let t = &TBool::False;
     let mut bytes = [0; 1];
     let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();
     assert_eq!(
       TBool::try_from_ctx(&bytes[..], LE).unwrap(),
-      (TBool(false), 1)
+      (TBool::False, 1)
     );
   }
 

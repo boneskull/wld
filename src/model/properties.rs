@@ -1,4 +1,5 @@
-use crate::model::common::*;
+use crate::model::common::{TBool::*, *};
+use bitvec::prelude::*;
 use derive_new::new;
 use scroll::{
   ctx::{TryFromCtx, TryIntoCtx},
@@ -7,10 +8,9 @@ use scroll::{
 use std::convert::TryInto;
 use std::fmt::Debug;
 pub use uuid::Uuid;
-use bitvec::prelude::*;
 
 pub type MoonStyle = u8;
-pub type UndergroundIceStyle = i32;
+pub type UndergroundSnowStyle = i32;
 pub type UndergroundJungleStyle = i32;
 pub type HellStyle = i32;
 
@@ -30,7 +30,7 @@ pub struct WorldStyle {
   pub moon: MoonStyle,
   pub trees: QuadrantStyle,
   pub moss: QuadrantStyle,
-  pub underground_ice: UndergroundIceStyle,
+  pub underground_snow: UndergroundSnowStyle,
   pub underground_jungle: UndergroundJungleStyle,
   pub hell: HellStyle,
 }
@@ -84,11 +84,11 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct TBitVec(BitVec::<Lsb0,u8>);
+pub struct TBitVec(BitVec<Lsb0, u8>);
 
 impl From<Vec<bool>> for TBitVec {
   fn from(v: Vec<bool>) -> Self {
-    Self(BitVec::<Lsb0,u8>::from(&v[..]))
+    Self(BitVec::<Lsb0, u8>::from(&v[..]))
   }
 }
 
@@ -102,7 +102,8 @@ impl<'a> TryFromCtx<'a, Endian> for TBitVec {
     let offset = &mut 0;
     let len = buf.gread_with::<i16>(offset, ctx)?;
     let byte_len = (len as f32 / 8.0).ceil() as usize;
-    let bits = BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset+byte_len]);
+    let bits =
+      BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
 
     // let mut bits: BitVec<u8> = BitVec::new();
     // for _ in 0..len {
@@ -305,13 +306,13 @@ mod test_properties {
         bottom: 19200,
       },
       size: Point::new(4200, 1200),
-      is_expert: TBool::from(false),
+      is_expert: False,
       created_on: 8518612034984415,
       style: WorldStyle {
         moon: 1,
         trees: QuadrantStyle::new(4, 5, 0, 0, 3072, 4200, 4200),
         moss: QuadrantStyle::new(1, 0, 3, 3, 1210, 4200, 4200),
-        underground_ice: 3,
+        underground_snow: 3,
         underground_jungle: 0,
         hell: 0,
       },
@@ -319,10 +320,10 @@ mod test_properties {
       underground_level: 300.0,
       cavern_level: 528.0,
       time: 0.0,
-      is_daytime: TBool::from(true),
+      is_daytime: True,
       moon_phase: 0u32,
-      is_blood_moon: TBool::from(false),
-      is_eclipse: TBool::from(true),
+      is_blood_moon: False,
+      is_eclipse: True,
       dungeon_point: Point::new(3426, 211),
       evil_type: EvilType::Corruption,
     };
