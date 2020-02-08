@@ -1,19 +1,13 @@
 use lazy_static::lazy_static;
-use nom::IResult;
 use std::fs::read;
 use wld::model::properties::Properties;
 use wld::{
   model::common::*,
   model::header::{Header, Offsets},
   model::properties::*,
-  model::variables::*,
   model::world::World,
   parse_world,
 };
-
-pub fn unwrap<T>(res: IResult<&[u8], T>) -> T {
-  res.unwrap().1
-}
 
 lazy_static! {
   // paths are relative to root, I guess?
@@ -44,44 +38,105 @@ fn test_parse() {
       ),
       properties: Properties {
         tile_frame_importances: TBitVec::from(vec![
-          true, false, true, false, true, false, true, false,
+          false, false, false, true, true, true, false, false, false, false,
+          true, true, true, true, true, true, true, true, true, true, true,
+          true, false, false, true, false, true, true, true, true, false, true,
+          false, true, true, true, true, false, false, false, false, false,
+          true, false, false, false, false, false, false, false, true, false,
+          false, false, false, true, false, false, false, false, false, true,
+          false, false, false, false, false, false, false, false, false, true,
+          true, true, true, false, false, true, true, true, false, true, true,
+          true, true, true, true, true, true, true, true, true, true, true,
+          true, true, true, true, true, true, true, true, true, true, true,
+          true, true, false, false, false, true, false, false, true, true,
+          false, false, false, false, false, false, false, false, false, false,
+          true, true, false, true, true, false, false, true, true, true, true,
+          true, true, true, true, false, true, true, true, true, false, false,
+          false, false, true, false, false, false, false, false, false, false,
+          false, false, false, false, false, false, false, false, true, false,
+          false, false, false, false, true, true, true, true, false, false,
+          false, true, false, false, false, false, false, true, true, true,
+          true, false, false, false, false, false, false, false, false, false,
+          false, false, false, false, true, false, false, false, false, false,
+          true, false, true, true, false, true, false, false, true, true, true,
+          true, true, true, false, false, false, false, false, false, true,
+          true, false, false, true, false, true, false, true, true, true, true,
+          true, true, true, true, true, true, true, true, true, false, false,
+          false, false, false, false, true, false, false, false, false, false,
+          false, false, false, false, false, false, false, false, false, true,
+          true, true, false, false, false, true, true, true, true, true, true,
+          true, true, true, false, true, true, true, true, true, true, true,
+          true, true, true, true, true, true, true, true, true, true, true,
+          true, true, true, true, true, true, true, true, false, false, false,
+          true, false, true, true, true, true, true, false, false, true, true,
+          false, false, false, false, false, false, false, false, false, true,
+          true, false, true, true, true, false, false, false, false, false,
+          false, false, false, false, true, false, false, false, false, true,
+          true, true, false, true, true, true, true, true, true, true, false,
+          false, false, false, false, false, false, true, true, true, true,
+          true, true, true, false, true, false, false, false, false, false,
+          true, true, true, true, true, true, true, true, true, true, false,
+          false, false, false, false, false, false, false, false, true, true,
+          false, false, false, true, true, true, true, true, false, false,
+          false, false, true, true, false, false, true, true, true, false,
+          true, true, true, false, false, false, false, false, true, true,
+          true, true, true, true, true, true, true, true, true, false, false,
+          false, false, false, false, true, true, true, true, true, true,
+          false, false, false, true, true, true, true, true, true, true, true,
+          true, false, false,
         ]),
-        name: TString::from("boneskullandia"),
+        name: TString::from("Foon"),
         generator: GeneratorInfo {
-          seed: TString::from("herp"),
-          version: 123456789,
+          seed: TString::from("1451234789"),
+          version: 833223655425,
         },
-        uuid: TUuid::new(Uuid::NAMESPACE_DNS), // why not
-        id: 12345678,
+        uuid: TUuid::from(
+          Uuid::parse_str("d578e106-3827-f648-a224-254c06ca78cb").unwrap()
+        ),
+        id: 1468463142,
         bounds: Rect {
           left: 0,
           right: 67200,
           top: 0,
           bottom: 19200,
         },
-        size: Point::new(4200, 1200),
+        size: Point { x: 4200, y: 1200 },
         is_expert: TBool::from(false),
-        created_on: 444444,
+        created_on: 9860045932737703464,
         style: WorldStyle {
           moon: 1,
-          trees: QuadrantStyle::new(1, 2, 3, 4, 5, 6, 7),
-          moss: QuadrantStyle::new(1, 2, 3, 4, 5, 6, 7),
-          underground_ice: 1,
+          trees: QuadrantStyle {
+            far_left: 4,
+            near_left: 5,
+            near_right: 0,
+            far_right: 0,
+            x1: 3072,
+            x2: 4200,
+            x3: 4200
+          },
+          moss: QuadrantStyle {
+            far_left: 1,
+            near_left: 0,
+            near_right: 3,
+            far_right: 0,
+            x1: 1210,
+            x2: 4200,
+            x3: 4200
+          },
+          underground_ice: 3,
           underground_jungle: 0,
-          hell: 1,
+          hell: 0,
         },
         spawn_point: Point::new(2098, 229),
         underground_level: 300.0,
         cavern_level: 528.0,
-      },
-      variables: Variables {
-        time: 0f32,
+        time: 34958.0,
         is_daytime: TBool::from(true),
-        moon_phase: 0u32,
+        moon_phase: 1,
         is_blood_moon: TBool::from(false),
-        is_eclipse: TBool::from(true),
-        dungeon_point: Point::new(0, 0),
-        evil_type: EvilType::Crimson
+        is_eclipse: TBool::from(false),
+        dungeon_point: Point::new(3426, 211),
+        evil_type: EvilType::Corruption,
       }
     }
   );
