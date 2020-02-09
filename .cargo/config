@@ -1,0 +1,12 @@
+[alias]
+dev = [
+  "watch",
+  "-i",
+  "*.snap*",
+  "-i",
+  "Cargo.{toml,lock}",
+  "-x",
+  "check",
+  "-x",
+  "test"
+]
