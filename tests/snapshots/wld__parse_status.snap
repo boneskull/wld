@@ -1,0 +1,63 @@
+---
+source: tests/wld.rs
+expression: PARSED_WORLD.status
+---
+Status {
+    bosses_slain: BossesSlain {
+        eye_of_cthulhu: True,
+        eater_of_worlds: True,
+        skeletron: False,
+        queen_bee: True,
+        the_twins: False,
+        the_destroyer: False,
+        skeletron_prime: False,
+        mechanical_boss: False,
+        plantera: False,
+        golem: False,
+        king_slime: True,
+    },
+    saved_npcs: SavedNPCs {
+        goblin_tinkerer: True,
+        wizard: False,
+        mechanic: False,
+    },
+    events_completed: EventsCompleted {
+        goblin_army: True,
+        clown: False,
+        frost_moon: False,
+        pirates: False,
+    },
+    shadow_orb_status: ShadowOrbStatus {
+        smashed: True,
+        meteorite_spawned: False,
+        evil_boss_counter: 0,
+    },
+    smashed_altar_count: 0,
+    is_hardmode: False,
+    invasion_status: InvasionStatus {
+        delay: 0,
+        size: 0,
+        invasion_type: NoInvasion,
+        position: 0.000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001371372158997,
+        slime_rain_time_left: 0.0,
+    },
+    sundial_cooldown: 0,
+    rain_status: RainStatus {
+        is_active: False,
+        time_left: 0,
+        max_rain: NaN,
+    },
+    hardmode_ore_1: UnknownOre,
+    hardmode_ore_2: UnknownOre,
+    hardmode_ore_3: UnknownOre,
+    backgrounds: Backgrounds {
+        forest: 4,
+        corruption: 1,
+        jungle: 1,
+        snow: 0,
+        hallow: 2,
+        crimson: 24,
+        desert: 34,
+        ocean: 1,
+    },
+}

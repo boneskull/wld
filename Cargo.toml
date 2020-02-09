@@ -10,6 +10,8 @@ derive-new = "0.5.8"
 scroll = { version = "0.10.1", features = ["derive", "std"] }
 nano-leb128 = { version = "0.1.0", features = ["std"] }
 bitvec = "0.17.2"
+derive-try-from-primitive = "0.1.0"
 
 [dev-dependencies]
 lazy_static = "1.4.0"
+insta = "0.13.1"

@@ -8,21 +8,15 @@ use scroll::{Pread, Pwrite, LE};
 pub struct World {
   pub header: Header,
   pub properties: Properties,
-  // pub status: Status
+  pub status: Status
 }
 
 impl World {
   #[inline]
   /// Read a variable length u64 from `bytes` at `offset`
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
-    let offset = &mut 0;
-    let header = bytes.gread_with::<Header>(offset, LE)?;
-    let properties = bytes.gread_with::<Properties>(offset, LE)?;
-    // let status = bytes.gread_with::<Status>(offset, LE)?;
-    Ok(World {
-      header,
-      properties,
-      // status,
-    })
+    let world = bytes.pread_with::<World>(0, LE)?;
+    Ok(world)
   }
 }
+

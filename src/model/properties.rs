@@ -1,4 +1,4 @@
-use crate::model::common::{TBool::*, *};
+use crate::model::common::*;
 use bitvec::prelude::*;
 use derive_new::new;
 use scroll::{
@@ -104,14 +104,6 @@ impl<'a> TryFromCtx<'a, Endian> for TBitVec {
     let byte_len = (len as f32 / 8.0).ceil() as usize;
     let bits =
       BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
-
-    // let mut bits: BitVec<u8> = BitVec::new();
-    // for _ in 0..len {
-    //   let byte = buf.gread::<u8>(offset)?;
-    //   let mut bv = BitVec::from_bytes(&[byte]);
-    //   // let mut bv = BitVec::from_iter(bv.iter().rev());
-    //   bits.append(&mut bv);
-    // }
     *offset += byte_len;
     Ok((Self(bits), *offset))
   }
@@ -219,7 +211,8 @@ pub struct Properties {
   pub uuid: TUuid,
   pub id: u32,
   pub bounds: Rect,
-  pub size: Point,
+  pub height: i32,
+  pub width: i32,
   pub is_expert: TBool,
   pub created_on: u64, // TODO
   pub style: WorldStyle,
@@ -239,6 +232,7 @@ pub struct Properties {
 mod test_properties {
   use super::*;
   use scroll::LE;
+  use crate::model::common::TBool::*;
 
   #[test]
   fn test_properties_rw() {
@@ -305,7 +299,8 @@ mod test_properties {
         top: 0,
         bottom: 19200,
       },
-      size: Point::new(4200, 1200),
+      width: 4200,
+      height: 1200,
       is_expert: False,
       created_on: 8518612034984415,
       style: WorldStyle {
