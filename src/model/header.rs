@@ -1,7 +1,7 @@
 use derive_new::new;
 use scroll::{
   ctx::{StrCtx, TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite
+  Endian, Pread, Pwrite,
 };
 
 static RELOGIC: &str = "relogic";
@@ -16,7 +16,7 @@ pub struct Offsets {
   pub tile_entities: i32,
   pub pressure_plates: i32,
   pub town_manager: i32,
-  pub footer: i32
+  pub footer: i32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -28,7 +28,12 @@ pub struct Header {
 }
 
 impl Header {
-  pub fn new<S>(version: S, revision: u32, is_favorite: bool, offsets: Offsets) -> Self
+  pub fn new<S>(
+    version: S,
+    revision: u32,
+    is_favorite: bool,
+    offsets: Offsets,
+  ) -> Self
   where
     S: Into<String>,
   {
@@ -44,14 +49,24 @@ impl Header {
 impl<'a> TryFromCtx<'a, Endian> for Header {
   type Error = scroll::Error;
 
-  fn try_from_ctx(buf: &'a [u8], ctx: Endian) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_version = buf.gread_with::<i32>(offset, ctx)?;
-    let _raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
-    let _ = buf.gread::<u8>(offset)?;
+    let raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
+    if raw_signature != RELOGIC {
+      return Err(scroll::Error::Custom("unrecognized signature".to_string()));
+    }
+    let savefile_type = buf.gread::<u8>(offset)?;
+    if savefile_type != 2 {
+      return Err(scroll::Error::Custom(
+        "unrecognized save file type".to_string(),
+      ));
+    }
     let revision = buf.gread_with::<u32>(offset, ctx)?;
-    let is_favorite = buf.gread_with::<u64>(offset, ctx)? != 0 ;
-    // the following might be needed.
+    let is_favorite = buf.gread_with::<u64>(offset, ctx)? != 0;
     let raw_offset_lengths = buf.gread_with::<u16>(offset, ctx)?;
     let offsets = buf.gread_with::<Offsets>(offset, ctx)?;
 
@@ -86,7 +101,11 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
 impl<'a> TryIntoCtx<Endian> for &'a Header {
   type Error = scroll::Error;
 
-  fn try_into_ctx(self, buf: &mut [u8], ctx: Endian) -> Result<usize, Self::Error> {
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
     let Header {
       version,
       revision,
@@ -109,14 +128,17 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
       "1.3.3" => 174,
       "1.3.4" => 178,
       "1.3.5.3" => 194,
-      _ => 0, // TODO error
+      _ => {
+        return Err(scroll::Error::Custom("unrecognized version".to_string()))
+      }
     };
 
     size += v.try_into_ctx(&mut buf[size..], ctx)?;
     size += RELOGIC.as_bytes().try_into_ctx(&mut buf[size..], ())?;
     size += 2u8.try_into_ctx(&mut buf[size..], ctx)?;
     size += revision.try_into_ctx(&mut buf[size..], ctx)?;
-    size += if *is_favorite { 1u64 } else { 0u64 }.try_into_ctx(&mut buf[size..], ctx)?;
+    size += if *is_favorite { 1u64 } else { 0u64 }
+      .try_into_ctx(&mut buf[size..], ctx)?;
     // TODO: there may be extra cruft at the end of offsets.
     size += 9u16.try_into_ctx(&mut buf[size..], ctx)?;
     size += offsets.try_into_ctx(&mut buf[size..], ctx)?;
@@ -151,5 +173,29 @@ mod test_header {
     let _res = bytes.pwrite_with::<&Header>(header, 0, LE).unwrap();
     let parsed = &Header::try_from_ctx(&bytes[..], LE).unwrap().0;
     assert_eq!(parsed, header);
+  }
+
+  #[test]
+  fn test_header_signature_err() {
+    let bytes = [
+      194, 0, 0, 0, 114, 101, 108, 101, 103, 105, 99, 2, 160, 0, 0, 0, 1, 0, 0,
+      0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0, 6, 0, 0, 0, 8,
+      0, 0, 0, 10, 0, 0, 0, 12, 0, 0, 0, 14, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0,
+    ];
+    let res = bytes.pread_with::<Header>(0, LE);
+    assert!(res.is_err());
+  }
+
+  #[test]
+  fn test_header_savefile_type_err() {
+    let bytes = [
+      194, 0, 0, 0, 114, 101, 108, 111, 103, 105, 99, 1, 160, 0, 0, 0, 1, 0, 0,
+      0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 2, 0, 0, 0, 4, 0, 0, 0, 6, 0, 0, 0, 8,
+      0, 0, 0, 10, 0, 0, 0, 12, 0, 0, 0, 14, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0,
+    ];
+    let res = bytes.pread_with::<Header>(0, LE);
+    assert!(res.is_err());
   }
 }

@@ -231,8 +231,8 @@ pub struct Properties {
 #[cfg(test)]
 mod test_properties {
   use super::*;
-  use scroll::LE;
   use crate::model::common::TBool::*;
+  use scroll::LE;
 
   #[test]
   fn test_properties_rw() {
@@ -291,7 +291,7 @@ mod test_properties {
       },
       uuid: TUuid(
         Uuid::parse_str("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap(),
-      ), // why not
+      ),
       id: 1468463142,
       bounds: Rect {
         left: 0,
