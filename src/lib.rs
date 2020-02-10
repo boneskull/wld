@@ -1,4 +1,6 @@
 #![allow(dead_code)]
+#[macro_use]
+extern crate num_derive;
 
 use crate::model::world::World;
 use std::boxed::Box;

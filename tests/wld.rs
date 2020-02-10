@@ -12,12 +12,12 @@ lazy_static! {
 
 #[test]
 fn test_parse_header() {
-  assert_debug_snapshot!(PARSED_WORLD.header);
+  assert_debug_snapshot!(PARSED_WORLD.status.header);
 }
 
 #[test]
 fn test_parse_properties() {
-  assert_debug_snapshot!(PARSED_WORLD.properties);
+  assert_debug_snapshot!(PARSED_WORLD.status.properties);
 }
 
 #[test]

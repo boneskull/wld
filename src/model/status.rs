@@ -1,6 +1,6 @@
 use crate::model::common::*;
 use derive_new::new;
-use derive_try_from_primitive::*;
+use num_traits::FromPrimitive;
 use scroll::{
   ctx::{TryFromCtx, TryIntoCtx},
   Endian, Pread, Pwrite,
@@ -19,6 +19,32 @@ pub struct BossesSlain {
   pub plantera: TBool,
   pub golem: TBool,
   pub king_slime: TBool,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+pub struct BossesSlain2 {
+  pub duke_fishron: TBool,
+  pub martian_madness: TBool,
+  pub lunatic_cultist: TBool,
+  pub moon_lord: TBool,
+  pub pumpking: TBool,
+  pub mourning_wood: TBool,
+  pub ice_queen: TBool,
+  pub santa_nk1: TBool,
+  pub everscream: TBool,
+  pub solar_pillar: TBool,
+  pub vortex_pillar: TBool,
+  pub nebula_pillar: TBool,
+  pub stardust_pillar: TBool,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+pub struct PillarStatus {
+  pub solar: TBool,
+  pub vortex: TBool,
+  pub nebula: TBool,
+  pub stardust: TBool,
+  pub is_active: TBool,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
@@ -50,7 +76,7 @@ pub struct RainStatus {
   pub max_rain: f32,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
 #[repr(i32)]
 pub enum HardmodeOre {
   UnknownOre = -1,
@@ -71,7 +97,7 @@ impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread::<i32>(offset)?;
-    let ore_opt = Self::try_from(value);
+    let ore_opt = Self::from_i32(value);
     Ok((
       if ore_opt.is_none() {
         Self::UnknownOre
@@ -98,7 +124,7 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
   }
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
 #[repr(i32)]
 pub enum InvasionType {
   NoInvasion = 0,
@@ -117,7 +143,7 @@ impl<'a> TryFromCtx<'a, Endian> for InvasionType {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread_with::<i32>(offset, ctx)?;
-    let ore_opt = Self::try_from(value);
+    let ore_opt = Self::from_i32(value);
     Ok((
       if ore_opt.is_none() {
         Self::NoInvasion
@@ -172,7 +198,7 @@ pub struct Clouds {
   pub wind_speed: f32,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, TryFromPrimitive)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
 #[repr(i32)]
 pub enum AnglerQuestFish {
   Batfish = 0,
@@ -225,7 +251,7 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestFish {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread_with::<i32>(offset, ctx)?;
-    Ok((Self::try_from(value).unwrap(), *offset))
+    Ok((Self::from_i32(value).unwrap(), *offset))
   }
 }
 
@@ -340,6 +366,68 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKills {
   }
 }
 
+#[derive(Clone, Debug, Eq, PartialEq, new)]
+pub struct PartyingNPCs(Vec<i32>);
+
+impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
+  type Error = scroll::Error;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let partying_npcs_count = buf.gread_with::<i32>(offset, ctx)?;
+    let mut partying_npcs: Vec<i32> = vec![];
+    for _ in 0..partying_npcs_count {
+      partying_npcs.push(buf.gread_with::<i32>(offset, ctx)?);
+    }
+    Ok((Self(partying_npcs), *offset))
+  }
+}
+
+impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCs {
+  type Error = scroll::Error;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: Endian,
+  ) -> Result<usize, Self::Error> {
+    let mut size = 0;
+    let partying_npcs_count = self.0.len();
+    size += partying_npcs_count.try_into_ctx(&mut buf[size..], ctx)?;
+    self
+      .0
+      .iter()
+      .for_each(|k| size += k.try_into_ctx(&mut buf[size..], ctx).unwrap());
+    Ok(size)
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+pub struct PartyStatus {
+  pub party_center_is_active: TBool,
+  pub natural_party_is_active: TBool,
+  pub party_cooldown: i32,
+  pub partying_npcs: PartyingNPCs,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
+pub struct SandstormStatus {
+  pub is_active: TBool,
+  pub time_left: i32,
+  pub severity: f32,
+  pub intended_severity: f32,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+pub struct OldOnesArmyStatus {
+  pub tier1: TBool,
+  pub tier2: TBool,
+  pub tier3: TBool,
+}
+
 #[derive(Clone, Debug, PartialEq, new, Pread, Pwrite)]
 pub struct Status {
   pub bosses_slain: BossesSlain,
@@ -362,4 +450,11 @@ pub struct Status {
   pub invasion_size_start: i32,
   pub cultist_delay: i32,
   pub mob_kills: MobKills,
+  pub fast_forward_time: TBool,
+  pub bosses_slain_2: BossesSlain2,
+  pub pillar_status: PillarStatus,
+  pub party_status: PartyStatus,
+  pub sandstorm_status: SandstormStatus,
+  pub bartender_saved: TBool,
+  pub old_ones_army_status: OldOnesArmyStatus,
 }

@@ -1,11 +1,9 @@
 use crate::model::common::*;
-use bitvec::prelude::*;
 use derive_new::new;
 use scroll::{
   ctx::{TryFromCtx, TryIntoCtx},
   Endian, Pread, Pwrite,
 };
-use std::convert::TryInto;
 use std::fmt::Debug;
 pub use uuid::Uuid;
 
@@ -79,49 +77,6 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
     let mut size = 0;
     size += seed.try_into_ctx(&mut buf[size..], ctx)?;
     size += version.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
-  }
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub struct TBitVec(BitVec<Lsb0, u8>);
-
-impl From<Vec<bool>> for TBitVec {
-  fn from(v: Vec<bool>) -> Self {
-    Self(BitVec::<Lsb0, u8>::from(&v[..]))
-  }
-}
-
-impl<'a> TryFromCtx<'a, Endian> for TBitVec {
-  type Error = scroll::Error;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    ctx: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let len = buf.gread_with::<i16>(offset, ctx)?;
-    let byte_len = (len as f32 / 8.0).ceil() as usize;
-    let bits =
-      BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
-    *offset += byte_len;
-    Ok((Self(bits), *offset))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
-  type Error = scroll::Error;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: Endian,
-  ) -> Result<usize, Self::Error> {
-    let bits = &self.0;
-    let mut size = 0;
-    let tfi_size: i16 = bits.len().try_into().unwrap();
-    size += tfi_size.try_into_ctx(&mut buf[size..], ctx)?;
-    size += bits.as_slice().try_into_ctx(&mut buf[size..], ())?;
     Ok(size)
   }
 }
@@ -205,7 +160,7 @@ impl<'a> TryIntoCtx<Endian> for &'a EvilType {
 
 #[derive(Clone, Debug, PartialEq, new, Pread, Pwrite)]
 pub struct Properties {
-  pub tile_frame_importances: TBitVec,
+  pub tile_frame_importances: VariableTBitVec,
   pub name: TString,
   pub generator: GeneratorInfo,
   pub uuid: TUuid,
@@ -219,7 +174,7 @@ pub struct Properties {
   pub spawn_point: Point,
   pub underground_level: f64,
   pub cavern_level: f64,
-  pub time: f64,
+  pub current_time: f64,
   pub is_daytime: TBool,
   pub moon_phase: u32,
   pub is_blood_moon: TBool,
@@ -237,7 +192,7 @@ mod test_properties {
   #[test]
   fn test_properties_rw() {
     let props = &Properties {
-      tile_frame_importances: TBitVec::from(vec![
+      tile_frame_importances: VariableTBitVec::from(vec![
         false, false, false, true, true, true, false, false, false, false,
         true, true, true, true, true, true, true, true, true, true, true, true,
         false, false, true, false, true, true, true, true, false, true, false,
@@ -314,7 +269,7 @@ mod test_properties {
       spawn_point: Point::new(2098, 229),
       underground_level: 300.0,
       cavern_level: 528.0,
-      time: 0.0,
+      current_time: 0.0,
       is_daytime: True,
       moon_phase: 0u32,
       is_blood_moon: False,

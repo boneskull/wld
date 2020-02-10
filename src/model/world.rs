@@ -1,22 +1,37 @@
 use super::header::*;
 use crate::model::properties::Properties;
 use crate::model::status::Status;
+use crate::model::tiles::*;
 use derive_new::new;
 use scroll::{Pread, Pwrite, LE};
 
-#[derive(Clone, Debug, PartialEq, new, Pwrite, Pread)]
+type Tiles = Vec<Vec<Tile>>;
+
+#[derive(Clone, Debug, PartialEq, new)]
 pub struct World {
+  pub status: WorldStatus,
+  pub tiles: Tiles,
+}
+
+#[derive(Clone, Debug, PartialEq, new, Pwrite, Pread)]
+pub struct WorldStatus {
   pub header: Header,
   pub properties: Properties,
-  pub status: Status
+  pub status: Status,
 }
 
 impl World {
   #[inline]
-  /// Read a variable length u64 from `bytes` at `offset`
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
-    let world = bytes.pread_with::<World>(0, LE)?;
-    Ok(world)
+    let mut offset = 0;
+    let status = bytes.gread_with::<WorldStatus>(&mut offset, LE)?;
+    let tiles = parse_tile_matrix(
+      bytes,
+      &mut offset,
+      &status.properties.width,
+      &status.properties.height,
+      &status.properties.tile_frame_importances,
+    );
+    Ok(World { status, tiles })
   }
 }
-

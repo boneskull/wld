@@ -3,7 +3,7 @@ source: tests/wld.rs
 expression: PARSED_WORLD.properties
 ---
 Properties {
-    tile_frame_importances: TBitVec(
+    tile_frame_importances: VariableTBitVec(
         BitVec<Lsb0, u8> [
             0b00011100,
             0b00111111,
@@ -119,7 +119,7 @@ Properties {
     },
     underground_level: 300.0,
     cavern_level: 528.0,
-    time: 34958.0,
+    current_time: 34958.0,
     is_daytime: True,
     moon_phase: 1,
     is_blood_moon: False,
