@@ -1,10 +1,13 @@
 #![allow(dead_code)]
+
 #[macro_use]
 extern crate num_derive;
 
 use crate::model::world::World;
-use std::boxed::Box;
-use std::error::Error;
+use std::{
+  boxed::Box,
+  error::Error,
+};
 
 pub mod model;
 

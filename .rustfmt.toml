@@ -1,4 +1,3 @@
-blank_lines_lower_bound = 1
 color = "always"
 combine_control_expr = false
 force_multiline_blocks = true

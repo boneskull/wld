@@ -1,6 +1,10 @@
 use crate::model::common::*;
 use num_traits::FromPrimitive;
-use scroll::{Pread, LE};
+use rayon::prelude::*;
+use scroll::{
+  Pread,
+  LE,
+};
 use std::convert::TryInto;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
@@ -761,7 +765,7 @@ pub struct Liquid {
 pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
-  pub frame_data: Option<Point>,
+  pub frame_data: Option<(u16, u16)>,
   pub block_paint: Option<u8>,
   pub is_block_active: bool,
 }
@@ -834,7 +838,7 @@ fn read_tile(
   offset: &mut usize,
 ) -> std::result::Result<(Tile, u16), Box<dyn std::error::Error>> {
   let flags = buf.gread_with::<TBitVec>(offset, LE)?;
-  println!("{}: {:?}", offset, flags);
+  // println!("{}: {:?}", offset, flags);
   let has_more_flags = flags[0];
   let has_block = flags[1];
   let has_wall = flags[2];
@@ -850,7 +854,6 @@ fn read_tile(
   let mut wall: Option<Wall> = None;
   let mut liquid: Option<Liquid> = None;
   if has_more_flags {
-    println!("{:?}", flags);
     let more_flags = buf.gread_with::<TBitVec>(offset, LE)?;
     let has_even_more_flags = more_flags[0];
     shape = BlockShape::from(&more_flags);
@@ -866,17 +869,26 @@ fn read_tile(
   }
 
   if has_block {
-    let mut frame_data: Option<Point> = None;
+    let mut frame_data: Option<(u16, u16)> = None;
     let mut block_paint: Option<u8> = None;
 
-    let block_type = BlockType::from_u16(if has_extended_block_id {
-      buf.gread_with::<u16>(offset, LE)?
+    let block_id = if has_extended_block_id {
+      buf.gread_with::<u16>(offset, LE)? as i64
     } else {
-      buf.gread::<u8>(offset)? as u16
-    })
-    .unwrap();
+      buf.gread::<u8>(offset)? as i64
+    };
+    // #[allow(trivial_numeric_casts)]
+    // println!(
+    //   "{:?} is dirt? {:?}",
+    //   block_id,
+    //   block_id == BlockType::Dirt as i64
+    // );
+    let block_type = BlockType::from_i64(block_id).unwrap();
+    // println!("block_type: {:?}", block_type);
     if tile_frame_importances[block_type as usize] {
-      frame_data = Some(buf.gread_with::<Point>(offset, LE)?);
+      let frame_data_x = buf.gread_with::<u16>(offset, LE)?;
+      let frame_data_y = buf.gread_with::<u16>(offset, LE)?;
+      frame_data = Some((frame_data_x, frame_data_y));
     }
     if is_block_painted {
       block_paint = Some(buf.gread::<u8>(offset)?);
@@ -891,8 +903,14 @@ fn read_tile(
   }
 
   if has_wall {
-    let wall_id = buf.gread::<u8>(offset)?;
-    let res = num::FromPrimitive::from_u8(wall_id);
+    println!("reading offset at {:?}", offset);
+    let wall_id = buf.gread::<u8>(offset)? as i64;
+    println!(
+      "{:?} is {:?}",
+      wall_id,
+      wall_id == WallType::RocksUnsafe2 as i64
+    );
+    let res = WallType::from_i64(wall_id);
     let wall_type: WallType = res.unwrap();
     let wall_paint: Option<u8> = if is_wall_painted {
       Some(buf.gread::<u8>(offset)?)
@@ -903,6 +921,7 @@ fn read_tile(
       wall_type,
       wall_paint,
     });
+    // println!("{:?}", wall);
   }
 
   if liquid_type != LiquidType::NoLiquid {
@@ -910,6 +929,7 @@ fn read_tile(
       liquid_type,
       volume: buf.gread::<u8>(offset)?,
     });
+    // println!("liquid: {:?}", liquid);
   }
 
   let multiply_by: u16 = match rle_type {
@@ -917,7 +937,7 @@ fn read_tile(
     RLEType::SingleByte => buf.gread::<u8>(offset)? as u16 + 1,
     _ => 1,
   };
-
+  // println!("repeating {:?} times", multiply_by);
   let tile = Tile {
     block,
     wall,
@@ -937,9 +957,9 @@ pub fn parse_tile_matrix(
   let column_count: usize = (*world_height).try_into().unwrap();
   let row_count: usize = (*world_width).try_into().unwrap();
   let mut matrix: Vec<Vec<Tile>> = Vec::with_capacity(row_count);
-  while matrix.capacity() > 0 {
+  while matrix.len() < row_count {
     let mut column: Vec<Tile> = Vec::with_capacity(column_count);
-    while column.capacity() > 0 {
+    while column.len() < column_count {
       let (tile, repeat) =
         read_tile(buf, tile_frame_importances, offset).unwrap();
       for _ in 0..repeat {
@@ -950,3 +970,20 @@ pub fn parse_tile_matrix(
   }
   matrix
 }
+
+//  let mut offset = AtomicUsize::new(*offset);
+//   (0..row_count)
+//     .into_par_iter()
+//     .map(|_| {
+//       (0..column_count)
+//         .into_par_iter()
+//         .flat_map(|_| {
+//           let mut tiles: Vec<Tile> = vec![];
+//           let (tile, repeat) =
+//             read_tile(buf, tile_frame_importances, offset).unwrap();
+//           tiles.par_extend((0..repeat).into_par_iter().map(|_| tile));
+//           tiles
+//         })
+//         .collect()
+//     })
+//     .collect_into_vec(&mut matrix);
