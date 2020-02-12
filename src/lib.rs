@@ -2,6 +2,8 @@
 
 #[macro_use]
 extern crate num_derive;
+#[macro_use]
+extern crate derive_more;
 
 use crate::model::world::World;
 use std::{

@@ -2,8 +2,13 @@ use crate::model::common::*;
 use derive_new::new;
 use num_traits::FromPrimitive;
 use scroll::{
-  ctx::{TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite,
+  ctx::{
+    TryFromCtx,
+    TryIntoCtx,
+  },
+  Endian,
+  Pread,
+  Pwrite,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
@@ -327,7 +332,7 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
   }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, new)]
+#[derive(Clone, Debug, Eq, PartialEq, new, AsRef)]
 pub struct MobKills(Vec<i32>);
 
 impl<'a> TryFromCtx<'a, Endian> for MobKills {
@@ -356,17 +361,17 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKills {
     ctx: Endian,
   ) -> Result<usize, Self::Error> {
     let mut size = 0;
-    let mob_kills_count = self.0.len();
+    let mob_kills = self.as_ref();
+    let mob_kills_count = mob_kills.len();
     size += mob_kills_count.try_into_ctx(&mut buf[size..], ctx)?;
-    self
-      .0
+    mob_kills
       .iter()
       .for_each(|k| size += k.try_into_ctx(&mut buf[size..], ctx).unwrap());
     Ok(size)
   }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, new)]
+#[derive(Clone, Debug, Eq, PartialEq, new, AsRef)]
 pub struct PartyingNPCs(Vec<i32>);
 
 impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
@@ -395,10 +400,10 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCs {
     ctx: Endian,
   ) -> Result<usize, Self::Error> {
     let mut size = 0;
-    let partying_npcs_count = self.0.len();
+    let partying_npcs = self.as_ref();
+    let partying_npcs_count = partying_npcs.len();
     size += partying_npcs_count.try_into_ctx(&mut buf[size..], ctx)?;
-    self
-      .0
+    partying_npcs
       .iter()
       .for_each(|k| size += k.try_into_ctx(&mut buf[size..], ctx).unwrap());
     Ok(size)

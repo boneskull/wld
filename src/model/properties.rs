@@ -1,8 +1,13 @@
 use crate::model::common::*;
 use derive_new::new;
 use scroll::{
-  ctx::{TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite,
+  ctx::{
+    TryFromCtx,
+    TryIntoCtx,
+  },
+  Endian,
+  Pread,
+  Pwrite,
 };
 use std::fmt::Debug;
 pub use uuid::Uuid;
@@ -81,7 +86,7 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
   }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, AsRef)]
 pub struct TUuid(Uuid);
 
 impl<'a> TryFromCtx<'a, Endian> for TUuid {
@@ -106,7 +111,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TUuid {
     buf: &mut [u8],
     ctx: Endian,
   ) -> Result<usize, Self::Error> {
-    let uuid = self.0;
+    let uuid = self.as_ref();
     let mut size = 0;
     size += uuid.to_u128_le().try_into_ctx(&mut buf[size..], ctx)?;
     Ok(size)

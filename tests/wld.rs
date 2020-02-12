@@ -1,7 +1,10 @@
 use insta::assert_debug_snapshot;
 use lazy_static::lazy_static;
 use std::fs::read;
-use wld::{model::world::World, parse_world};
+use wld::{
+  model::world::World,
+  parse_world,
+};
 
 lazy_static! {
   // paths are relative to root, I guess?
@@ -11,16 +14,22 @@ lazy_static! {
 }
 
 #[test]
-fn test_parse_header() {
+fn test_parse_status_header() {
   assert_debug_snapshot!(PARSED_WORLD.status.header);
 }
 
 #[test]
-fn test_parse_properties() {
+fn test_parse_status_properties() {
   assert_debug_snapshot!(PARSED_WORLD.status.properties);
 }
 
 #[test]
-fn test_parse_status() {
-  assert_debug_snapshot!(PARSED_WORLD.status);
+fn test_parse_status_status() {
+  assert_debug_snapshot!(PARSED_WORLD.status.status);
+}
+
+#[test]
+fn test_parse_tiles() {
+  // if we did the whole thing, the diff would be about 2GB
+  assert_debug_snapshot!(&PARSED_WORLD.tiles[0][0..50]);
 }

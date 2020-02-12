@@ -1,13 +1,21 @@
 use bitvec::prelude::*;
-use custom_derive::*;
 use derive_new::new;
 use nano_leb128::ULEB128 as NanoUleb128;
-use newtype_derive::{NewtypeFrom, NewtypeIndex};
 use scroll::{
-  ctx::{StrCtx, TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite, Uleb128,
+  ctx::{
+    StrCtx,
+    TryFromCtx,
+    TryIntoCtx,
+  },
+  Endian,
+  Pread,
+  Pwrite,
+  Uleb128,
 };
-use std::convert::{TryFrom, TryInto};
+use std::convert::{
+  TryFrom,
+  TryInto,
+};
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
 pub struct Rect {
@@ -23,7 +31,7 @@ pub struct Point {
   pub y: i32,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, new)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, new, AsRef)]
 pub struct TString(String);
 
 impl<'a> TryFromCtx<'a, Endian> for TString {
@@ -51,7 +59,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
     buf: &mut [u8],
     _ctx: Endian,
   ) -> Result<usize, Self::Error> {
-    let value = &self.0;
+    let value = self.as_ref();
     let mut size = 0;
     let str_len = match u64::try_from(value.len()) {
       Ok(l) => l,
@@ -120,10 +128,8 @@ impl<'a> TryIntoCtx<Endian> for &'a TBool {
   }
 }
 
-custom_derive! {
-  #[derive(Clone, Debug, Default, PartialEq, Eq, NewtypeFrom, NewtypeIndex(usize))]
-  pub struct VariableTBitVec(BitVec<Lsb0, u8>);
-}
+#[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef)]
+pub struct VariableTBitVec(BitVec<Lsb0, u8>);
 
 impl From<Vec<bool>> for VariableTBitVec {
   fn from(v: Vec<bool>) -> Self {
@@ -156,7 +162,7 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
     buf: &mut [u8],
     ctx: Endian,
   ) -> Result<usize, Self::Error> {
-    let bits = &self.0;
+    let bits = self.as_ref();
     let mut size = 0;
     let tfi_size: i16 = bits.len().try_into().unwrap();
     size += tfi_size.try_into_ctx(&mut buf[size..], ctx)?;
@@ -165,10 +171,8 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
   }
 }
 
-custom_derive! {
-  #[derive(Clone, Debug, Default, PartialEq, Eq, NewtypeFrom, NewtypeIndex(usize))]
-  pub struct TBitVec(BitVec<Lsb0, u8>);
-}
+#[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef)]
+pub struct TBitVec(BitVec<Lsb0, u8>);
 
 impl From<Vec<bool>> for TBitVec {
   fn from(v: Vec<bool>) -> Self {
@@ -198,7 +202,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
     buf: &mut [u8],
     _ctx: Endian,
   ) -> Result<usize, Self::Error> {
-    let bits = &self.0;
+    let bits = self.as_ref();
     let mut size = 0;
     size += bits.as_slice().try_into_ctx(&mut buf[size..], ())?;
     Ok(size)

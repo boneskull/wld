@@ -1,6 +1,6 @@
 ---
 source: tests/wld.rs
-expression: PARSED_WORLD.header
+expression: PARSED_WORLD.status.header
 ---
 Header {
     version: "1.3.5.3",
