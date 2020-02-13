@@ -1,4 +1,4 @@
-use super::tiles::Tiles;
+use super::tiles::TileMatrix;
 use crate::model::common::{
   Point,
   TString,
@@ -4048,9 +4048,9 @@ pub struct Chest {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator)]
-pub struct Chests(Vec<Chest>);
+pub struct ChestVec(Vec<Chest>);
 
-impl<'a> TryFromCtx<'a, Endian> for Chests {
+impl<'a> TryFromCtx<'a, Endian> for ChestVec {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -4082,9 +4082,9 @@ impl<'a> TryFromCtx<'a, Endian> for Chests {
   }
 }
 
-impl Chests {
+impl ChestVec {
   #[inline]
-  pub fn assign_to_tile(chests: Self, tiles: &mut Tiles) {
+  pub fn assign_to_tile(chests: Self, tiles: &mut TileMatrix) {
     chests.into_iter().for_each(|chest| {
       let mut tile = tiles.tile_at_point(&chest.position);
       tile.chest = Some(chest);
@@ -4099,9 +4099,9 @@ pub struct Sign {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator)]
-pub struct Signs(Vec<Sign>);
+pub struct SignVec(Vec<Sign>);
 
-impl<'a> TryFromCtx<'a, Endian> for Signs {
+impl<'a> TryFromCtx<'a, Endian> for SignVec {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -4121,9 +4121,9 @@ impl<'a> TryFromCtx<'a, Endian> for Signs {
   }
 }
 
-impl Signs {
+impl SignVec {
   #[inline]
-  pub fn assign_to_tile(signs: Self, tiles: &mut Tiles) {
+  pub fn assign_to_tile(signs: Self, tiles: &mut TileMatrix) {
     signs.into_iter().for_each(|sign| {
       let mut tile = tiles.tile_at_point(&sign.position);
       tile.sign = Some(sign);

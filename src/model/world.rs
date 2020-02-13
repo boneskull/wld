@@ -22,7 +22,7 @@ use scroll::{
 #[derive(Clone, Debug, PartialEq)]
 pub struct World {
   pub status: WorldStatus,
-  pub tiles: Tiles,
+  pub tiles: TileMatrix,
   pub npcs: NPCVec,
   pub mobs: MobVec,
   pub rooms: RoomVec,
@@ -81,11 +81,11 @@ impl World {
     // need this context to associate various bits with other bits
     let world_ctx = status.properties.as_world_context();
 
-    let mut tiles = bytes.gread_with::<Tiles>(offset, world_ctx)?;
-    let chests = bytes.gread::<Chests>(offset)?;
-    Chests::assign_to_tile(chests, &mut tiles);
-    let signs = bytes.gread::<Signs>(offset)?;
-    Signs::assign_to_tile(signs, &mut tiles);
+    let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
+    let chests = bytes.gread::<ChestVec>(offset)?;
+    ChestVec::assign_to_tile(chests, &mut tiles);
+    let signs = bytes.gread::<SignVec>(offset)?;
+    SignVec::assign_to_tile(signs, &mut tiles);
 
     let npcs = bytes.gread::<NPCVec>(offset)?;
     let mobs = bytes.gread::<MobVec>(offset)?;

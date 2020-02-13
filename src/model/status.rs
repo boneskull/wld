@@ -333,9 +333,9 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
-pub struct MobKills(Vec<i32>);
+pub struct MobKillVec(Vec<i32>);
 
-impl<'a> TryFromCtx<'a, Endian> for MobKills {
+impl<'a> TryFromCtx<'a, Endian> for MobKillVec {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -352,7 +352,7 @@ impl<'a> TryFromCtx<'a, Endian> for MobKills {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for &'a MobKills {
+impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
   type Error = scroll::Error;
 
   fn try_into_ctx(
@@ -372,9 +372,9 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKills {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
-pub struct PartyingNPCs(Vec<i32>);
+pub struct PartyingNPCVec(Vec<i32>);
 
-impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
+impl<'a> TryFromCtx<'a, Endian> for PartyingNPCVec {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -391,7 +391,7 @@ impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCs {
+impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
   type Error = scroll::Error;
 
   fn try_into_ctx(
@@ -415,7 +415,7 @@ pub struct PartyStatus {
   pub party_center_is_active: TBool,
   pub natural_party_is_active: TBool,
   pub party_cooldown: i32,
-  pub partying_npcs: PartyingNPCs,
+  pub partying_npcs: PartyingNPCVec,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
@@ -454,7 +454,7 @@ pub struct Status {
   pub tax_collector_saved: TBool,
   pub invasion_size_start: i32,
   pub cultist_delay: i32,
-  pub mob_kills: MobKills,
+  pub mob_kills: MobKillVec,
   pub fast_forward_time: TBool,
   pub bosses_slain_2: BossesSlain2,
   pub pillar_status: PillarStatus,

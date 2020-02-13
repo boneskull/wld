@@ -110,7 +110,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let flags = buf.gread_with::<TBitVec>(offset, LE)?;
+    let flags = buf.gread::<TBitVec>(offset)?;
     // println!("{}: {:?}", offset, flags);
     let has_more_flags = flags[0];
     let has_block = flags[1];
@@ -127,11 +127,11 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     let mut wall: Option<Wall> = None;
     let mut liquid: Option<Liquid> = None;
     if has_more_flags {
-      let more_flags = buf.gread_with::<TBitVec>(offset, LE)?;
+      let more_flags = buf.gread::<TBitVec>(offset)?;
       let has_even_more_flags = more_flags[0];
       shape = BlockShape::from(&more_flags);
       if has_even_more_flags {
-        let even_more_flags = buf.gread_with::<TBitVec>(offset, LE)?;
+        let even_more_flags = buf.gread::<TBitVec>(offset)?;
         is_block_active = !even_more_flags[2];
         wiring = Some(Wiring::from((&more_flags, &even_more_flags)));
         is_block_painted = even_more_flags[3];
@@ -142,30 +142,16 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     }
 
     if has_block {
-      let mut frame_data: Option<(u16, u16)> = None;
-      let mut block_paint: Option<u8> = None;
-
-      let block_id = if has_extended_block_id {
-        buf.gread_with::<u16>(offset, LE)? as i64
-      } else {
-        buf.gread::<u8>(offset)? as i64
-      };
-      let block_type = BlockType::from_i64(block_id).unwrap();
-      if ctx.tile_frame_importances[block_type as usize] {
-        let frame_data_x = buf.gread_with::<u16>(offset, LE)?;
-        let frame_data_y = buf.gread_with::<u16>(offset, LE)?;
-        frame_data = Some((frame_data_x, frame_data_y));
-      }
-      if is_block_painted {
-        block_paint = Some(buf.gread::<u8>(offset)?);
-      }
-      block = Some(Block {
-        block_type,
-        shape,
-        frame_data,
-        block_paint,
-        is_block_active,
-      });
+      block = Some(buf.gread_with::<Block>(
+        offset,
+        BlockCtx {
+          has_extended_block_id,
+          is_block_active,
+          is_block_painted,
+          tile_frame_importances: ctx.tile_frame_importances,
+          shape: shape,
+        },
+      )?);
     }
 
     if has_wall {
@@ -222,9 +208,9 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index)]
-pub struct Tiles(Vec<Vec<Tile>>);
+pub struct TileMatrix(Vec<Vec<Tile>>);
 
-impl Tiles {
+impl TileMatrix {
   pub fn tile_at_point(&mut self, point: &Point) -> &mut Tile {
     &mut self.as_mut()[point.x as usize][point.y as usize]
   }
@@ -239,7 +225,7 @@ pub struct WorldCtx<'a> {
   pub name: &'a TString,
 }
 
-impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tiles {
+impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
   type Error = ScrollError;
 
   fn try_from_ctx(
@@ -260,6 +246,6 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tiles {
       }
       matrix.push(column);
     }
-    Ok((Tiles(matrix), *offset))
+    Ok((TileMatrix(matrix), *offset))
   }
 }

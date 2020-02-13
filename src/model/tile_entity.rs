@@ -2,7 +2,7 @@ use super::{
   common::*,
   items::ItemStack,
   npc::EntityType,
-  tiles::Tiles,
+  tiles::TileMatrix,
 };
 use scroll::{
   ctx::TryFromCtx,
@@ -81,7 +81,7 @@ impl<'a> TryFromCtx<'a, ()> for TileEntityVec {
 
 impl TileEntityVec {
   #[inline]
-  pub fn assign_to_tile(tile_entities: Self, tiles: &mut Tiles) {
+  pub fn assign_to_tile(tile_entities: Self, tiles: &mut TileMatrix) {
     tile_entities.into_iter().for_each(|tile_entity| {
       let mut tile = tiles.tile_at_point(&tile_entity.position);
       tile.tile_entity = Some(tile_entity);
@@ -122,7 +122,7 @@ impl<'a> TryFromCtx<'a, ()> for PressurePlateVec {
 
 impl PressurePlateVec {
   #[inline]
-  pub fn assign_to_tile(pressure_plates: Self, tiles: &mut Tiles) {
+  pub fn assign_to_tile(pressure_plates: Self, tiles: &mut TileMatrix) {
     pressure_plates.into_iter().for_each(|pressure_plate| {
       let mut tile = tiles.tile_at_point(pressure_plate.as_ref());
       tile.pressure_plate = Some(pressure_plate);
