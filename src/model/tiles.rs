@@ -1,6 +1,7 @@
 use super::{
   blocks::*,
   items::*,
+  tile_entity::*,
   walls::*,
 };
 use crate::model::common::*;
@@ -83,6 +84,7 @@ pub struct Tile {
   pub chest: Option<Chest>,
   pub sign: Option<Sign>,
   pub run_length: u16,
+  pub tile_entity: Option<TileEntity>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
@@ -210,6 +212,7 @@ impl<'a> TryFromCtx<'a, TilesCtx<'a>> for Tile {
         chest: None,
         sign: None,
         run_length,
+        tile_entity: None,
       },
       *offset,
     ))

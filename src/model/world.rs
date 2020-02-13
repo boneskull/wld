@@ -4,6 +4,7 @@ use crate::model::{
   npc::*,
   properties::Properties,
   status::Status,
+  tile_entity::*,
   tiles::*,
 };
 use scroll::{
@@ -30,18 +31,19 @@ pub struct WorldStatus {
 impl World {
   #[inline]
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
-    let mut offset = 0;
-    let status = bytes.gread_with::<WorldStatus>(&mut offset, LE)?;
+    let offset = &mut 0;
+    let status = bytes.gread_with::<WorldStatus>(offset, LE)?;
     let mut tiles = bytes
-      .gread_with::<Tiles>(&mut offset, status.properties.as_tiles_context())?;
-    let chests = bytes.gread_with::<Chests>(&mut offset, LE)?;
+      .gread_with::<Tiles>(offset, status.properties.as_tiles_context())?;
+    let chests = bytes.gread_with::<Chests>(offset, LE)?;
     Chests::assign_to_tile(chests, &mut tiles);
-    let signs = bytes.gread_with::<Signs>(&mut offset, LE)?;
+    let signs = bytes.gread_with::<Signs>(offset, LE)?;
     Signs::assign_to_tile(signs, &mut tiles);
 
-    let npcs = bytes.gread::<NPCVec>(&mut offset)?;
-    let mobs = bytes.gread::<MobVec>(&mut offset)?;
-
+    let npcs = bytes.gread::<NPCVec>(offset)?;
+    let mobs = bytes.gread::<MobVec>(offset)?;
+    let tile_entities = bytes.gread::<TileEntityVec>(offset)?;
+    TileEntityVec::assign_to_tile(tile_entities, &mut tiles);
     Ok(World {
       status,
       tiles,

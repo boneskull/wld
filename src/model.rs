@@ -5,6 +5,7 @@ pub mod items;
 pub mod npc;
 pub mod properties;
 pub mod status;
+pub mod tile_entity;
 pub mod tiles;
 pub mod walls;
 pub mod world;
