@@ -1,0 +1,10 @@
+---
+source: tests/wld.rs
+expression: PARSED_WORLD.footer
+---
+Footer {
+    name: TString(
+        "Foon",
+    ),
+    id: 1468463142,
+}

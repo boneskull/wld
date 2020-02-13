@@ -1,6 +1,5 @@
 use super::tiles::*;
 use crate::model::common::*;
-use derive_new::new;
 use scroll::{
   ctx::{
     TryFromCtx,
@@ -9,6 +8,7 @@ use scroll::{
   Endian,
   Pread,
   Pwrite,
+  LE,
 };
 use std::fmt::Debug;
 pub use uuid::Uuid;
@@ -18,7 +18,9 @@ pub type UndergroundSnowStyle = i32;
 pub type UndergroundJungleStyle = i32;
 pub type HellStyle = i32;
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Constructor, Pread, Pwrite,
+)]
 pub struct QuadrantStyle {
   pub x1: i32,
   pub x2: i32,
@@ -29,7 +31,7 @@ pub struct QuadrantStyle {
   pub far_right: i32,
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite)]
 pub struct WorldStyle {
   pub moon: MoonStyle,
   pub trees: QuadrantStyle,
@@ -62,12 +64,12 @@ impl<'a> TryFromCtx<'a, Endian> for GeneratorInfo {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let seed = buf.gread_with::<TString>(offset, ctx)?;
-    let version = buf.gread_with::<u64>(offset, ctx)?;
-    Ok((Self::new(seed, version), *offset))
+    let seed = buf.gread::<TString>(offset)?;
+    let version = buf.gread_with::<u64>(offset, LE)?;
+    Ok((Self { seed, version }, *offset))
   }
 }
 
@@ -87,7 +89,7 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
   }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, AsRef)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, AsRef)]
 pub struct TUuid(Uuid);
 
 impl<'a> TryFromCtx<'a, Endian> for TUuid {
@@ -95,11 +97,10 @@ impl<'a> TryFromCtx<'a, Endian> for TUuid {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let raw_uuid = buf.gread_with::<u128>(offset, ctx)?;
-
+    let raw_uuid = buf.gread_with::<u128>(offset, LE)?;
     Ok((Self(Uuid::from_u128_le(raw_uuid)), *offset))
   }
 }
@@ -136,16 +137,18 @@ impl<'a> TryFromCtx<'a, Endian> for EvilType {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_value = buf.gread::<u8>(offset)?;
-    let evil_type = if raw_value != 0 {
-      Self::Crimson
-    } else {
-      Self::Corruption
-    };
-    Ok((evil_type, *offset))
+    Ok((
+      if raw_value != 0 {
+        Self::Crimson
+      } else {
+        Self::Corruption
+      },
+      *offset,
+    ))
   }
 }
 
@@ -164,13 +167,13 @@ impl<'a> TryIntoCtx<Endian> for &'a EvilType {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct Properties {
   pub tile_frame_importances: VariableTBitVec,
   pub name: TString,
   pub generator: GeneratorInfo,
   pub uuid: TUuid,
-  pub id: u32,
+  pub id: i32,
   pub bounds: Rect,
   pub height: i32,
   pub width: i32,
@@ -190,11 +193,13 @@ pub struct Properties {
 }
 
 impl Properties {
-  pub fn as_tiles_context<'s>(&'s self) -> TilesCtx<'s> {
-    TilesCtx {
+  pub fn as_world_context<'s>(&'s self) -> WorldCtx<'s> {
+    WorldCtx {
       world_height: &self.height,
       world_width: &self.width,
       tile_frame_importances: &self.tile_frame_importances,
+      id: &self.id,
+      name: &self.name,
     }
   }
 }

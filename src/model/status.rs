@@ -1,5 +1,4 @@
 use crate::model::common::*;
-use derive_new::new;
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
@@ -9,9 +8,10 @@ use scroll::{
   Endian,
   Pread,
   Pwrite,
+  LE,
 };
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct BossesSlain {
   pub eye_of_cthulhu: TBool,
   pub eater_of_worlds: TBool,
@@ -26,7 +26,7 @@ pub struct BossesSlain {
   pub king_slime: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct BossesSlain2 {
   pub duke_fishron: TBool,
   pub martian_madness: TBool,
@@ -43,7 +43,7 @@ pub struct BossesSlain2 {
   pub stardust_pillar: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct PillarStatus {
   pub solar: TBool,
   pub vortex: TBool,
@@ -52,14 +52,14 @@ pub struct PillarStatus {
   pub is_active: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct SavedNPCs {
   pub goblin_tinkerer: TBool,
   pub wizard: TBool,
   pub mechanic: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct EventsCompleted {
   pub goblin_army: TBool,
   pub clown: TBool,
@@ -67,14 +67,14 @@ pub struct EventsCompleted {
   pub pirates: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct ShadowOrbStatus {
   pub smashed: TBool,
   pub meteorite_spawned: TBool,
   pub evil_boss_counter: i32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct RainStatus {
   pub is_active: TBool,
   pub time_left: i32,
@@ -98,10 +98,10 @@ impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread::<i32>(offset)?;
+    let value = buf.gread_with::<i32>(offset, LE)?;
     let ore_opt = Self::from_i32(value);
     Ok((
       if ore_opt.is_none() {
@@ -144,10 +144,10 @@ impl<'a> TryFromCtx<'a, Endian> for InvasionType {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, ctx)?;
+    let value = buf.gread_with::<i32>(offset, LE)?;
     let ore_opt = Self::from_i32(value);
     Ok((
       if ore_opt.is_none() {
@@ -175,7 +175,7 @@ impl<'a> TryIntoCtx<Endian> for &'a InvasionType {
   }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct InvasionStatus {
   pub delay: i32,
   pub size: i32,
@@ -184,7 +184,7 @@ pub struct InvasionStatus {
   pub slime_rain_time_left: f64,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct Backgrounds {
   pub forest: u8,
   pub corruption: u8,
@@ -196,7 +196,7 @@ pub struct Backgrounds {
   pub ocean: u8,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct Clouds {
   pub background: i32,
   pub count: i16,
@@ -252,10 +252,10 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestFish {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, ctx)?;
+    let value = buf.gread_with::<i32>(offset, LE)?;
     Ok((Self::from_i32(value).unwrap(), *offset))
   }
 }
@@ -275,7 +275,7 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestFish {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, new)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AnglerQuestStatus {
   pub completed_players: Vec<TString>,
   pub angler_saved: TBool,
@@ -287,7 +287,7 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestStatus {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let completed_players_count = buf.gread::<u8>(offset)?;
@@ -296,11 +296,11 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestStatus {
       completed_players.push(TString::from(""));
     } else {
       for _ in 0..completed_players_count {
-        completed_players.push(buf.gread_with::<TString>(offset, ctx)?);
+        completed_players.push(buf.gread::<TString>(offset)?);
       }
     }
-    let angler_saved = buf.gread_with::<TBool>(offset, ctx)?;
-    let target = buf.gread_with::<AnglerQuestFish>(offset, ctx)?;
+    let angler_saved = buf.gread::<TBool>(offset)?;
+    let target = buf.gread::<AnglerQuestFish>(offset)?;
     Ok((
       Self {
         completed_players,
@@ -332,7 +332,7 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
   }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, new, AsRef)]
+#[derive(Clone, Debug, Eq, PartialEq, AsRef)]
 pub struct MobKills(Vec<i32>);
 
 impl<'a> TryFromCtx<'a, Endian> for MobKills {
@@ -340,13 +340,13 @@ impl<'a> TryFromCtx<'a, Endian> for MobKills {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let mob_kills_count = buf.gread_with::<i16>(offset, ctx)?;
+    let mob_kills_count = buf.gread_with::<i16>(offset, LE)?;
     let mut mob_kills: Vec<i32> = vec![];
     for _ in 0..mob_kills_count {
-      mob_kills.push(buf.gread_with::<i32>(offset, ctx)?);
+      mob_kills.push(buf.gread_with::<i32>(offset, LE)?);
     }
     Ok((Self(mob_kills), *offset))
   }
@@ -371,7 +371,7 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKills {
   }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, new, AsRef)]
+#[derive(Clone, Debug, Eq, PartialEq, AsRef)]
 pub struct PartyingNPCs(Vec<i32>);
 
 impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
@@ -379,13 +379,13 @@ impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let partying_npcs_count = buf.gread_with::<i32>(offset, ctx)?;
+    let partying_npcs_count = buf.gread_with::<i32>(offset, LE)?;
     let mut partying_npcs: Vec<i32> = vec![];
     for _ in 0..partying_npcs_count {
-      partying_npcs.push(buf.gread_with::<i32>(offset, ctx)?);
+      partying_npcs.push(buf.gread_with::<i32>(offset, LE)?);
     }
     Ok((Self(partying_npcs), *offset))
   }
@@ -410,7 +410,7 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCs {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct PartyStatus {
   pub party_center_is_active: TBool,
   pub natural_party_is_active: TBool,
@@ -418,7 +418,7 @@ pub struct PartyStatus {
   pub partying_npcs: PartyingNPCs,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct SandstormStatus {
   pub is_active: TBool,
   pub time_left: i32,
@@ -426,14 +426,14 @@ pub struct SandstormStatus {
   pub intended_severity: f32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 pub struct OldOnesArmyStatus {
   pub tier1: TBool,
   pub tier2: TBool,
   pub tier3: TBool,
 }
 
-#[derive(Clone, Debug, PartialEq, new, Pread, Pwrite)]
+#[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct Status {
   pub bosses_slain: BossesSlain,
   pub saved_npcs: SavedNPCs,

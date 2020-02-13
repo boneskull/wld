@@ -1,5 +1,4 @@
 use bitvec::prelude::*;
-use derive_new::new;
 use nano_leb128::ULEB128 as NanoUleb128;
 use scroll::{
   ctx::{
@@ -8,16 +7,18 @@ use scroll::{
     TryIntoCtx,
   },
   Endian,
+  Error as ScrollError,
   Pread,
   Pwrite,
   Uleb128,
+  LE,
 };
 use std::convert::{
   TryFrom,
   TryInto,
 };
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite)]
 pub struct Rect {
   pub left: i32,
   pub right: i32,
@@ -25,49 +26,49 @@ pub struct Rect {
   pub bottom: i32,
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pread, Pwrite)]
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, Constructor,
+)]
 pub struct Point {
   pub x: i32,
   pub y: i32,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, new, AsRef)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, AsRef)]
 pub struct TString(String);
 
 impl<'a> TryFromCtx<'a, Endian> for TString {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let str_len = Uleb128::read(buf, offset)?;
-    let value = buf.gread_with::<&str>(
-      offset,
-      StrCtx::Length(str_len.try_into().unwrap()),
-    )?;
+    let value =
+      buf.gread_with::<&str>(offset, StrCtx::Length(str_len as usize))?;
     Ok((Self(value.to_string()), *offset))
   }
 }
 
 impl<'a> TryIntoCtx<Endian> for &'a TString {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
     let value = self.as_ref();
     let mut size = 0;
     let str_len = match u64::try_from(value.len()) {
       Ok(l) => l,
-      Err(e) => return Err(scroll::Error::Custom(format!("{:?}", e))),
+      Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
     size += match NanoUleb128::from(str_len).write_into(buf) {
       Ok(s) => s,
-      Err(e) => return Err(scroll::Error::Custom(format!("{:?}", e))),
+      Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
     size += value.as_bytes().try_into_ctx(&mut buf[size..], ())?;
     Ok(size)
@@ -93,37 +94,35 @@ pub enum TBool {
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TBool {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread::<u8>(offset)?;
-    let value = if value == 0 {
-      TBool::False
-    } else {
-      TBool::True
-    };
-    Ok((value, *offset))
+    Ok((
+      if value == 0 {
+        TBool::False
+      } else {
+        TBool::True
+      },
+      *offset,
+    ))
   }
 }
 
 impl<'a> TryIntoCtx<Endian> for &'a TBool {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
     let mut size = 0;
-    // gwrite or try_into_ctx?
     buf.gwrite(if *self == TBool::True { 1u8 } else { 0u8 }, &mut size)?;
-    //   size += if *self == TBool::True { 1u8 } else { 0u8 }
-    // .try_into_ctx(&mut buf[size..], ctx)?;
-
     Ok(size)
   }
 }
@@ -138,14 +137,14 @@ impl From<Vec<bool>> for VariableTBitVec {
 }
 
 impl<'a> TryFromCtx<'a, Endian> for VariableTBitVec {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let len = buf.gread_with::<i16>(offset, ctx)?;
+    let len = buf.gread_with::<i16>(offset, LE)?;
     let byte_len = (len as f32 / 8.0).ceil() as usize;
     let bits =
       BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
@@ -155,7 +154,7 @@ impl<'a> TryFromCtx<'a, Endian> for VariableTBitVec {
 }
 
 impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_into_ctx(
     self,
@@ -181,11 +180,11 @@ impl From<Vec<bool>> for TBitVec {
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TBitVec {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let bits = BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + 1]);
@@ -195,12 +194,12 @@ impl<'a> TryFromCtx<'a, Endian> for TBitVec {
 }
 
 impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    _ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
     let bits = self.as_ref();
     let mut size = 0;

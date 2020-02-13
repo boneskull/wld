@@ -102,12 +102,12 @@ impl From<&TBitVec> for RLEType {
   }
 }
 
-impl<'a> TryFromCtx<'a, TilesCtx<'a>> for Tile {
+impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
   type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: TilesCtx,
+    ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let flags = buf.gread_with::<TBitVec>(offset, LE)?;
@@ -231,18 +231,20 @@ impl Tiles {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Constructor)]
-pub struct TilesCtx<'a> {
+pub struct WorldCtx<'a> {
   pub world_width: &'a i32,
   pub world_height: &'a i32,
   pub tile_frame_importances: &'a VariableTBitVec,
+  pub id: &'a i32,
+  pub name: &'a TString,
 }
 
-impl<'a> TryFromCtx<'a, TilesCtx<'a>> for Tiles {
+impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tiles {
   type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: TilesCtx,
+    ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let column_count: usize = *ctx.world_height as usize;

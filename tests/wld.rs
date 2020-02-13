@@ -30,7 +30,7 @@ fn test_parse_status_status() {
 
 #[test]
 fn test_parse_tiles() {
-  // if we did the whole thing, the diff would be about 2GB
+  // if we did the whole thing, the snapshot would be about 2GB
   assert_debug_snapshot!(&PARSED_WORLD.tiles[0][0..50]);
 }
 
@@ -47,4 +47,9 @@ fn test_parse_mobs() {
 #[test]
 fn test_parse_rooms() {
   assert_debug_snapshot!(PARSED_WORLD.rooms);
+}
+
+#[test]
+fn test_parse_footer() {
+  assert_debug_snapshot!(PARSED_WORLD.footer);
 }

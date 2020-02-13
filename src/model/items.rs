@@ -8,6 +8,7 @@ use scroll::{
   ctx::TryFromCtx,
   Endian,
   Pread,
+  LE,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
@@ -3998,10 +3999,10 @@ impl<'a> TryFromCtx<'a, Endian> for ItemType {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let raw_value = buf.gread_with::<i32>(offset, ctx)?;
+    let raw_value = buf.gread_with::<i32>(offset, LE)?;
     Ok((Self::from_i64(raw_value as i64).unwrap(), *offset))
   }
 }
@@ -4018,15 +4019,15 @@ impl<'a> TryFromCtx<'a, Endian> for ItemStack {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
-    let mut offset = &mut 0;
-    let quantity = buf.gread_with::<i16>(offset, ctx)?;
+    let offset = &mut 0;
+    let quantity = buf.gread_with::<i16>(offset, LE)?;
     let mut item_type: Option<ItemType> = None;
     let mut modifier: u8 = 0;
     if quantity > 0 {
-      item_type = Some(buf.gread_with::<ItemType>(offset, ctx)?);
-      modifier = buf.gread::<u8>(&mut offset)?;
+      item_type = Some(buf.gread::<ItemType>(offset)?);
+      modifier = buf.gread::<u8>(offset)?;
     }
     Ok((
       Self {
@@ -4054,18 +4055,18 @@ impl<'a> TryFromCtx<'a, Endian> for Chests {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let chests_count = buf.gread_with::<u16>(offset, ctx)?;
-    let chests_max_items = buf.gread_with::<u16>(offset, ctx)?;
+    let chests_count = buf.gread_with::<u16>(offset, LE)?;
+    let chests_max_items = buf.gread_with::<u16>(offset, LE)?;
     let mut chests: Vec<Chest> = vec![];
     for _ in 0..chests_count {
-      let position = buf.gread_with::<Point>(offset, ctx)?;
-      let name = buf.gread_with::<TString>(offset, ctx)?;
+      let position = buf.gread_with::<Point>(offset, LE)?;
+      let name = buf.gread::<TString>(offset)?;
       let mut contents: Vec<ItemStack> = vec![];
       for _ in 0..chests_max_items {
-        let item_stack = buf.gread_with::<ItemStack>(offset, ctx)?;
+        let item_stack = buf.gread::<ItemStack>(offset)?;
         if item_stack.item_type.is_some() {
           contents.push(item_stack);
         }
@@ -4105,14 +4106,14 @@ impl<'a> TryFromCtx<'a, Endian> for Signs {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let signs_count = buf.gread_with::<u16>(offset, ctx)?;
+    let signs_count = buf.gread_with::<u16>(offset, LE)?;
     let mut signs: Vec<Sign> = vec![];
     for _ in 0..signs_count {
-      let text = buf.gread_with::<TString>(offset, ctx)?;
-      let position = buf.gread_with::<Point>(offset, ctx)?;
+      let text = buf.gread::<TString>(offset)?;
+      let position = buf.gread_with::<Point>(offset, LE)?;
       let chest = Sign { text, position };
       signs.push(chest);
     }

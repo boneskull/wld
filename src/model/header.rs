@@ -1,12 +1,18 @@
-use derive_new::new;
 use scroll::{
-  ctx::{StrCtx, TryFromCtx, TryIntoCtx},
-  Endian, Pread, Pwrite,
+  ctx::{
+    StrCtx,
+    TryFromCtx,
+    TryIntoCtx,
+  },
+  Endian,
+  Pread,
+  Pwrite,
+  LE,
 };
 
 static RELOGIC: &str = "relogic";
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, new, Pwrite, Pread)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pwrite, Pread)]
 pub struct Offsets {
   pub header: i32,
   pub tiles: i32,
@@ -51,10 +57,10 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let raw_version = buf.gread_with::<i32>(offset, ctx)?;
+    let raw_version = buf.gread_with::<i32>(offset, LE)?;
     let raw_signature = buf.gread_with::<&str>(offset, StrCtx::Length(7))?;
     if raw_signature != RELOGIC {
       return Err(scroll::Error::Custom("unrecognized signature".to_string()));
@@ -65,13 +71,13 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
         "unrecognized save file type".to_string(),
       ));
     }
-    let revision = buf.gread_with::<u32>(offset, ctx)?;
-    let is_favorite = buf.gread_with::<u64>(offset, ctx)? != 0;
-    let raw_offset_lengths = buf.gread_with::<u16>(offset, ctx)?;
-    let offsets = buf.gread_with::<Offsets>(offset, ctx)?;
+    let revision = buf.gread_with::<u32>(offset, LE)?;
+    let is_favorite = buf.gread_with::<u64>(offset, LE)? != 0;
+    let raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
+    let offsets = buf.gread::<Offsets>(offset)?;
 
     for _ in 9..raw_offset_lengths {
-      buf.gread_with::<i32>(offset, ctx)?;
+      buf.gread_with::<i32>(offset, LE)?;
     }
 
     let version = match raw_version {
@@ -92,7 +98,12 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
     }?;
 
     Ok((
-      Header::new(version, revision, is_favorite, offsets),
+      Header {
+        version: version.to_string(),
+        revision,
+        is_favorite,
+        offsets,
+      },
       *offset,
     ))
   }
@@ -153,11 +164,11 @@ mod test_header {
 
   #[test]
   fn test_header_rw() {
-    let header = &Header::new(
-      "1.3.5.3",
-      160,
-      true,
-      Offsets {
+    let header = &Header {
+      version: "1.3.5.3".to_string(),
+      revision: 160,
+      is_favorite: true,
+      offsets: Offsets {
         header: 0,
         tiles: 2,
         chests: 4,
@@ -168,7 +179,7 @@ mod test_header {
         town_manager: 14,
         footer: 16,
       },
-    );
+    };
     let mut bytes = [0; 70];
     let _res = bytes.pwrite_with::<&Header>(header, 0, LE).unwrap();
     let parsed = &Header::try_from_ctx(&bytes[..], LE).unwrap().0;

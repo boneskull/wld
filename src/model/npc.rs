@@ -682,7 +682,7 @@ impl<'a> TryFromCtx<'a, ()> for NPC {
   fn try_from_ctx(buf: &'a [u8], _: ()) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let entity = buf.gread::<EntityType>(offset)?;
-    let name = buf.gread_with::<TString>(offset, LE)?;
+    let name = buf.gread::<TString>(offset)?;
     let position = (
       buf.gread_with::<f32>(offset, LE)?,
       buf.gread_with::<f32>(offset, LE)?,
