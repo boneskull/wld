@@ -19,6 +19,7 @@ pub struct World {
   pub tiles: Tiles,
   pub npcs: NPCVec,
   pub mobs: MobVec,
+  pub rooms: RoomVec,
 }
 
 #[derive(Clone, Debug, PartialEq, Pwrite, Pread)]
@@ -44,11 +45,13 @@ impl World {
     let mobs = bytes.gread::<MobVec>(offset)?;
     let tile_entities = bytes.gread::<TileEntityVec>(offset)?;
     TileEntityVec::assign_to_tile(tile_entities, &mut tiles);
+    let rooms = bytes.gread::<RoomVec>(offset)?;
     Ok(World {
       status,
       tiles,
       npcs,
       mobs,
+      rooms,
     })
   }
 }

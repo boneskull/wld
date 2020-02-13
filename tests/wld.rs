@@ -43,3 +43,8 @@ fn test_parse_npcs() {
 fn test_parse_mobs() {
   assert_debug_snapshot!(PARSED_WORLD.mobs);
 }
+
+#[test]
+fn test_parse_rooms() {
+  assert_debug_snapshot!(PARSED_WORLD.rooms);
+}

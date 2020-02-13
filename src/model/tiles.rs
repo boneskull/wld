@@ -85,6 +85,7 @@ pub struct Tile {
   pub sign: Option<Sign>,
   pub run_length: u16,
   pub tile_entity: Option<TileEntity>,
+  pub pressure_plate: Option<PressurePlate>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
@@ -213,6 +214,7 @@ impl<'a> TryFromCtx<'a, TilesCtx<'a>> for Tile {
         sign: None,
         run_length,
         tile_entity: None,
+        pressure_plate: None,
       },
       *offset,
     ))

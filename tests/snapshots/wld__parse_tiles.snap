@@ -12,6 +12,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -22,6 +23,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -32,6 +34,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -42,6 +45,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -52,6 +56,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -62,6 +67,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -72,6 +78,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -82,6 +89,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -92,6 +100,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -102,6 +111,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -112,6 +122,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -122,6 +133,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -132,6 +144,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -142,6 +155,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -152,6 +166,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -162,6 +177,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -172,6 +188,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -182,6 +199,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -192,6 +210,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -202,6 +221,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -212,6 +232,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -222,6 +243,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -232,6 +254,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -242,6 +265,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -252,6 +276,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -262,6 +287,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -272,6 +298,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -282,6 +309,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -292,6 +320,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -302,6 +331,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -312,6 +342,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -322,6 +353,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -332,6 +364,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -342,6 +375,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -352,6 +386,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -362,6 +397,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -372,6 +408,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -382,6 +419,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -392,6 +430,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -402,6 +441,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -412,6 +452,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -422,6 +463,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -432,6 +474,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -442,6 +485,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -452,6 +496,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -462,6 +507,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -472,6 +518,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -482,6 +529,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -492,6 +540,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
     Tile {
         block: None,
@@ -502,5 +551,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         run_length: 98,
         tile_entity: None,
+        pressure_plate: None,
     },
 ]
