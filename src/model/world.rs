@@ -29,13 +29,8 @@ impl World {
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
     let mut offset = 0;
     let status = bytes.gread_with::<WorldStatus>(&mut offset, LE)?;
-    let mut tiles = parse_tile_matrix(
-      bytes,
-      &mut offset,
-      &status.properties.width,
-      &status.properties.height,
-      &status.properties.tile_frame_importances,
-    );
+    let mut tiles = bytes
+      .gread_with::<Tiles>(&mut offset, status.properties.as_tiles_context())?;
     let chests = bytes.gread_with::<Chests>(&mut offset, LE)?;
     Chests::assign_to_tile(chests, &mut tiles);
     let signs = bytes.gread_with::<Signs>(&mut offset, LE)?;

@@ -1,3 +1,4 @@
+use super::tiles::*;
 use crate::model::common::*;
 use derive_new::new;
 use scroll::{
@@ -186,6 +187,16 @@ pub struct Properties {
   pub is_eclipse: TBool,
   pub dungeon_point: Point,
   pub evil_type: EvilType,
+}
+
+impl Properties {
+  pub fn as_tiles_context<'s>(&'s self) -> TilesCtx<'s> {
+    TilesCtx {
+      world_height: &self.height,
+      world_width: &self.width,
+      tile_frame_importances: &self.tile_frame_importances,
+    }
+  }
 }
 
 #[cfg(test)]

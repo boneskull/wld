@@ -10,6 +10,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -18,6 +19,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -26,6 +28,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -34,6 +37,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -42,6 +46,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -50,6 +55,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -58,6 +64,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -66,6 +73,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -74,6 +82,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -82,6 +91,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -90,6 +100,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -98,6 +109,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -106,6 +118,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -114,6 +127,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -122,6 +136,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -130,6 +145,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -138,6 +154,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -146,6 +163,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -154,6 +172,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -162,6 +181,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -170,6 +190,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -178,6 +199,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -186,6 +208,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -194,6 +217,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -202,6 +226,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -210,6 +235,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -218,6 +244,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -226,6 +253,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -234,6 +262,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -242,6 +271,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -250,6 +280,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -258,6 +289,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -266,6 +298,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -274,6 +307,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -282,6 +316,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -290,6 +325,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -298,6 +334,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -306,6 +343,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -314,6 +352,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -322,6 +361,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -330,6 +370,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -338,6 +379,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -346,6 +388,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -354,6 +397,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -362,6 +406,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -370,6 +415,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -378,6 +424,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -386,6 +433,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -394,6 +442,7 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
     Tile {
         block: None,
@@ -402,5 +451,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
+        run_length: 98,
     },
 ]
