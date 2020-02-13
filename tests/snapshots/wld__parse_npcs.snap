@@ -1,0 +1,184 @@
+---
+source: tests/wld.rs
+expression: PARSED_WORLD.npcs
+---
+NPCVec(
+    [
+        NPC {
+            entity: OldMan,
+            position: (
+                54816.504,
+                3336.0,
+            ),
+            name: TString(
+                "",
+            ),
+            home_position: Some(
+                Point {
+                    x: 3426,
+                    y: 211,
+                },
+            ),
+        },
+        NPC {
+            entity: Guide,
+            position: (
+                30897.0,
+                6168.0,
+            ),
+            name: TString(
+                "Asher",
+            ),
+            home_position: Some(
+                Point {
+                    x: 1929,
+                    y: 388,
+                },
+            ),
+        },
+        NPC {
+            entity: Merchant,
+            position: (
+                34435.805,
+                3640.0,
+            ),
+            name: TString(
+                "Louis",
+            ),
+            home_position: Some(
+                Point {
+                    x: 2102,
+                    y: 229,
+                },
+            ),
+        },
+        NPC {
+            entity: Nurse,
+            position: (
+                34006.137,
+                3656.0,
+            ),
+            name: TString(
+                "Emma",
+            ),
+            home_position: Some(
+                Point {
+                    x: 2127,
+                    y: 231,
+                },
+            ),
+        },
+        NPC {
+            entity: Angler,
+            position: (
+                9471.102,
+                3592.0,
+            ),
+            name: TString(
+                "Bobby",
+            ),
+            home_position: Some(
+                Point {
+                    x: 606,
+                    y: 234,
+                },
+            ),
+        },
+        NPC {
+            entity: Demolitionist,
+            position: (
+                9656.912,
+                3592.0,
+            ),
+            name: TString(
+                "Urist",
+            ),
+            home_position: Some(
+                Point {
+                    x: 611,
+                    y: 227,
+                },
+            ),
+        },
+        NPC {
+            entity: Dryad,
+            position: (
+                10332.0205,
+                3280.0,
+            ),
+            name: TString(
+                "Chryseis",
+            ),
+            home_position: Some(
+                Point {
+                    x: 616,
+                    y: 220,
+                },
+            ),
+        },
+        NPC {
+            entity: ArmsDealer,
+            position: (
+                9624.998,
+                3400.0,
+            ),
+            name: TString(
+                "Darius",
+            ),
+            home_position: Some(
+                Point {
+                    x: 602,
+                    y: 220,
+                },
+            ),
+        },
+        NPC {
+            entity: Dd2bartender,
+            position: (
+                34137.824,
+                3656.0,
+            ),
+            name: TString(
+                "Jerry",
+            ),
+            home_position: Some(
+                Point {
+                    x: 2159,
+                    y: 230,
+                },
+            ),
+        },
+        NPC {
+            entity: DyeTrader,
+            position: (
+                10342.9,
+                3272.0,
+            ),
+            name: TString(
+                "Hannibal",
+            ),
+            home_position: Some(
+                Point {
+                    x: 613,
+                    y: 215,
+                },
+            ),
+        },
+        NPC {
+            entity: GoblinTinkerer,
+            position: (
+                9514.8545,
+                3403.1455,
+            ),
+            name: TString(
+                "Grodax",
+            ),
+            home_position: Some(
+                Point {
+                    x: 607,
+                    y: 215,
+                },
+            ),
+        },
+    ],
+)

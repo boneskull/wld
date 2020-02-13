@@ -33,3 +33,13 @@ fn test_parse_tiles() {
   // if we did the whole thing, the diff would be about 2GB
   assert_debug_snapshot!(&PARSED_WORLD.tiles[0][0..50]);
 }
+
+#[test]
+fn test_parse_npcs() {
+  assert_debug_snapshot!(PARSED_WORLD.npcs);
+}
+
+#[test]
+fn test_parse_mobs() {
+  assert_debug_snapshot!(PARSED_WORLD.mobs);
+}

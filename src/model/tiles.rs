@@ -247,8 +247,6 @@ impl<'a> TryFromCtx<'a, TilesCtx<'a>> for Tiles {
       let mut column: Vec<Tile> = Vec::with_capacity(column_count);
       while column.len() < column_count {
         let tile = buf.gread_with::<Tile>(offset, ctx)?;
-        // let (tile, repeat) =
-        //   read_tile(buf, ctx.tile_frame_importances, offset).unwrap();
         for _ in 0..tile.run_length {
           column.push(tile.clone());
         }

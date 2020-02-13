@@ -2,6 +2,7 @@ pub mod blocks;
 pub mod common;
 pub mod header;
 pub mod items;
+pub mod npc;
 pub mod properties;
 pub mod status;
 pub mod tiles;

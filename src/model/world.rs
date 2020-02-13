@@ -1,6 +1,7 @@
 use super::header::*;
 use crate::model::{
   items::*,
+  npc::*,
   properties::Properties,
   status::Status,
   tiles::*,
@@ -15,6 +16,8 @@ use scroll::{
 pub struct World {
   pub status: WorldStatus,
   pub tiles: Tiles,
+  pub npcs: NPCVec,
+  pub mobs: MobVec,
 }
 
 #[derive(Clone, Debug, PartialEq, Pwrite, Pread)]
@@ -36,7 +39,14 @@ impl World {
     let signs = bytes.gread_with::<Signs>(&mut offset, LE)?;
     Signs::assign_to_tile(signs, &mut tiles);
 
-    // next: npcs, mobs
-    Ok(World { status, tiles })
+    let npcs = bytes.gread::<NPCVec>(&mut offset)?;
+    let mobs = bytes.gread::<MobVec>(&mut offset)?;
+
+    Ok(World {
+      status,
+      tiles,
+      npcs,
+      mobs,
+    })
   }
 }
