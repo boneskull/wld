@@ -11,6 +11,10 @@ use crate::model::{
   tile_entity::*,
   tiles::*,
 };
+use image::{
+  ImageBuffer,
+  RgbaImage,
+};
 use scroll::{
   ctx::TryFromCtx,
   Error as ScrollError,
@@ -104,5 +108,14 @@ impl World {
       rooms,
       footer,
     })
+  }
+}
+
+impl World {
+  pub fn render(&self) -> RgbaImage {
+    ImageBuffer::new(
+      self.status.properties.width as u32,
+      self.status.properties.height as u32,
+    )
   }
 }

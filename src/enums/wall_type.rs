@@ -1,4 +1,7 @@
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+use crate::constants::WALLTYPE_COLOR_MAP;
+use image::Rgba;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive, Hash)]
 pub enum WallType {
   Stone = 1,
   DirtUnsafe = 2,
@@ -230,4 +233,10 @@ pub enum WallType {
   SillyBalloonPinkWall = 228,
   SillyBalloonPurpleWall = 229,
   SillyBalloonGreenWall = 230,
+}
+
+impl WallType {
+  pub fn color(&self) -> Rgba<i32> {
+    WALLTYPE_COLOR_MAP[self]
+  }
 }

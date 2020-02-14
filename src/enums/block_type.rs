@@ -1,4 +1,7 @@
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+use crate::constants::BLOCKTYPE_COLOR_MAP;
+use image::Rgba;
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive, Hash)]
 pub enum BlockType {
   Dirt = 0,
   Stone = 1,
@@ -470,4 +473,10 @@ pub enum BlockType {
   Containers2 = 467,
   FakeContainers2 = 468,
   Tables2 = 469,
+}
+
+impl BlockType {
+  pub fn color(&self) -> Rgba<i32> {
+    BLOCKTYPE_COLOR_MAP[self]
+  }
 }
