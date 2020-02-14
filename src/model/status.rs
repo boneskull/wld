@@ -1,5 +1,11 @@
-use crate::model::common::*;
-use num_traits::FromPrimitive;
+use crate::{
+  enums::{
+    AnglerQuestFish,
+    HardmodeOre,
+    InvasionType,
+  },
+  model::common::*,
+};
 use scroll::{
   ctx::{
     TryFromCtx,
@@ -81,100 +87,6 @@ pub struct RainStatus {
   pub max_rain: f32,
 }
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-#[repr(i32)]
-pub enum HardmodeOre {
-  UnknownOre = -1,
-  CobaltOre = 107,
-  MythrilOre = 108,
-  AdamantiteOre = 111,
-  PalladiumOre = 221,
-  OrichalcumOre = 222,
-  TitaniumOre = 223,
-}
-
-impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {
-  type Error = scroll::Error;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, LE)?;
-    let ore_opt = Self::from_i32(value);
-    Ok((
-      if ore_opt.is_none() {
-        Self::UnknownOre
-      } else {
-        ore_opt.unwrap()
-      },
-      *offset,
-    ))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
-  type Error = scroll::Error;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: Endian,
-  ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let value = *self as i32;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
-  }
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-#[repr(i32)]
-pub enum InvasionType {
-  NoInvasion = 0,
-  GoblinInvasion = 1,
-  FrostLegion = 2,
-  PirateInvasion = 3,
-  MartianMadness = 4,
-}
-
-impl<'a> TryFromCtx<'a, Endian> for InvasionType {
-  type Error = scroll::Error;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, LE)?;
-    let ore_opt = Self::from_i32(value);
-    Ok((
-      if ore_opt.is_none() {
-        Self::NoInvasion
-      } else {
-        ore_opt.unwrap()
-      },
-      *offset,
-    ))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a InvasionType {
-  type Error = scroll::Error;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: Endian,
-  ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let value = *self as i32;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
-  }
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct InvasionStatus {
   pub delay: i32,
@@ -201,78 +113,6 @@ pub struct Clouds {
   pub background: i32,
   pub count: i16,
   pub wind_speed: f32,
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-#[repr(i32)]
-pub enum AnglerQuestFish {
-  Batfish = 0,
-  BumblebeeTuna = 1,
-  Catfish = 2,
-  Cloudfish = 3,
-  Cursedfish = 4,
-  Dirtfish = 5,
-  DynamiteFish = 6,
-  EaterOfPlankton = 7,
-  FallenStarfish = 8,
-  TheFishOfCthulhu = 9,
-  Fishotron = 10,
-  Harpyfish = 11,
-  Hungerfish = 12,
-  Ichorfish = 13,
-  Jewelfish = 14,
-  MirageFish = 15,
-  MutantFlinxfin = 16,
-  Pengfish = 17,
-  Pixiefish = 18,
-  Spiderfish = 19,
-  TundraTrout = 20,
-  UnicornFish = 21,
-  GuideVoodooFish = 22,
-  Wyverntail = 23,
-  ZombieFish = 24,
-  AmanitiaFungifin = 25,
-  Angelfish = 26,
-  BloodyManowar = 27,
-  Bonefish = 28,
-  Bunnyfish = 29,
-  CapnTunabeard = 30,
-  Clownfish = 31,
-  DemonicHellfish = 32,
-  Derpfish = 33,
-  Fishron = 34,
-  InfectedScabbardfish = 35,
-  Mudfish = 36,
-  Slimefish = 37,
-  TropicalBarracuda = 38,
-}
-
-impl<'a> TryFromCtx<'a, Endian> for AnglerQuestFish {
-  type Error = scroll::Error;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, LE)?;
-    Ok((Self::from_i32(value).unwrap(), *offset))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestFish {
-  type Error = scroll::Error;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: Endian,
-  ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let value = *self as i32;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
-  }
 }
 
 #[derive(Clone, Debug, PartialEq)]

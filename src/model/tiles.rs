@@ -4,36 +4,20 @@ use super::{
   tile_entity::*,
   walls::*,
 };
-use crate::model::common::*;
-use num_traits::FromPrimitive;
+use crate::{
+  enums::{
+    BlockShape,
+    LiquidType,
+    RLEType,
+  },
+  model::common::*,
+};
 use scroll::{
   ctx::TryFromCtx,
   Error as ScrollError,
   Pread,
   LE,
 };
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
-pub enum LiquidType {
-  NoLiquid = 0,
-  Water = 1,
-  Lava = 2,
-  Honey = 3,
-}
-
-impl From<&TBitVec> for LiquidType {
-  fn from(flags: &TBitVec) -> Self {
-    if flags[3] && flags[4] {
-      LiquidType::Honey
-    } else if flags[4] {
-      LiquidType::Lava
-    } else if flags[3] {
-      LiquidType::Water
-    } else {
-      LiquidType::NoLiquid
-    }
-  }
-}
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Liquid {
@@ -90,20 +74,6 @@ impl From<&TBitVec> for Wiring {
       yellow: false,
       actuator: false,
     }
-  }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
-pub enum RLEType {
-  NoCompression = 0,
-  SingleByte = 1,
-  DoubleByte = 2,
-}
-
-impl From<&TBitVec> for RLEType {
-  fn from(flags: &TBitVec) -> Self {
-    let value = ((flags[7] as u8) << 1) + flags[6] as u8;
-    Self::from_u8(value).unwrap()
   }
 }
 

@@ -11,7 +11,10 @@ use std::{
   error::Error,
 };
 
+pub mod enums;
 pub mod model;
+
+// use image, imageproc to render.
 
 pub fn parse_world<'a>(bytes: &'a [u8]) -> Result<World, Box<dyn Error>> {
   Ok(World::read(bytes)?)

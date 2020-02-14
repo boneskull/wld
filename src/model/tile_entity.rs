@@ -1,9 +1,9 @@
 use super::{
   common::*,
   items::ItemStack,
-  npc::EntityType,
   tiles::TileMatrix,
 };
+use crate::enums::EntityType;
 use scroll::{
   ctx::TryFromCtx,
   Error as ScrollError,

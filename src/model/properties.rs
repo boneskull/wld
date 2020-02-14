@@ -1,5 +1,8 @@
 use super::tiles::*;
-use crate::model::common::*;
+use crate::{
+  enums::EvilType,
+  model::common::*,
+};
 use scroll::{
   ctx::{
     TryFromCtx,
@@ -123,47 +126,6 @@ impl<'a> TryIntoCtx<Endian> for &'a TUuid {
 impl From<Uuid> for TUuid {
   fn from(uuid: Uuid) -> Self {
     Self(uuid)
-  }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum EvilType {
-  Corruption,
-  Crimson,
-}
-
-impl<'a> TryFromCtx<'a, Endian> for EvilType {
-  type Error = scroll::Error;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let raw_value = buf.gread::<u8>(offset)?;
-    Ok((
-      if raw_value != 0 {
-        Self::Crimson
-      } else {
-        Self::Corruption
-      },
-      *offset,
-    ))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a EvilType {
-  type Error = scroll::Error;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: Endian,
-  ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let value = *self as u8;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
   }
 }
 
