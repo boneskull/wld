@@ -41,6 +41,24 @@ pub struct Liquid {
   pub volume: u8,
 }
 
+impl<'a> TryFromCtx<'a, LiquidType> for Liquid {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    liquid_type: LiquidType,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    Ok((
+      Self {
+        liquid_type,
+        volume: buf.gread::<u8>(offset)?,
+      },
+      *offset,
+    ))
+  }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Wiring {
   pub red: bool,
@@ -75,19 +93,6 @@ impl From<&TBitVec> for Wiring {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Tile {
-  pub block: Option<Block>,
-  pub wall: Option<Wall>,
-  pub liquid: Option<Liquid>,
-  pub wiring: Option<Wiring>,
-  pub chest: Option<Chest>,
-  pub sign: Option<Sign>,
-  pub run_length: u16,
-  pub tile_entity: Option<TileEntity>,
-  pub pressure_plate: Option<PressurePlate>,
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum RLEType {
   NoCompression = 0,
@@ -102,6 +107,39 @@ impl From<&TBitVec> for RLEType {
   }
 }
 
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Deref)]
+pub struct RunLength(u16);
+
+impl<'a> TryFromCtx<'a, RLEType> for RunLength {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    rle_type: RLEType,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let run_length = match rle_type {
+      RLEType::DoubleByte => buf.gread_with::<u16>(offset, LE)? + 1,
+      RLEType::SingleByte => buf.gread::<u8>(offset)? as u16 + 1,
+      _ => 1,
+    };
+    Ok((Self(run_length), *offset))
+  }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Tile {
+  pub block: Option<Block>,
+  pub wall: Option<Wall>,
+  pub liquid: Option<Liquid>,
+  pub wiring: Option<Wiring>,
+  pub chest: Option<Chest>,
+  pub sign: Option<Sign>,
+  pub tile_entity: Option<TileEntity>,
+  pub pressure_plate: Option<PressurePlate>,
+  pub run_length: RunLength,
+}
+
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
   type Error = ScrollError;
 
@@ -110,15 +148,6 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let flags = buf.gread::<TBitVec>(offset)?;
-    // println!("{}: {:?}", offset, flags);
-    let has_more_flags = flags[0];
-    let has_block = flags[1];
-    let has_wall = flags[2];
-    let liquid_type = LiquidType::from(&flags);
-    let has_extended_block_id = flags[5];
-    let rle_type = RLEType::from(&flags);
-    let mut shape = BlockShape::Normal;
     let mut is_block_active = true;
     let mut is_wall_painted = false;
     let mut is_block_painted = false;
@@ -126,6 +155,16 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     let mut block: Option<Block> = None;
     let mut wall: Option<Wall> = None;
     let mut liquid: Option<Liquid> = None;
+    let mut shape = BlockShape::Normal;
+
+    let flags = buf.gread::<TBitVec>(offset)?;
+    let has_more_flags = flags[0];
+    let has_block = flags[1];
+    let has_wall = flags[2];
+    let liquid_type = LiquidType::from(&flags);
+    let has_extended_block_id = flags[5];
+    let rle_type = RLEType::from(&flags);
+
     if has_more_flags {
       let more_flags = buf.gread::<TBitVec>(offset)?;
       let has_even_more_flags = more_flags[0];
@@ -155,41 +194,14 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     }
 
     if has_wall {
-      // println!("reading offset at {:?}", offset);
-      let wall_id = buf.gread::<u8>(offset)? as i64;
-      // println!(
-      //   "{:?} is {:?}",
-      //   wall_id,
-      //   wall_id == WallType::RocksUnsafe2 as i64
-      // );
-      let res = WallType::from_i64(wall_id);
-      let wall_type: WallType = res.unwrap();
-      let wall_paint: Option<u8> = if is_wall_painted {
-        Some(buf.gread::<u8>(offset)?)
-      } else {
-        None
-      };
-      wall = Some(Wall {
-        wall_type,
-        wall_paint,
-      });
-      // println!("{:?}", wall);
+      wall = Some(buf.gread_with::<Wall>(offset, is_wall_painted)?);
     }
 
     if liquid_type != LiquidType::NoLiquid {
-      liquid = Some(Liquid {
-        liquid_type,
-        volume: buf.gread::<u8>(offset)?,
-      });
-      // println!("liquid: {:?}", liquid);
+      liquid = Some(buf.gread_with::<Liquid>(offset, liquid_type)?);
     }
 
-    let run_length: u16 = match rle_type {
-      RLEType::DoubleByte => buf.gread_with::<u16>(offset, LE)? + 1,
-      RLEType::SingleByte => buf.gread::<u8>(offset)? as u16 + 1,
-      _ => 1,
-    };
-    // println!("repeating {:?} times", multiply_by);
+    let run_length = buf.gread_with::<RunLength>(offset, rle_type)?;
     Ok((
       Tile {
         block,
@@ -207,15 +219,6 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index)]
-pub struct TileMatrix(Vec<Vec<Tile>>);
-
-impl TileMatrix {
-  pub fn tile_at_point(&mut self, point: &Point) -> &mut Tile {
-    &mut self.as_mut()[point.x as usize][point.y as usize]
-  }
-}
-
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Constructor)]
 pub struct WorldCtx<'a> {
   pub world_width: &'a i32,
@@ -223,6 +226,38 @@ pub struct WorldCtx<'a> {
   pub tile_frame_importances: &'a VariableTBitVec,
   pub id: &'a i32,
   pub name: &'a TString,
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, IndexMut, Index)]
+pub struct TileVec(Vec<Tile>);
+
+impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: WorldCtx,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let size = *ctx.world_height as usize;
+    let mut tiles: Vec<Tile> = Vec::with_capacity(size);
+    while tiles.len() < size {
+      let tile = buf.gread_with::<Tile>(offset, ctx)?;
+      for _ in 0..*tile.run_length {
+        tiles.push(tile.clone());
+      }
+    }
+    Ok((TileVec(tiles), *offset))
+  }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index)]
+pub struct TileMatrix(Vec<TileVec>);
+
+impl TileMatrix {
+  pub fn tile_at_point(&mut self, point: &Point) -> &mut Tile {
+    &mut self.as_mut()[point.x as usize][point.y as usize]
+  }
 }
 
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
@@ -233,17 +268,10 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
     ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let column_count: usize = *ctx.world_height as usize;
-    let row_count: usize = *ctx.world_width as usize;
-    let mut matrix: Vec<Vec<Tile>> = Vec::with_capacity(row_count);
+    let row_count = *ctx.world_width as usize;
+    let mut matrix: Vec<TileVec> = Vec::with_capacity(row_count);
     while matrix.len() < row_count {
-      let mut column: Vec<Tile> = Vec::with_capacity(column_count);
-      while column.len() < column_count {
-        let tile = buf.gread_with::<Tile>(offset, ctx)?;
-        for _ in 0..tile.run_length {
-          column.push(tile.clone());
-        }
-      }
+      let column = buf.gread_with::<TileVec>(offset, ctx)?;
       matrix.push(column);
     }
     Ok((TileMatrix(matrix), *offset))

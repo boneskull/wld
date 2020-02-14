@@ -10,9 +10,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -21,9 +23,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -32,9 +36,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -43,9 +49,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -54,9 +62,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -65,9 +75,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -76,9 +88,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -87,9 +101,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -98,9 +114,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -109,9 +127,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -120,9 +140,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -131,9 +153,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -142,9 +166,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -153,9 +179,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -164,9 +192,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -175,9 +205,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -186,9 +218,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -197,9 +231,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -208,9 +244,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -219,9 +257,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -230,9 +270,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -241,9 +283,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -252,9 +296,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -263,9 +309,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -274,9 +322,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -285,9 +335,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -296,9 +348,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -307,9 +361,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -318,9 +374,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -329,9 +387,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -340,9 +400,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -351,9 +413,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -362,9 +426,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -373,9 +439,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -384,9 +452,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -395,9 +465,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -406,9 +478,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -417,9 +491,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -428,9 +504,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -439,9 +517,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -450,9 +530,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -461,9 +543,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -472,9 +556,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -483,9 +569,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -494,9 +582,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -505,9 +595,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -516,9 +608,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -527,9 +621,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -538,9 +634,11 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
     Tile {
         block: None,
@@ -549,8 +647,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wiring: None,
         chest: None,
         sign: None,
-        run_length: 98,
         tile_entity: None,
         pressure_plate: None,
+        run_length: RunLength(
+            98,
+        ),
     },
 ]
