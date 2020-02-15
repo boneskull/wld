@@ -236,7 +236,7 @@ pub enum WallType {
 }
 
 impl WallType {
-  pub fn color(&self) -> Rgba<i32> {
+  pub fn color(&self) -> Rgba<u8> {
     WALLTYPE_COLOR_MAP[self]
   }
 }

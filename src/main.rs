@@ -6,7 +6,7 @@ fn main() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error>> {
     std::fs::read("tests/fixtures/Foon.wld").expect("Unable to read file");
 
   match parse_world(&world) {
-    Ok(_) => Ok(()),
+    Ok(world) => world.render("output.png"),
     Err(e) => Err(e),
   }
 }

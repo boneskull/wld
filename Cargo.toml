@@ -13,9 +13,10 @@ num-derive = "0.3.0"
 num-traits = "0.2.11"
 derive_more = "0.99.2"
 imageproc = "0.19.2"
-image = "0.23.0"
+image = "0.22.2"
 lazy_static = "1.4.0"
 maplit = "1.0.2"
+indicatif = "0.14.0"
 
 [dev-dependencies]
 insta = "0.13.1"
