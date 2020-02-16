@@ -15,7 +15,7 @@ use scroll::{
 pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
-  pub frame_data: Option<(u16, u16)>,
+  pub frame_data: Option<Point>,
   pub block_paint: Option<u8>,
   pub is_block_active: bool,
 }
@@ -37,19 +37,22 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
     ctx: BlockCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let mut frame_data: Option<(u16, u16)> = None;
+    let mut frame_data: Option<Point> = None;
     let mut block_paint: Option<u8> = None;
 
     let block_id = if ctx.has_extended_block_id {
-      buf.gread_with::<u16>(offset, LE)? as i64
+      buf.gread_with::<u16>(offset, LE)?
     } else {
-      buf.gread::<u8>(offset)? as i64
+      buf.gread::<u8>(offset)? as u16
     };
-    let block_type = BlockType::from_i64(block_id).unwrap();
+    let block_type = BlockType::from_u16(block_id).unwrap();
     if ctx.tile_frame_importances[block_type as usize] {
-      let frame_data_x = buf.gread_with::<u16>(offset, LE)?;
-      let frame_data_y = buf.gread_with::<u16>(offset, LE)?;
-      frame_data = Some((frame_data_x, frame_data_y));
+      let x = buf.gread_with::<u16>(offset, LE)?;
+      let y = buf.gread_with::<u16>(offset, LE)?;
+      frame_data = Some(Point {
+        x: x as i32,
+        y: y as i32,
+      });
     }
     if ctx.is_block_painted {
       block_paint = Some(buf.gread::<u8>(offset)?);
