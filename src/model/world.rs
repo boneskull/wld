@@ -20,10 +20,6 @@ use imageproc::{
   drawing::draw_filled_rect_mut,
   rect::Rect,
 };
-use indicatif::{
-  ProgressBar,
-  ProgressStyle,
-};
 use scroll::{
   ctx::TryFromCtx,
   Error as ScrollError,
@@ -130,14 +126,8 @@ impl World {
     let mut img = RgbaImage::new(width, height);
     self.draw_background(&mut img);
     println!("Rendering {:?} tiles...", width * height);
-    let pb = ProgressBar::new((width * height) as u64);
-    pb.set_style(ProgressStyle::default_bar().template(
-      "[{elapsed_precise}] {bar:40.green/yellow} {pos:>7}/{len:7} ({per_sec}; \
-       ETA: {eta_precise})",
-    ));
     for x in 0..width {
       for y in 0..height {
-        pb.inc(1);
         self.draw_wall(x, y, &mut img);
         self.draw_liquid(x, y, &mut img);
         self.draw_block(x, y, &mut img);
@@ -145,7 +135,6 @@ impl World {
       }
     }
     img.save(path)?;
-    pb.finish_with_message("done");
     Ok(())
   }
 

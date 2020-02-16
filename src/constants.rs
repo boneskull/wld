@@ -2,8 +2,8 @@ use crate::enums::{
   BlockType,
   WallType,
 };
+use fnv::FnvHashMap;
 use image::Rgba;
-use std::collections::HashMap;
 
 pub const ABBEY: Rgba<u8> = Rgba([76, 74, 83, 255]);
 pub const AFFAIR: Rgba<u8> = Rgba([113, 64, 150, 255]);
@@ -372,742 +372,750 @@ pub const ZOMBIE: Rgba<u8> = Rgba([228, 219, 162, 255]);
 pub const ZUCCINI: Rgba<u8> = Rgba([30, 80, 48, 255]);
 
 lazy_static! {
-  pub static ref BLOCKTYPE_COLOR_MAP: HashMap<BlockType, Rgba<u8>> = hashmap! {
-    BlockType::Dirt => LEATHER,
-    BlockType::Stone => GRAY,
-    BlockType::Grass => MALACHITE,
-    BlockType::Plants => EMERALD,
-    BlockType::Torches => SCHOOL_BUS_YELLOW,
-    BlockType::Trees => LEATHER,
-    BlockType::Iron => BEAVER,
-    BlockType::Copper => CUMIN,
-    BlockType::Gold => SAHARA,
-    BlockType::Silver => SUBMARINE,
-    BlockType::ClosedDoor => PEAT,
-    BlockType::OpenDoor => PEAT,
-    BlockType::Heart => MAROON_FLUSH,
-    BlockType::Bottles => SEAGULL,
-    BlockType::Tables => ANTIQUE_BRASS,
-    BlockType::Chairs => ANTIQUE_BRASS,
-    BlockType::Anvils => SQUIRREL,
-    BlockType::Furnaces => STACK,
-    BlockType::WorkBenches => ANTIQUE_BRASS,
-    BlockType::Platforms => ANTIQUE_BRASS,
-    BlockType::Saplings => CAPE_PALLISER,
-    BlockType::Containers => GOLDENROD,
-    BlockType::Demonite => SCAMPI,
-    BlockType::CorruptGrass => CHETWODE_BLUE,
-    BlockType::CorruptPlants => TRUE_V,
-    BlockType::Ebonstone => RUM,
-    BlockType::DemonAltar => OLD_LAVENDER,
-    BlockType::Sunflower => GOLD_TIPS,
-    BlockType::Pots => COPPER_RUST,
-    BlockType::PiggyBank => TURKISH_ROSE,
-    BlockType::WoodBlock => CAPE_PALLISER,
-    BlockType::ShadowOrbs => LAVENDER_PURPLE,
-    BlockType::CorruptThorns => BLUE_BELL,
-    BlockType::Candles => SCHOOL_BUS_YELLOW,
-    BlockType::Chandeliers => TUMBLEWEED,
-    BlockType::Jackolanterns => TIARA,
-    BlockType::Presents => CARNATION,
-    BlockType::Meteorite => DORADO,
-    BlockType::GrayBrick => MOUNTAIN_MIST,
-    BlockType::RedBrick => MEDIUM_CARMINE,
-    BlockType::ClayBlock => IRONSTONE,
-    BlockType::BlueDungeonBrick => FIORD,
-    BlockType::HangingLanterns => KOURNIKOVA,
-    BlockType::GreenDungeonBrick => AXOLOTL,
-    BlockType::PinkDungeonBrick => VOODOO,
-    BlockType::GoldBrick => SAHARA,
-    BlockType::SilverBrick => SUBMARINE,
-    BlockType::CopperBrick => CUMIN,
-    BlockType::Spikes => GRAY,
-    BlockType::WaterCandle => DODGER_BLUE,
-    BlockType::Books => ROYAL_HEATH,
-    BlockType::Cobweb => SUBMARINE,
-    BlockType::Vines => APPLE,
-    BlockType::Sand => BRIGHT_SUN,
-    BlockType::Glass => ONAHAU,
-    BlockType::SignVec => ANTIQUE_BRASS,
-    BlockType::Obsidian => PORT_GORE,
-    BlockType::Ash => GRAVEL,
-    BlockType::Hellstone => TOSCA,
-    BlockType::Mud => DON_JUAN,
-    BlockType::JungleGrass => ATLANTIS,
-    BlockType::JunglePlants => ATLANTIS,
-    BlockType::JungleVines => CHRISTI,
-    BlockType::Sapphire => SHIP_COVE,
-    BlockType::Ruby => CADILLAC,
-    BlockType::Emerald => SEA_GREEN,
-    BlockType::Topaz => DRIFTWOOD,
-    BlockType::Amethyst => SEANCE,
-    BlockType::Diamond => HALF_BAKED,
-    BlockType::JungleThorns => TWINE,
-    BlockType::MushroomGrass => AZURE_RADIANCE,
-    BlockType::MushroomPlants => SORRELL_BROWN,
-    BlockType::MushroomTrees => SORRELL_BROWN,
-    BlockType::Plants2 => EMERALD,
-    BlockType::JunglePlants2 => LIMA,
-    BlockType::ObsidianBrick => SHARK,
-    BlockType::HellstoneBrick => TOSCA,
-    BlockType::Hellforge => VALENCIA,
-    BlockType::ClayPot => SANDSTONE,
-    BlockType::Beds => ANTIQUE_BRASS,
-    BlockType::Cactus => GREEN_LEAF,
-    BlockType::Coral => PERSIAN_PINK,
-    BlockType::ImmatureHerbs => FLAMENCO,
-    BlockType::MatureHerbs => FLAMENCO,
-    BlockType::BloomingHerbs => FLAMENCO,
-    BlockType::Tombstones => SILVER,
-    BlockType::Loom => ANTIQUE_BRASS,
-    BlockType::Pianos => ANTIQUE_BRASS,
-    BlockType::Dressers => ANTIQUE_BRASS,
-    BlockType::Benches => ANTIQUE_BRASS,
-    BlockType::Bathtubs => STACK,
-    BlockType::Banners => VENICE_BLUE,
-    BlockType::Lampposts => GEYSER,
-    BlockType::Lamps => SCHOOL_BUS_YELLOW,
-    BlockType::Kegs => ANTIQUE_BRASS,
-    BlockType::ChineseLanterns => TREE_POPPY,
-    BlockType::CookingPots => STACK,
-    BlockType::Safes => STACK,
-    BlockType::SkullLanterns => SCHOOL_BUS_YELLOW,
-    BlockType::TrashCan => STACK,
-    BlockType::Candelabras => SCHOOL_BUS_YELLOW,
-    BlockType::Bookcases => ANTIQUE_BRASS,
-    BlockType::Thrones => WATTLE,
-    BlockType::Bowls => LEATHER,
-    BlockType::GrandfatherClocks => ANTIQUE_BRASS,
-    BlockType::Statues => STACK,
-    BlockType::Sawmill => ANTIQUE_BRASS,
-    BlockType::Cobalt => ST_TROPAZ,
-    BlockType::Mythril => BREAKER_BAY,
-    BlockType::HallowedGrass => SEAGULL,
-    BlockType::HallowedPlants => MOUNTAIN_MEADOW,
-    BlockType::Adamantite => CLARET,
-    BlockType::Ebonsand => DOLPHIN,
-    BlockType::HallowedPlants2 => SCOOTER,
-    BlockType::TinkerersWorkbench => ANTIQUE_BRASS,
-    BlockType::HallowedVines => PACIFIC_BLUE,
-    BlockType::Pearlsand => BIZARRE,
-    BlockType::Pearlstone => CHATELLE,
-    BlockType::PearlstoneBrick => BIZARRE,
-    BlockType::IridescentBrick => SALT_BOX,
-    BlockType::Mudstone => DON_JUAN,
-    BlockType::CobaltBrick => ST_TROPAZ,
-    BlockType::MythrilBrick => BREAKER_BAY,
-    BlockType::Silt => SHUTTLE_GRAY,
-    BlockType::WoodenBeam => IROKO,
-    BlockType::CrystalBall => PORTAGE,
-    BlockType::DiscoBall => REGENT_ST_BLUE,
-    BlockType::MagicalIceBlock => SEAGULL,
-    BlockType::Mannequin => ANTIQUE_BRASS,
-    BlockType::Crystals => LAVENDER_MAGENTA,
-    BlockType::ActiveStoneBlock => STAR_DUST,
-    BlockType::InactiveStoneBlock => MINE_SHAFT,
-    BlockType::Lever => STACK,
-    BlockType::AdamantiteForge => ALIZARIN_CRIMSON,
-    BlockType::MythrilAnvil => NORWAY,
-    BlockType::PressurePlates => SUNGLO,
-    BlockType::Switches => SWISS_COFFEE,
-    BlockType::Traps => STACK,
-    BlockType::Boulder => STORM_DUST,
-    BlockType::MusicBoxes => ANTIQUE_BRASS,
-    BlockType::DemoniteBrick => SCAMPI,
-    BlockType::Explosives => WELL_READ,
-    BlockType::InletPump => STACK,
-    BlockType::OutletPump => STACK,
-    BlockType::Timers => STACK,
-    BlockType::CandyCaneBlock => THUNDERBIRD,
-    BlockType::GreenCandyCaneBlock => MALACHITE,
-    BlockType::SnowBlock => MABEL,
-    BlockType::SnowBrick => JET_STREAM,
-    BlockType::HolidayLights => CINNABAR,
-    BlockType::AdamantiteBeam => CLARET,
-    BlockType::SandstoneBrick => HUSK,
-    BlockType::EbonstoneBrick => WILD_BLUE_YONDER,
-    BlockType::RedStucco => VIVID_TANGERINE,
-    BlockType::YellowStucco => HUSK,
-    BlockType::GreenStucco => GRANNY_SMITH,
-    BlockType::GrayStucco => BUD,
-    BlockType::Ebonwood => DOLPHIN,
-    BlockType::RichMahogany => AU_CHICO,
-    BlockType::Pearlwood => CLAY_CREEK,
-    BlockType::RainbowBrick => DARK_BLUE,
-    BlockType::IceBlock => CORNFLOWER,
-    BlockType::BreakableIce => SAIL,
-    BlockType::CorruptIce => EAST_SIDE,
-    BlockType::HallowedIce => MELANIE,
-    BlockType::Stalactite => STORM_DUST,
-    BlockType::Tin => CLAY_CREEK,
-    BlockType::Lead => SAN_JUAN,
-    BlockType::Tungsten => AMULET,
-    BlockType::Platinum => ROCK_BLUE,
-    BlockType::PineTree => ZOMBIE,
-    BlockType::ChristmasTree => SEA_GREEN,
-    BlockType::Sinks => CASPER,
-    BlockType::PlatinumCandelabra => SCHOOL_BUS_YELLOW,
-    BlockType::PlatinumCandle => SCHOOL_BUS_YELLOW,
-    BlockType::TinBrick => CLAY_CREEK,
-    BlockType::TungstenBrick => AMULET,
-    BlockType::PlatinumBrick => ROCK_BLUE,
-    BlockType::ExposedGems => MAGENTA_FUCHSIA,
-    BlockType::GreenMoss => VIRIDIAN,
-    BlockType::BrownMoss => PACIFIKA,
-    BlockType::RedMoss => SANGUINE_BROWN,
-    BlockType::BlueMoss => VENICE_BLUE,
-    BlockType::PurpleMoss => VIVID_VIOLET,
-    BlockType::LongMoss => STORM_DUST,
-    BlockType::SmallPiles => GURKHA,
-    BlockType::LargePiles => MAGENTA_FUCHSIA,
-    BlockType::LargePiles2 => MAGENTA_FUCHSIA,
-    BlockType::CactusBlock => GREEN_LEAF,
-    BlockType::Cloud => BABY_BLUE,
-    BlockType::MushroomBlock => SORRELL_BROWN,
-    BlockType::LivingWood => LEATHER,
-    BlockType::LeafBlock => MALACHITE,
-    BlockType::SlimeBlock => AZURE_RADIANCE,
-    BlockType::BoneBlock => AVOCADO,
-    BlockType::FleshBlock => MERLOT,
-    BlockType::RainCloud => AMETHYST_SMOKE,
-    BlockType::FrozenSlimeBlock => VIKING,
-    BlockType::Asphalt => ARMADILLO,
-    BlockType::FleshGrass => ROMAN,
-    BlockType::FleshIce => PETITE_ORCHID,
-    BlockType::FleshWeeds => FLUSH_MAHOGANY,
-    BlockType::Sunplate => GALLIANO,
-    BlockType::Crimstone => CROWN_OF_THORNS,
-    BlockType::Crimtane => SOLID_PINK,
-    BlockType::CrimsonVines => WELL_READ,
-    BlockType::IceBrick => GLACIER,
-    BlockType::WaterFountain => STACK,
-    BlockType::Shadewood => SHUTTLE_GRAY,
-    BlockType::Cannon => STACK,
-    BlockType::LandMine => WELL_READ,
-    BlockType::Chlorophyte => SULU,
-    BlockType::SnowballLauncher => STACK,
-    BlockType::Rope => PESTO,
-    BlockType::Chain => STORM_DUST,
-    BlockType::Campfire => FLAMENCO,
-    BlockType::Firework => ANTIQUE_BRASS,
-    BlockType::Blendomatic => STACK,
-    BlockType::MeatGrinder => STACK,
-    BlockType::Extractinator => STACK,
-    BlockType::Solidifier => STACK,
-    BlockType::Palladium => FLAMINGO,
-    BlockType::Orichalcum => BLUSH_PINK,
-    BlockType::Titanium => FIORD,
-    BlockType::Slush => SIROCCO,
-    BlockType::Hive => ZEST,
-    BlockType::LihzahrdBrick => OREGON,
-    BlockType::DyePlants => WHITE,
-    BlockType::DyeVat => STACK,
-    BlockType::HoneyBlock => CALIFORNIA,
-    BlockType::CrispyHoneyBlock => RUSTY_NAIL,
-    BlockType::Larva => EQUATOR,
-    BlockType::WoodenSpikes => AU_CHICO,
-    BlockType::PlantDetritus => MAGENTA_FUCHSIA,
-    BlockType::Crimsand => DUNE,
-    BlockType::Teleporter => OLD_GOLD,
-    BlockType::LifeFruit => CONIFER,
-    BlockType::LihzahrdAltar => BROOM,
-    BlockType::PlanteraBulb => LAVENDER_ROSE,
-    BlockType::MetalBars => EQUATOR,
-    BlockType::Painting3x3 => JAMBALAYA,
-    BlockType::Painting4x3 => FUSCOUS_GRAY,
-    BlockType::Painting6x4 => JAMBALAYA,
-    BlockType::ImbuingStation => PORTAGE,
-    BlockType::BubbleMachine => ONAHAU,
-    BlockType::Painting2x3 => JAMBALAYA,
-    BlockType::Painting3x2 => JAMBALAYA,
-    BlockType::Autohammer => OSLO_GRAY,
-    BlockType::PalladiumColumn => PUNCH,
-    BlockType::BubblegumBlock => MAGENTA_FUCHSIA,
-    BlockType::Titanstone => ABBEY,
-    BlockType::PumpkinBlock => DIXIE,
-    BlockType::HayBlock => LUXOR_GOLD,
-    BlockType::SpookyWood => PORT_GORE,
-    BlockType::Pumpkins => TAN_HIDE,
-    BlockType::AmethystGemsparkOff => ROYAL_PURPLE,
-    BlockType::TopazGemsparkOff => SYCAMORE,
-    BlockType::SapphireGemsparkOff => SMALT,
-    BlockType::EmeraldGemsparkOff => CHATEAU_GREEN,
-    BlockType::RubyGemsparkOff => NIGHT_SHADZ,
-    BlockType::DiamondGemsparkOff => COMET,
-    BlockType::AmberGemsparkOff => SEPIA_SKIN,
-    BlockType::AmethystGemspark => PINK_FLAMINGO,
-    BlockType::TopazGemspark => GOLDEN_FIZZ,
-    BlockType::SapphireGemspark => BLUE_RIBBON,
-    BlockType::EmeraldGemspark => SCREAMIN_GREEN,
-    BlockType::RubyGemspark => SUNSET_ORANGE,
-    BlockType::DiamondGemspark => ATHENS_GRAY,
-    BlockType::AmberGemspark => JAFFA,
-    BlockType::Womannequin => ANTIQUE_BRASS,
-    BlockType::FireflyinaBottle => SPRAY,
-    BlockType::LightningBuginaBottle => SPRAY,
-    BlockType::Cog => PABLO,
-    BlockType::StoneSlab => GRAY,
-    BlockType::SandStoneSlab => HUSK,
-    BlockType::BunnyCage => SPRAY,
-    BlockType::SquirrelCage => SPRAY,
-    BlockType::MallardDuckCage => SPRAY,
-    BlockType::DuckCage => SPRAY,
-    BlockType::BirdCage => SPRAY,
-    BlockType::BlueJay => SPRAY,
-    BlockType::CardinalCage => SPRAY,
-    BlockType::FishBowl => SPRAY,
-    BlockType::HeavyWorkBench => GRAY,
-    BlockType::CopperPlating => CUMIN,
-    BlockType::SnailCage => SPRAY,
-    BlockType::GlowingSnailCage => SPRAY,
-    BlockType::AmmoBox => VIDA_LOCA,
-    BlockType::MonarchButterflyJar => SPRAY,
-    BlockType::PurpleEmperorButterflyJar => SPRAY,
-    BlockType::RedAdmiralButterflyJar => SPRAY,
-    BlockType::UlyssesButterflyJar => SPRAY,
-    BlockType::SulphurButterflyJar => SPRAY,
-    BlockType::TreeNymphButterflyJar => SPRAY,
-    BlockType::ZebraSwallowtailButterflyJar => SPRAY,
-    BlockType::JuliaButterflyJar => SPRAY,
-    BlockType::ScorpionCage => SPRAY,
-    BlockType::BlackScorpionCage => SPRAY,
-    BlockType::FrogCage => SPRAY,
-    BlockType::MouseCage => SPRAY,
-    BlockType::BoneWelder => STACK,
-    BlockType::FleshCloningVat => STACK,
-    BlockType::GlassKiln => STACK,
-    BlockType::LihzahrdFurnace => STACK,
-    BlockType::LivingLoom => STACK,
-    BlockType::SkyMill => STACK,
-    BlockType::IceMachine => STACK,
-    BlockType::SteampunkBoiler => STACK,
-    BlockType::HoneyDispenser => STACK,
-    BlockType::PenguinCage => SPRAY,
-    BlockType::WormCage => SPRAY,
-    BlockType::DynastyWood => WALNUT,
-    BlockType::RedDynastyShingles => CRAIL,
-    BlockType::BlueDynastyShingles => BREAKER_BAY,
-    BlockType::MinecartTrack => MONGOOSE,
-    BlockType::Coralstone => BURNT_SIENNA,
-    BlockType::BlueJellyfishBowl => SPRAY,
-    BlockType::GreenJellyfishBowl => SPRAY,
-    BlockType::PinkJellyfishBowl => SPRAY,
-    BlockType::ShipInAbottle => QUINCY,
-    BlockType::SeaweedPlanter => INDIAN_KHAKI,
-    BlockType::BorealWood => KABUL,
-    BlockType::PalmWood => HUSK,
-    BlockType::PalmTree => DRIFTWOOD,
-    BlockType::BeachPiles => HAMPTON,
-    BlockType::TinPlating => CLAY_CREEK,
-    BlockType::Waterfall => PERSIAN_BLUE,
-    BlockType::Lavafall => SCARLET,
-    BlockType::Confetti => ONAHAU,
-    BlockType::ConfettiBlack => WOODSMOKE,
-    BlockType::CopperCoinPile => BURNT_SIENNA,
-    BlockType::SilverCoinPile => EDWARD,
-    BlockType::GoldCoinPile => TURMERIC,
-    BlockType::PlatinumCoinPile => ASH,
-    BlockType::WeaponsRack => ANTIQUE_BRASS,
-    BlockType::FireworksBox => TAN,
-    BlockType::LivingFire => VERMILION,
-    BlockType::AlphabetStatues => STACK,
-    BlockType::FireworkFountain => MINT_GREEN,
-    BlockType::GrasshopperCage => SPRAY,
-    BlockType::LivingCursedFire => BRIGHT_GREEN,
-    BlockType::LivingDemonFire => GOVERNOR_BAY,
-    BlockType::LivingFrostFire => CYAN_AQUA,
-    BlockType::LivingIchor => GOLDEN_TAINOI,
-    BlockType::LivingUltrabrightFire => RIPTIDE,
-    BlockType::Honeyfall => CALIFORNIA,
-    BlockType::ChlorophyteBrick => CONIFER,
-    BlockType::CrimtaneBrick => CARNATION,
-    BlockType::ShroomitePlating => DARK_BLUE,
-    BlockType::MushroomStatue => STACK,
-    BlockType::MartianConduitPlating => SAN_MARINO,
-    BlockType::ChimneySmoke => SHARK,
-    BlockType::CrimtaneThorns => CARNATION,
-    BlockType::VineRope => MALACHITE,
-    BlockType::BewitchingTable => BEAVER,
-    BlockType::AlchemyTable => BEAVER,
-    BlockType::Sundial => GOLDEN_DREAM,
-    BlockType::MarbleBlock => ROCK_BLUE,
-    BlockType::GoldBirdCage => SPRAY,
-    BlockType::GoldBunnyCage => SPRAY,
-    BlockType::GoldButterflyCage => SPRAY,
-    BlockType::GoldFrogCage => SPRAY,
-    BlockType::GoldGrasshopperCage => SPRAY,
-    BlockType::GoldMouseCage => SPRAY,
-    BlockType::GoldWormCage => SPRAY,
-    BlockType::SilkRope => DULL_LAVENDER,
-    BlockType::WebRope => MYSTIC,
-    BlockType::Marble => ROCK_BLUE,
-    BlockType::Granite => JACARTA,
-    BlockType::GraniteBlock => JACARTA,
-    BlockType::MeteoriteBrick => CHETWODE_BLUE,
-    BlockType::PinkSlimeBlock => HOT_PINK,
-    BlockType::PeaceCandle => PERSIAN_PINK,
-    BlockType::WaterDrip => PERSIAN_BLUE,
-    BlockType::LavaDrip => SCARLET,
-    BlockType::HoneyDrip => CALIFORNIA,
-    BlockType::FishingCrate => LEATHER,
-    BlockType::SharpeningStation => ANTIQUE_BRASS,
-    BlockType::TargetDummy => LEATHER,
-    BlockType::Bubble => CLASSIC_ROSE,
-    BlockType::PlanterBox => ANTIQUE_BRASS,
-    BlockType::LavaMoss => FLAMENCO,
-    BlockType::VineFlowers => MALACHITE,
-    BlockType::LivingMahogany => SEA_PINK,
-    BlockType::LivingMahoganyLeaves => LIMA,
-    BlockType::CrystalBlock => PIGMENT_INDIGO,
-    BlockType::TrapdoorOpen => ROMAN_COFFEE,
-    BlockType::TrapdoorClosed => ROMAN_COFFEE,
-    BlockType::TallGateClosed => ROMAN_COFFEE,
-    BlockType::TallGateOpen => ROMAN_COFFEE,
-    BlockType::LavaLamp => SCARLET,
-    BlockType::CageEnchantedNightcrawler => SPRAY,
-    BlockType::CageBuggy => SPRAY,
-    BlockType::CageGrubby => SPRAY,
-    BlockType::CageSluggy => SPRAY,
-    BlockType::ItemFrame => ANTIQUE_BRASS,
-    BlockType::Sandstone => RAW_SIENNA,
-    BlockType::HardenedSand => TACHA,
-    BlockType::CorruptHardenedSand => KIMBERLY,
-    BlockType::CrimsonHardenedSand => FUSCOUS_GRAY,
-    BlockType::CorruptSandstone => BOSSANOVA,
-    BlockType::CrimsonSandstone => ARMADILLO,
-    BlockType::HallowHardenedSand => SPUN_PEARL,
-    BlockType::HallowSandstone => VIOLA,
-    BlockType::DesertFossil => POTTERS_CLAY,
-    BlockType::Fireplace => GUNSMOKE,
-    BlockType::Chimney => BOULDER,
-    BlockType::FossilOre => GOLDEN_SAND,
-    BlockType::LunarOre => FUSCOUS_GRAY,
-    BlockType::LunarBrick => FUSCOUS_GRAY,
-    BlockType::LunarMonolith => HORIZON,
-    BlockType::Detonator => ALIZARIN_CRIMSON,
-    BlockType::LunarCraftingStation => HORIZON,
-    BlockType::SquirrelOrangeCage => SPRAY,
-    BlockType::SquirrelGoldCage => SPRAY,
-    BlockType::LunarBlockSolar => VERMILION,
-    BlockType::LunarBlockVortex => EASTERN_BLUE,
-    BlockType::LunarBlockNebula => PURPLE_HEART,
-    BlockType::LunarBlockStardust => CURIOUS_BLUE,
-    BlockType::LogicGateLamp => WATERLOO,
-    BlockType::LogicGate => WHITE,
-    BlockType::ConveyorBeltLeft => TUNDORA,
-    BlockType::ConveyorBeltRight => TUNDORA,
-    BlockType::LogicSensor => WHITE,
-    BlockType::WirePipe => POLO_BLUE,
-    BlockType::AnnouncementBox => CASPER,
-    BlockType::TeamBlockRed => CASTRO,
-    BlockType::TeamBlockRedPlatform => CLARET,
-    BlockType::WeightedPressurePlate => WHITE,
-    BlockType::WireBulb => MASALA,
-    BlockType::TeamBlockGreen => JEWEL,
-    BlockType::TeamBlockBlue => ASTRONAUT,
-    BlockType::TeamBlockYellow => SEPIA,
-    BlockType::TeamBlockPink => METEORITE,
-    BlockType::TeamBlockWhite => COMET,
-    BlockType::TeamBlockGreenPlatform => CHATEAU_GREEN,
-    BlockType::TeamBlockBluePlatform => AZURE,
-    BlockType::TeamBlockYellowPlatform => MANDALAY,
-    BlockType::TeamBlockPinkPlatform => PURPLE,
-    BlockType::TeamBlockWhitePlatform => AMETHYST_SMOKE,
-    BlockType::GemLocks => WHITE,
-    BlockType::FakeContainers => WHITE,
-    BlockType::ProjectilePressurePad => CURIOUS_BLUE,
-    BlockType::GeyserTrap => BOULDER,
-    BlockType::BeeHive => STRAW,
-    BlockType::PixelBox => TUNA,
-    BlockType::SillyBalloonPink => WILD_STRAWBERRY,
-    BlockType::SillyBalloonPurple => MEDIUM_PURPLE,
-    BlockType::SillyBalloonGreen => PUERTO_RICO,
-    BlockType::SillyStreamerBlue => PICTON_BLUE,
-    BlockType::SillyStreamerGreen => SCREAMIN_GREEN,
-    BlockType::SillyStreamerPink => FRENCH_ROSE,
-    BlockType::SillyBalloonMachine => MAUVELOUS,
-    BlockType::SillyBalloonTile => WHITE,
-    BlockType::Pigronata => VIOLET_EGGPLANT,
-    BlockType::PartyMonolith => SPRING_GREEN,
-    BlockType::PartyBundleOfBalloonTile => MEDIUM_PURPLE,
-    BlockType::PartyPresent => WHITE,
-    BlockType::SandFallBlock => CHENIN,
-    BlockType::SnowFallBlock => ZIGGURAT,
-    BlockType::SnowCloud => BALI_HAI,
-    BlockType::SandDrip => DANDELION,
-    BlockType::DjinnLamp => GALLIANO,
-    BlockType::DefendersForge => CORNFLOWER,
-    BlockType::WarTable => TACAO,
-    BlockType::WarTableBanner => CERULEAN_BLUE,
-    BlockType::ElderCrystalStand => TUSSOCK,
-    BlockType::Containers2 => GOLDENROD,
-    BlockType::FakeContainers2 => WHITE,
-    BlockType::Tables2 => ANTIQUE_BRASS,
+  pub static ref BLOCKTYPE_COLOR_MAP: FnvHashMap<BlockType, Rgba<u8>> = {
+    let mut blocktype_map = FnvHashMap::default();
+
+    blocktype_map.insert(BlockType::Dirt, LEATHER);
+    blocktype_map.insert(BlockType::Stone, GRAY);
+    blocktype_map.insert(BlockType::Grass, MALACHITE);
+    blocktype_map.insert(BlockType::Plants, EMERALD);
+    blocktype_map.insert(BlockType::Torches, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::Trees, LEATHER);
+    blocktype_map.insert(BlockType::Iron, BEAVER);
+    blocktype_map.insert(BlockType::Copper, CUMIN);
+    blocktype_map.insert(BlockType::Gold, SAHARA);
+    blocktype_map.insert(BlockType::Silver, SUBMARINE);
+    blocktype_map.insert(BlockType::ClosedDoor, PEAT);
+    blocktype_map.insert(BlockType::OpenDoor, PEAT);
+    blocktype_map.insert(BlockType::Heart, MAROON_FLUSH);
+    blocktype_map.insert(BlockType::Bottles, SEAGULL);
+    blocktype_map.insert(BlockType::Tables, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Chairs, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Anvils, SQUIRREL);
+    blocktype_map.insert(BlockType::Furnaces, STACK);
+    blocktype_map.insert(BlockType::WorkBenches, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Platforms, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Saplings, CAPE_PALLISER);
+    blocktype_map.insert(BlockType::Containers, GOLDENROD);
+    blocktype_map.insert(BlockType::Demonite, SCAMPI);
+    blocktype_map.insert(BlockType::CorruptGrass, CHETWODE_BLUE);
+    blocktype_map.insert(BlockType::CorruptPlants, TRUE_V);
+    blocktype_map.insert(BlockType::Ebonstone, RUM);
+    blocktype_map.insert(BlockType::DemonAltar, OLD_LAVENDER);
+    blocktype_map.insert(BlockType::Sunflower, GOLD_TIPS);
+    blocktype_map.insert(BlockType::Pots, COPPER_RUST);
+    blocktype_map.insert(BlockType::PiggyBank, TURKISH_ROSE);
+    blocktype_map.insert(BlockType::WoodBlock, CAPE_PALLISER);
+    blocktype_map.insert(BlockType::ShadowOrbs, LAVENDER_PURPLE);
+    blocktype_map.insert(BlockType::CorruptThorns, BLUE_BELL);
+    blocktype_map.insert(BlockType::Candles, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::Chandeliers, TUMBLEWEED);
+    blocktype_map.insert(BlockType::Jackolanterns, TIARA);
+    blocktype_map.insert(BlockType::Presents, CARNATION);
+    blocktype_map.insert(BlockType::Meteorite, DORADO);
+    blocktype_map.insert(BlockType::GrayBrick, MOUNTAIN_MIST);
+    blocktype_map.insert(BlockType::RedBrick, MEDIUM_CARMINE);
+    blocktype_map.insert(BlockType::ClayBlock, IRONSTONE);
+    blocktype_map.insert(BlockType::BlueDungeonBrick, FIORD);
+    blocktype_map.insert(BlockType::HangingLanterns, KOURNIKOVA);
+    blocktype_map.insert(BlockType::GreenDungeonBrick, AXOLOTL);
+    blocktype_map.insert(BlockType::PinkDungeonBrick, VOODOO);
+    blocktype_map.insert(BlockType::GoldBrick, SAHARA);
+    blocktype_map.insert(BlockType::SilverBrick, SUBMARINE);
+    blocktype_map.insert(BlockType::CopperBrick, CUMIN);
+    blocktype_map.insert(BlockType::Spikes, GRAY);
+    blocktype_map.insert(BlockType::WaterCandle, DODGER_BLUE);
+    blocktype_map.insert(BlockType::Books, ROYAL_HEATH);
+    blocktype_map.insert(BlockType::Cobweb, SUBMARINE);
+    blocktype_map.insert(BlockType::Vines, APPLE);
+    blocktype_map.insert(BlockType::Sand, BRIGHT_SUN);
+    blocktype_map.insert(BlockType::Glass, ONAHAU);
+    blocktype_map.insert(BlockType::SignVec, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Obsidian, PORT_GORE);
+    blocktype_map.insert(BlockType::Ash, GRAVEL);
+    blocktype_map.insert(BlockType::Hellstone, TOSCA);
+    blocktype_map.insert(BlockType::Mud, DON_JUAN);
+    blocktype_map.insert(BlockType::JungleGrass, ATLANTIS);
+    blocktype_map.insert(BlockType::JunglePlants, ATLANTIS);
+    blocktype_map.insert(BlockType::JungleVines, CHRISTI);
+    blocktype_map.insert(BlockType::Sapphire, SHIP_COVE);
+    blocktype_map.insert(BlockType::Ruby, CADILLAC);
+    blocktype_map.insert(BlockType::Emerald, SEA_GREEN);
+    blocktype_map.insert(BlockType::Topaz, DRIFTWOOD);
+    blocktype_map.insert(BlockType::Amethyst, SEANCE);
+    blocktype_map.insert(BlockType::Diamond, HALF_BAKED);
+    blocktype_map.insert(BlockType::JungleThorns, TWINE);
+    blocktype_map.insert(BlockType::MushroomGrass, AZURE_RADIANCE);
+    blocktype_map.insert(BlockType::MushroomPlants, SORRELL_BROWN);
+    blocktype_map.insert(BlockType::MushroomTrees, SORRELL_BROWN);
+    blocktype_map.insert(BlockType::Plants2, EMERALD);
+    blocktype_map.insert(BlockType::JunglePlants2, LIMA);
+    blocktype_map.insert(BlockType::ObsidianBrick, SHARK);
+    blocktype_map.insert(BlockType::HellstoneBrick, TOSCA);
+    blocktype_map.insert(BlockType::Hellforge, VALENCIA);
+    blocktype_map.insert(BlockType::ClayPot, SANDSTONE);
+    blocktype_map.insert(BlockType::Beds, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Cactus, GREEN_LEAF);
+    blocktype_map.insert(BlockType::Coral, PERSIAN_PINK);
+    blocktype_map.insert(BlockType::ImmatureHerbs, FLAMENCO);
+    blocktype_map.insert(BlockType::MatureHerbs, FLAMENCO);
+    blocktype_map.insert(BlockType::BloomingHerbs, FLAMENCO);
+    blocktype_map.insert(BlockType::Tombstones, SILVER);
+    blocktype_map.insert(BlockType::Loom, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Pianos, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Dressers, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Benches, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Bathtubs, STACK);
+    blocktype_map.insert(BlockType::Banners, VENICE_BLUE);
+    blocktype_map.insert(BlockType::Lampposts, GEYSER);
+    blocktype_map.insert(BlockType::Lamps, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::Kegs, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::ChineseLanterns, TREE_POPPY);
+    blocktype_map.insert(BlockType::CookingPots, STACK);
+    blocktype_map.insert(BlockType::Safes, STACK);
+    blocktype_map.insert(BlockType::SkullLanterns, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::TrashCan, STACK);
+    blocktype_map.insert(BlockType::Candelabras, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::Bookcases, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Thrones, WATTLE);
+    blocktype_map.insert(BlockType::Bowls, LEATHER);
+    blocktype_map.insert(BlockType::GrandfatherClocks, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Statues, STACK);
+    blocktype_map.insert(BlockType::Sawmill, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Cobalt, ST_TROPAZ);
+    blocktype_map.insert(BlockType::Mythril, BREAKER_BAY);
+    blocktype_map.insert(BlockType::HallowedGrass, SEAGULL);
+    blocktype_map.insert(BlockType::HallowedPlants, MOUNTAIN_MEADOW);
+    blocktype_map.insert(BlockType::Adamantite, CLARET);
+    blocktype_map.insert(BlockType::Ebonsand, DOLPHIN);
+    blocktype_map.insert(BlockType::HallowedPlants2, SCOOTER);
+    blocktype_map.insert(BlockType::TinkerersWorkbench, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::HallowedVines, PACIFIC_BLUE);
+    blocktype_map.insert(BlockType::Pearlsand, BIZARRE);
+    blocktype_map.insert(BlockType::Pearlstone, CHATELLE);
+    blocktype_map.insert(BlockType::PearlstoneBrick, BIZARRE);
+    blocktype_map.insert(BlockType::IridescentBrick, SALT_BOX);
+    blocktype_map.insert(BlockType::Mudstone, DON_JUAN);
+    blocktype_map.insert(BlockType::CobaltBrick, ST_TROPAZ);
+    blocktype_map.insert(BlockType::MythrilBrick, BREAKER_BAY);
+    blocktype_map.insert(BlockType::Silt, SHUTTLE_GRAY);
+    blocktype_map.insert(BlockType::WoodenBeam, IROKO);
+    blocktype_map.insert(BlockType::CrystalBall, PORTAGE);
+    blocktype_map.insert(BlockType::DiscoBall, REGENT_ST_BLUE);
+    blocktype_map.insert(BlockType::MagicalIceBlock, SEAGULL);
+    blocktype_map.insert(BlockType::Mannequin, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Crystals, LAVENDER_MAGENTA);
+    blocktype_map.insert(BlockType::ActiveStoneBlock, STAR_DUST);
+    blocktype_map.insert(BlockType::InactiveStoneBlock, MINE_SHAFT);
+    blocktype_map.insert(BlockType::Lever, STACK);
+    blocktype_map.insert(BlockType::AdamantiteForge, ALIZARIN_CRIMSON);
+    blocktype_map.insert(BlockType::MythrilAnvil, NORWAY);
+    blocktype_map.insert(BlockType::PressurePlates, SUNGLO);
+    blocktype_map.insert(BlockType::Switches, SWISS_COFFEE);
+    blocktype_map.insert(BlockType::Traps, STACK);
+    blocktype_map.insert(BlockType::Boulder, STORM_DUST);
+    blocktype_map.insert(BlockType::MusicBoxes, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::DemoniteBrick, SCAMPI);
+    blocktype_map.insert(BlockType::Explosives, WELL_READ);
+    blocktype_map.insert(BlockType::InletPump, STACK);
+    blocktype_map.insert(BlockType::OutletPump, STACK);
+    blocktype_map.insert(BlockType::Timers, STACK);
+    blocktype_map.insert(BlockType::CandyCaneBlock, THUNDERBIRD);
+    blocktype_map.insert(BlockType::GreenCandyCaneBlock, MALACHITE);
+    blocktype_map.insert(BlockType::SnowBlock, MABEL);
+    blocktype_map.insert(BlockType::SnowBrick, JET_STREAM);
+    blocktype_map.insert(BlockType::HolidayLights, CINNABAR);
+    blocktype_map.insert(BlockType::AdamantiteBeam, CLARET);
+    blocktype_map.insert(BlockType::SandstoneBrick, HUSK);
+    blocktype_map.insert(BlockType::EbonstoneBrick, WILD_BLUE_YONDER);
+    blocktype_map.insert(BlockType::RedStucco, VIVID_TANGERINE);
+    blocktype_map.insert(BlockType::YellowStucco, HUSK);
+    blocktype_map.insert(BlockType::GreenStucco, GRANNY_SMITH);
+    blocktype_map.insert(BlockType::GrayStucco, BUD);
+    blocktype_map.insert(BlockType::Ebonwood, DOLPHIN);
+    blocktype_map.insert(BlockType::RichMahogany, AU_CHICO);
+    blocktype_map.insert(BlockType::Pearlwood, CLAY_CREEK);
+    blocktype_map.insert(BlockType::RainbowBrick, DARK_BLUE);
+    blocktype_map.insert(BlockType::IceBlock, CORNFLOWER);
+    blocktype_map.insert(BlockType::BreakableIce, SAIL);
+    blocktype_map.insert(BlockType::CorruptIce, EAST_SIDE);
+    blocktype_map.insert(BlockType::HallowedIce, MELANIE);
+    blocktype_map.insert(BlockType::Stalactite, STORM_DUST);
+    blocktype_map.insert(BlockType::Tin, CLAY_CREEK);
+    blocktype_map.insert(BlockType::Lead, SAN_JUAN);
+    blocktype_map.insert(BlockType::Tungsten, AMULET);
+    blocktype_map.insert(BlockType::Platinum, ROCK_BLUE);
+    blocktype_map.insert(BlockType::PineTree, ZOMBIE);
+    blocktype_map.insert(BlockType::ChristmasTree, SEA_GREEN);
+    blocktype_map.insert(BlockType::Sinks, CASPER);
+    blocktype_map.insert(BlockType::PlatinumCandelabra, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::PlatinumCandle, SCHOOL_BUS_YELLOW);
+    blocktype_map.insert(BlockType::TinBrick, CLAY_CREEK);
+    blocktype_map.insert(BlockType::TungstenBrick, AMULET);
+    blocktype_map.insert(BlockType::PlatinumBrick, ROCK_BLUE);
+    blocktype_map.insert(BlockType::ExposedGems, MAGENTA_FUCHSIA);
+    blocktype_map.insert(BlockType::GreenMoss, VIRIDIAN);
+    blocktype_map.insert(BlockType::BrownMoss, PACIFIKA);
+    blocktype_map.insert(BlockType::RedMoss, SANGUINE_BROWN);
+    blocktype_map.insert(BlockType::BlueMoss, VENICE_BLUE);
+    blocktype_map.insert(BlockType::PurpleMoss, VIVID_VIOLET);
+    blocktype_map.insert(BlockType::LongMoss, STORM_DUST);
+    blocktype_map.insert(BlockType::SmallPiles, GURKHA);
+    blocktype_map.insert(BlockType::LargePiles, MAGENTA_FUCHSIA);
+    blocktype_map.insert(BlockType::LargePiles2, MAGENTA_FUCHSIA);
+    blocktype_map.insert(BlockType::CactusBlock, GREEN_LEAF);
+    blocktype_map.insert(BlockType::Cloud, BABY_BLUE);
+    blocktype_map.insert(BlockType::MushroomBlock, SORRELL_BROWN);
+    blocktype_map.insert(BlockType::LivingWood, LEATHER);
+    blocktype_map.insert(BlockType::LeafBlock, MALACHITE);
+    blocktype_map.insert(BlockType::SlimeBlock, AZURE_RADIANCE);
+    blocktype_map.insert(BlockType::BoneBlock, AVOCADO);
+    blocktype_map.insert(BlockType::FleshBlock, MERLOT);
+    blocktype_map.insert(BlockType::RainCloud, AMETHYST_SMOKE);
+    blocktype_map.insert(BlockType::FrozenSlimeBlock, VIKING);
+    blocktype_map.insert(BlockType::Asphalt, ARMADILLO);
+    blocktype_map.insert(BlockType::FleshGrass, ROMAN);
+    blocktype_map.insert(BlockType::FleshIce, PETITE_ORCHID);
+    blocktype_map.insert(BlockType::FleshWeeds, FLUSH_MAHOGANY);
+    blocktype_map.insert(BlockType::Sunplate, GALLIANO);
+    blocktype_map.insert(BlockType::Crimstone, CROWN_OF_THORNS);
+    blocktype_map.insert(BlockType::Crimtane, SOLID_PINK);
+    blocktype_map.insert(BlockType::CrimsonVines, WELL_READ);
+    blocktype_map.insert(BlockType::IceBrick, GLACIER);
+    blocktype_map.insert(BlockType::WaterFountain, STACK);
+    blocktype_map.insert(BlockType::Shadewood, SHUTTLE_GRAY);
+    blocktype_map.insert(BlockType::Cannon, STACK);
+    blocktype_map.insert(BlockType::LandMine, WELL_READ);
+    blocktype_map.insert(BlockType::Chlorophyte, SULU);
+    blocktype_map.insert(BlockType::SnowballLauncher, STACK);
+    blocktype_map.insert(BlockType::Rope, PESTO);
+    blocktype_map.insert(BlockType::Chain, STORM_DUST);
+    blocktype_map.insert(BlockType::Campfire, FLAMENCO);
+    blocktype_map.insert(BlockType::Firework, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Blendomatic, STACK);
+    blocktype_map.insert(BlockType::MeatGrinder, STACK);
+    blocktype_map.insert(BlockType::Extractinator, STACK);
+    blocktype_map.insert(BlockType::Solidifier, STACK);
+    blocktype_map.insert(BlockType::Palladium, FLAMINGO);
+    blocktype_map.insert(BlockType::Orichalcum, BLUSH_PINK);
+    blocktype_map.insert(BlockType::Titanium, FIORD);
+    blocktype_map.insert(BlockType::Slush, SIROCCO);
+    blocktype_map.insert(BlockType::Hive, ZEST);
+    blocktype_map.insert(BlockType::LihzahrdBrick, OREGON);
+    blocktype_map.insert(BlockType::DyePlants, WHITE);
+    blocktype_map.insert(BlockType::DyeVat, STACK);
+    blocktype_map.insert(BlockType::HoneyBlock, CALIFORNIA);
+    blocktype_map.insert(BlockType::CrispyHoneyBlock, RUSTY_NAIL);
+    blocktype_map.insert(BlockType::Larva, EQUATOR);
+    blocktype_map.insert(BlockType::WoodenSpikes, AU_CHICO);
+    blocktype_map.insert(BlockType::PlantDetritus, MAGENTA_FUCHSIA);
+    blocktype_map.insert(BlockType::Crimsand, DUNE);
+    blocktype_map.insert(BlockType::Teleporter, OLD_GOLD);
+    blocktype_map.insert(BlockType::LifeFruit, CONIFER);
+    blocktype_map.insert(BlockType::LihzahrdAltar, BROOM);
+    blocktype_map.insert(BlockType::PlanteraBulb, LAVENDER_ROSE);
+    blocktype_map.insert(BlockType::MetalBars, EQUATOR);
+    blocktype_map.insert(BlockType::Painting3x3, JAMBALAYA);
+    blocktype_map.insert(BlockType::Painting4x3, FUSCOUS_GRAY);
+    blocktype_map.insert(BlockType::Painting6x4, JAMBALAYA);
+    blocktype_map.insert(BlockType::ImbuingStation, PORTAGE);
+    blocktype_map.insert(BlockType::BubbleMachine, ONAHAU);
+    blocktype_map.insert(BlockType::Painting2x3, JAMBALAYA);
+    blocktype_map.insert(BlockType::Painting3x2, JAMBALAYA);
+    blocktype_map.insert(BlockType::Autohammer, OSLO_GRAY);
+    blocktype_map.insert(BlockType::PalladiumColumn, PUNCH);
+    blocktype_map.insert(BlockType::BubblegumBlock, MAGENTA_FUCHSIA);
+    blocktype_map.insert(BlockType::Titanstone, ABBEY);
+    blocktype_map.insert(BlockType::PumpkinBlock, DIXIE);
+    blocktype_map.insert(BlockType::HayBlock, LUXOR_GOLD);
+    blocktype_map.insert(BlockType::SpookyWood, PORT_GORE);
+    blocktype_map.insert(BlockType::Pumpkins, TAN_HIDE);
+    blocktype_map.insert(BlockType::AmethystGemsparkOff, ROYAL_PURPLE);
+    blocktype_map.insert(BlockType::TopazGemsparkOff, SYCAMORE);
+    blocktype_map.insert(BlockType::SapphireGemsparkOff, SMALT);
+    blocktype_map.insert(BlockType::EmeraldGemsparkOff, CHATEAU_GREEN);
+    blocktype_map.insert(BlockType::RubyGemsparkOff, NIGHT_SHADZ);
+    blocktype_map.insert(BlockType::DiamondGemsparkOff, COMET);
+    blocktype_map.insert(BlockType::AmberGemsparkOff, SEPIA_SKIN);
+    blocktype_map.insert(BlockType::AmethystGemspark, PINK_FLAMINGO);
+    blocktype_map.insert(BlockType::TopazGemspark, GOLDEN_FIZZ);
+    blocktype_map.insert(BlockType::SapphireGemspark, BLUE_RIBBON);
+    blocktype_map.insert(BlockType::EmeraldGemspark, SCREAMIN_GREEN);
+    blocktype_map.insert(BlockType::RubyGemspark, SUNSET_ORANGE);
+    blocktype_map.insert(BlockType::DiamondGemspark, ATHENS_GRAY);
+    blocktype_map.insert(BlockType::AmberGemspark, JAFFA);
+    blocktype_map.insert(BlockType::Womannequin, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::FireflyinaBottle, SPRAY);
+    blocktype_map.insert(BlockType::LightningBuginaBottle, SPRAY);
+    blocktype_map.insert(BlockType::Cog, PABLO);
+    blocktype_map.insert(BlockType::StoneSlab, GRAY);
+    blocktype_map.insert(BlockType::SandStoneSlab, HUSK);
+    blocktype_map.insert(BlockType::BunnyCage, SPRAY);
+    blocktype_map.insert(BlockType::SquirrelCage, SPRAY);
+    blocktype_map.insert(BlockType::MallardDuckCage, SPRAY);
+    blocktype_map.insert(BlockType::DuckCage, SPRAY);
+    blocktype_map.insert(BlockType::BirdCage, SPRAY);
+    blocktype_map.insert(BlockType::BlueJay, SPRAY);
+    blocktype_map.insert(BlockType::CardinalCage, SPRAY);
+    blocktype_map.insert(BlockType::FishBowl, SPRAY);
+    blocktype_map.insert(BlockType::HeavyWorkBench, GRAY);
+    blocktype_map.insert(BlockType::CopperPlating, CUMIN);
+    blocktype_map.insert(BlockType::SnailCage, SPRAY);
+    blocktype_map.insert(BlockType::GlowingSnailCage, SPRAY);
+    blocktype_map.insert(BlockType::AmmoBox, VIDA_LOCA);
+    blocktype_map.insert(BlockType::MonarchButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::PurpleEmperorButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::RedAdmiralButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::UlyssesButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::SulphurButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::TreeNymphButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::ZebraSwallowtailButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::JuliaButterflyJar, SPRAY);
+    blocktype_map.insert(BlockType::ScorpionCage, SPRAY);
+    blocktype_map.insert(BlockType::BlackScorpionCage, SPRAY);
+    blocktype_map.insert(BlockType::FrogCage, SPRAY);
+    blocktype_map.insert(BlockType::MouseCage, SPRAY);
+    blocktype_map.insert(BlockType::BoneWelder, STACK);
+    blocktype_map.insert(BlockType::FleshCloningVat, STACK);
+    blocktype_map.insert(BlockType::GlassKiln, STACK);
+    blocktype_map.insert(BlockType::LihzahrdFurnace, STACK);
+    blocktype_map.insert(BlockType::LivingLoom, STACK);
+    blocktype_map.insert(BlockType::SkyMill, STACK);
+    blocktype_map.insert(BlockType::IceMachine, STACK);
+    blocktype_map.insert(BlockType::SteampunkBoiler, STACK);
+    blocktype_map.insert(BlockType::HoneyDispenser, STACK);
+    blocktype_map.insert(BlockType::PenguinCage, SPRAY);
+    blocktype_map.insert(BlockType::WormCage, SPRAY);
+    blocktype_map.insert(BlockType::DynastyWood, WALNUT);
+    blocktype_map.insert(BlockType::RedDynastyShingles, CRAIL);
+    blocktype_map.insert(BlockType::BlueDynastyShingles, BREAKER_BAY);
+    blocktype_map.insert(BlockType::MinecartTrack, MONGOOSE);
+    blocktype_map.insert(BlockType::Coralstone, BURNT_SIENNA);
+    blocktype_map.insert(BlockType::BlueJellyfishBowl, SPRAY);
+    blocktype_map.insert(BlockType::GreenJellyfishBowl, SPRAY);
+    blocktype_map.insert(BlockType::PinkJellyfishBowl, SPRAY);
+    blocktype_map.insert(BlockType::ShipInAbottle, QUINCY);
+    blocktype_map.insert(BlockType::SeaweedPlanter, INDIAN_KHAKI);
+    blocktype_map.insert(BlockType::BorealWood, KABUL);
+    blocktype_map.insert(BlockType::PalmWood, HUSK);
+    blocktype_map.insert(BlockType::PalmTree, DRIFTWOOD);
+    blocktype_map.insert(BlockType::BeachPiles, HAMPTON);
+    blocktype_map.insert(BlockType::TinPlating, CLAY_CREEK);
+    blocktype_map.insert(BlockType::Waterfall, PERSIAN_BLUE);
+    blocktype_map.insert(BlockType::Lavafall, SCARLET);
+    blocktype_map.insert(BlockType::Confetti, ONAHAU);
+    blocktype_map.insert(BlockType::ConfettiBlack, WOODSMOKE);
+    blocktype_map.insert(BlockType::CopperCoinPile, BURNT_SIENNA);
+    blocktype_map.insert(BlockType::SilverCoinPile, EDWARD);
+    blocktype_map.insert(BlockType::GoldCoinPile, TURMERIC);
+    blocktype_map.insert(BlockType::PlatinumCoinPile, ASH);
+    blocktype_map.insert(BlockType::WeaponsRack, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::FireworksBox, TAN);
+    blocktype_map.insert(BlockType::LivingFire, VERMILION);
+    blocktype_map.insert(BlockType::AlphabetStatues, STACK);
+    blocktype_map.insert(BlockType::FireworkFountain, MINT_GREEN);
+    blocktype_map.insert(BlockType::GrasshopperCage, SPRAY);
+    blocktype_map.insert(BlockType::LivingCursedFire, BRIGHT_GREEN);
+    blocktype_map.insert(BlockType::LivingDemonFire, GOVERNOR_BAY);
+    blocktype_map.insert(BlockType::LivingFrostFire, CYAN_AQUA);
+    blocktype_map.insert(BlockType::LivingIchor, GOLDEN_TAINOI);
+    blocktype_map.insert(BlockType::LivingUltrabrightFire, RIPTIDE);
+    blocktype_map.insert(BlockType::Honeyfall, CALIFORNIA);
+    blocktype_map.insert(BlockType::ChlorophyteBrick, CONIFER);
+    blocktype_map.insert(BlockType::CrimtaneBrick, CARNATION);
+    blocktype_map.insert(BlockType::ShroomitePlating, DARK_BLUE);
+    blocktype_map.insert(BlockType::MushroomStatue, STACK);
+    blocktype_map.insert(BlockType::MartianConduitPlating, SAN_MARINO);
+    blocktype_map.insert(BlockType::ChimneySmoke, SHARK);
+    blocktype_map.insert(BlockType::CrimtaneThorns, CARNATION);
+    blocktype_map.insert(BlockType::VineRope, MALACHITE);
+    blocktype_map.insert(BlockType::BewitchingTable, BEAVER);
+    blocktype_map.insert(BlockType::AlchemyTable, BEAVER);
+    blocktype_map.insert(BlockType::Sundial, GOLDEN_DREAM);
+    blocktype_map.insert(BlockType::MarbleBlock, ROCK_BLUE);
+    blocktype_map.insert(BlockType::GoldBirdCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldBunnyCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldButterflyCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldFrogCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldGrasshopperCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldMouseCage, SPRAY);
+    blocktype_map.insert(BlockType::GoldWormCage, SPRAY);
+    blocktype_map.insert(BlockType::SilkRope, DULL_LAVENDER);
+    blocktype_map.insert(BlockType::WebRope, MYSTIC);
+    blocktype_map.insert(BlockType::Marble, ROCK_BLUE);
+    blocktype_map.insert(BlockType::Granite, JACARTA);
+    blocktype_map.insert(BlockType::GraniteBlock, JACARTA);
+    blocktype_map.insert(BlockType::MeteoriteBrick, CHETWODE_BLUE);
+    blocktype_map.insert(BlockType::PinkSlimeBlock, HOT_PINK);
+    blocktype_map.insert(BlockType::PeaceCandle, PERSIAN_PINK);
+    blocktype_map.insert(BlockType::WaterDrip, PERSIAN_BLUE);
+    blocktype_map.insert(BlockType::LavaDrip, SCARLET);
+    blocktype_map.insert(BlockType::HoneyDrip, CALIFORNIA);
+    blocktype_map.insert(BlockType::FishingCrate, LEATHER);
+    blocktype_map.insert(BlockType::SharpeningStation, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::TargetDummy, LEATHER);
+    blocktype_map.insert(BlockType::Bubble, CLASSIC_ROSE);
+    blocktype_map.insert(BlockType::PlanterBox, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::LavaMoss, FLAMENCO);
+    blocktype_map.insert(BlockType::VineFlowers, MALACHITE);
+    blocktype_map.insert(BlockType::LivingMahogany, SEA_PINK);
+    blocktype_map.insert(BlockType::LivingMahoganyLeaves, LIMA);
+    blocktype_map.insert(BlockType::CrystalBlock, PIGMENT_INDIGO);
+    blocktype_map.insert(BlockType::TrapdoorOpen, ROMAN_COFFEE);
+    blocktype_map.insert(BlockType::TrapdoorClosed, ROMAN_COFFEE);
+    blocktype_map.insert(BlockType::TallGateClosed, ROMAN_COFFEE);
+    blocktype_map.insert(BlockType::TallGateOpen, ROMAN_COFFEE);
+    blocktype_map.insert(BlockType::LavaLamp, SCARLET);
+    blocktype_map.insert(BlockType::CageEnchantedNightcrawler, SPRAY);
+    blocktype_map.insert(BlockType::CageBuggy, SPRAY);
+    blocktype_map.insert(BlockType::CageGrubby, SPRAY);
+    blocktype_map.insert(BlockType::CageSluggy, SPRAY);
+    blocktype_map.insert(BlockType::ItemFrame, ANTIQUE_BRASS);
+    blocktype_map.insert(BlockType::Sandstone, RAW_SIENNA);
+    blocktype_map.insert(BlockType::HardenedSand, TACHA);
+    blocktype_map.insert(BlockType::CorruptHardenedSand, KIMBERLY);
+    blocktype_map.insert(BlockType::CrimsonHardenedSand, FUSCOUS_GRAY);
+    blocktype_map.insert(BlockType::CorruptSandstone, BOSSANOVA);
+    blocktype_map.insert(BlockType::CrimsonSandstone, ARMADILLO);
+    blocktype_map.insert(BlockType::HallowHardenedSand, SPUN_PEARL);
+    blocktype_map.insert(BlockType::HallowSandstone, VIOLA);
+    blocktype_map.insert(BlockType::DesertFossil, POTTERS_CLAY);
+    blocktype_map.insert(BlockType::Fireplace, GUNSMOKE);
+    blocktype_map.insert(BlockType::Chimney, BOULDER);
+    blocktype_map.insert(BlockType::FossilOre, GOLDEN_SAND);
+    blocktype_map.insert(BlockType::LunarOre, FUSCOUS_GRAY);
+    blocktype_map.insert(BlockType::LunarBrick, FUSCOUS_GRAY);
+    blocktype_map.insert(BlockType::LunarMonolith, HORIZON);
+    blocktype_map.insert(BlockType::Detonator, ALIZARIN_CRIMSON);
+    blocktype_map.insert(BlockType::LunarCraftingStation, HORIZON);
+    blocktype_map.insert(BlockType::SquirrelOrangeCage, SPRAY);
+    blocktype_map.insert(BlockType::SquirrelGoldCage, SPRAY);
+    blocktype_map.insert(BlockType::LunarBlockSolar, VERMILION);
+    blocktype_map.insert(BlockType::LunarBlockVortex, EASTERN_BLUE);
+    blocktype_map.insert(BlockType::LunarBlockNebula, PURPLE_HEART);
+    blocktype_map.insert(BlockType::LunarBlockStardust, CURIOUS_BLUE);
+    blocktype_map.insert(BlockType::LogicGateLamp, WATERLOO);
+    blocktype_map.insert(BlockType::LogicGate, WHITE);
+    blocktype_map.insert(BlockType::ConveyorBeltLeft, TUNDORA);
+    blocktype_map.insert(BlockType::ConveyorBeltRight, TUNDORA);
+    blocktype_map.insert(BlockType::LogicSensor, WHITE);
+    blocktype_map.insert(BlockType::WirePipe, POLO_BLUE);
+    blocktype_map.insert(BlockType::AnnouncementBox, CASPER);
+    blocktype_map.insert(BlockType::TeamBlockRed, CASTRO);
+    blocktype_map.insert(BlockType::TeamBlockRedPlatform, CLARET);
+    blocktype_map.insert(BlockType::WeightedPressurePlate, WHITE);
+    blocktype_map.insert(BlockType::WireBulb, MASALA);
+    blocktype_map.insert(BlockType::TeamBlockGreen, JEWEL);
+    blocktype_map.insert(BlockType::TeamBlockBlue, ASTRONAUT);
+    blocktype_map.insert(BlockType::TeamBlockYellow, SEPIA);
+    blocktype_map.insert(BlockType::TeamBlockPink, METEORITE);
+    blocktype_map.insert(BlockType::TeamBlockWhite, COMET);
+    blocktype_map.insert(BlockType::TeamBlockGreenPlatform, CHATEAU_GREEN);
+    blocktype_map.insert(BlockType::TeamBlockBluePlatform, AZURE);
+    blocktype_map.insert(BlockType::TeamBlockYellowPlatform, MANDALAY);
+    blocktype_map.insert(BlockType::TeamBlockPinkPlatform, PURPLE);
+    blocktype_map.insert(BlockType::TeamBlockWhitePlatform, AMETHYST_SMOKE);
+    blocktype_map.insert(BlockType::GemLocks, WHITE);
+    blocktype_map.insert(BlockType::FakeContainers, WHITE);
+    blocktype_map.insert(BlockType::ProjectilePressurePad, CURIOUS_BLUE);
+    blocktype_map.insert(BlockType::GeyserTrap, BOULDER);
+    blocktype_map.insert(BlockType::BeeHive, STRAW);
+    blocktype_map.insert(BlockType::PixelBox, TUNA);
+    blocktype_map.insert(BlockType::SillyBalloonPink, WILD_STRAWBERRY);
+    blocktype_map.insert(BlockType::SillyBalloonPurple, MEDIUM_PURPLE);
+    blocktype_map.insert(BlockType::SillyBalloonGreen, PUERTO_RICO);
+    blocktype_map.insert(BlockType::SillyStreamerBlue, PICTON_BLUE);
+    blocktype_map.insert(BlockType::SillyStreamerGreen, SCREAMIN_GREEN);
+    blocktype_map.insert(BlockType::SillyStreamerPink, FRENCH_ROSE);
+    blocktype_map.insert(BlockType::SillyBalloonMachine, MAUVELOUS);
+    blocktype_map.insert(BlockType::SillyBalloonTile, WHITE);
+    blocktype_map.insert(BlockType::Pigronata, VIOLET_EGGPLANT);
+    blocktype_map.insert(BlockType::PartyMonolith, SPRING_GREEN);
+    blocktype_map.insert(BlockType::PartyBundleOfBalloonTile, MEDIUM_PURPLE);
+    blocktype_map.insert(BlockType::PartyPresent, WHITE);
+    blocktype_map.insert(BlockType::SandFallBlock, CHENIN);
+    blocktype_map.insert(BlockType::SnowFallBlock, ZIGGURAT);
+    blocktype_map.insert(BlockType::SnowCloud, BALI_HAI);
+    blocktype_map.insert(BlockType::SandDrip, DANDELION);
+    blocktype_map.insert(BlockType::DjinnLamp, GALLIANO);
+    blocktype_map.insert(BlockType::DefendersForge, CORNFLOWER);
+    blocktype_map.insert(BlockType::WarTable, TACAO);
+    blocktype_map.insert(BlockType::WarTableBanner, CERULEAN_BLUE);
+    blocktype_map.insert(BlockType::ElderCrystalStand, TUSSOCK);
+    blocktype_map.insert(BlockType::Containers2, GOLDENROD);
+    blocktype_map.insert(BlockType::FakeContainers2, WHITE);
+    blocktype_map.insert(BlockType::Tables2, ANTIQUE_BRASS);
+    blocktype_map
   };
-  pub static ref WALLTYPE_COLOR_MAP: HashMap<WallType, Rgba<u8>> = hashmap! {
-    WallType::Stone => MINE_SHAFT,
-    WallType::DirtUnsafe => MILLBROOK,
-    WallType::EbonstoneUnsafe => GUN_POWDER,
-    WallType::Wood => IROKO,
-    WallType::GrayBrick => MINE_SHAFT,
-    WallType::RedBrick => HEATH,
-    WallType::BlueDungeonUnsafe => MIRAGE,
-    WallType::GreenDungeonUnsafe => LOG_CABIN,
-    WallType::PinkDungeonUnsafe => BASTILLE,
-    WallType::GoldBrick => BRONZETONE,
-    WallType::SilverBrick => OUTER_SPACE,
-    WallType::CopperBrick => MOROCCO_BROWN,
-    WallType::HellstoneBrickUnsafe => CRATER_BROWN,
-    WallType::ObsidianBrickUnsafe => WOODSMOKE,
-    WallType::MudUnsafe => THUNDER,
-    WallType::Dirt => MILLBROOK,
-    WallType::BlueDungeon => MIRAGE,
-    WallType::GreenDungeon => LOG_CABIN,
-    WallType::PinkDungeon => BASTILLE,
-    WallType::ObsidianBrick => WOODSMOKE,
-    WallType::Glass => BLACK,
-    WallType::PearlstoneBrick => SCORPION,
-    WallType::IridescentBrick => SHARK,
-    WallType::MudstoneBrick => THUNDER,
-    WallType::CobaltBrick => BIG_STONE,
-    WallType::MythrilBrick => BLUE_DIANNE,
-    WallType::Planked => MILLBROOK,
-    WallType::PearlstoneBrickUnsafe => SCARPA_FLOW,
-    WallType::CandyCane => HEATH,
-    WallType::GreenCandyCane => CAMARONE,
-    WallType::SnowBrick => TROUT,
-    WallType::AdamantiteBeam => CASTRO,
-    WallType::DemoniteBrick => MARTINIQUE,
-    WallType::SandstoneBrick => LISBON_BROWN,
-    WallType::EbonstoneBrick => TUNA,
-    WallType::RedStucco => CONGO_BROWN,
-    WallType::YellowStucco => LISBON_BROWN,
-    WallType::GreenStucco => HEAVY_METAL,
-    WallType::Gray => FUSCOUS_GRAY,
-    WallType::SnowWallUnsafe => CORDUROY,
-    WallType::Ebonwood => TUNA,
-    WallType::RichMaogany => CRATER_BROWN,
-    WallType::Pearlwood => MONDO,
-    WallType::RainbowBrick => MINE_SHAFT,
-    WallType::TinBrick => ARMADILLO,
-    WallType::TungstenBrick => HEAVY_METAL,
-    WallType::PlatinumBrick => ABBEY,
-    WallType::AmethystUnsafe => MINE_SHAFT,
-    WallType::TopazUnsafe => MINE_SHAFT,
-    WallType::SapphireUnsafe => MINE_SHAFT,
-    WallType::EmeraldUnsafe => MINE_SHAFT,
-    WallType::RubyUnsafe => MINE_SHAFT,
-    WallType::DiamondUnsafe => MINE_SHAFT,
-    WallType::CaveUnsafe => HEAVY_METAL,
-    WallType::Cave2unsafe => RANGITOTO,
-    WallType::Cave3unsafe => COCOA_BROWN,
-    WallType::Cave4unsafe => SHARK,
-    WallType::Cave5unsafe => BLEACHED_CEDAR,
-    WallType::Cave6unsafe => MILLBROOK,
-    WallType::LivingLeaf => COUNTY_GREEN,
-    WallType::Cave7unsafe => BISTRE,
-    WallType::SpiderUnsafe => ZEUS,
-    WallType::GrassUnsafe => ZUCCINI,
-    WallType::JungleUnsafe => CLOVER,
-    WallType::FlowerUnsafe => ZUCCINI,
-    WallType::Grass => ZUCCINI,
-    WallType::Jungle => CLOVER,
-    WallType::Flower => ZUCCINI,
-    WallType::CorruptGrassUnsafe => EBONY_CLAY,
-    WallType::HallowedGrassUnsafe => BLUE_DIANNE,
-    WallType::IceUnsafe => KASHMIR_BLUE,
-    WallType::Cactus => GREEN_HOUSE,
-    WallType::Cloud => PERIWINKLE_GRAY,
-    WallType::Mushroom => GUN_POWDER,
-    WallType::Bone => THATCH_GREEN,
-    WallType::Slime => MADISON,
-    WallType::Flesh => AUBERGINE,
-    WallType::LivingWood => CORK,
-    WallType::ObsidianBackUnsafe => BISCAY,
-    WallType::MushroomUnsafe => GUN_POWDER,
-    WallType::CrimsonGrassUnsafe => BUCCANEER,
-    WallType::DiscWall => METALLIC_BRONZE,
-    WallType::CrimstoneUnsafe => JON,
-    WallType::IceBrick => BLUE_DIANNE,
-    WallType::Shadewood => OUTER_SPACE,
-    WallType::HiveUnsafe => RUSSET,
-    WallType::LihzahrdBrickUnsafe => TAMARIND,
-    WallType::PurpleStainedGlass => BLACK,
-    WallType::YellowStainedGlass => BLACK,
-    WallType::BlueStainedGlass => BLACK,
-    WallType::GreenStainedGlass => BLACK,
-    WallType::RedStainedGlass => BLACK,
-    WallType::RainbowStainedGlass => BLACK,
-    WallType::BlueDungeonSlabUnsafe => SHARK,
-    WallType::BlueDungeonTileUnsafe => BALTIC_SEA,
-    WallType::PinkDungeonSlabUnsafe => VOODOO,
-    WallType::PinkDungeonTileUnsafe => EGGPLANT,
-    WallType::GreenDungeonSlabUnsafe => MINE_SHAFT,
-    WallType::GreenDungeonTileUnsafe => OUTER_SPACE,
-    WallType::BlueDungeonSlab => SHARK,
-    WallType::BlueDungeonTile => BALTIC_SEA,
-    WallType::PinkDungeonSlab => VOODOO,
-    WallType::PinkDungeonTile => EGGPLANT,
-    WallType::GreenDungeonSlab => MINE_SHAFT,
-    WallType::GreenDungeonTile => OUTER_SPACE,
-    WallType::WoodenFence => BLACK,
-    WallType::MetalFence => BLACK,
-    WallType::Hive => RUSSET,
-    WallType::PalladiumColumn => CHERRYWOOD,
-    WallType::BubblegumBlock => PLUM,
-    WallType::TitanstoneBlock => TREEHOUSE,
-    WallType::LihzahrdBrick => TAMARIND,
-    WallType::Pumpkin => PERU_TAN,
-    WallType::Hay => MADRAS,
-    WallType::SpookyWood => SHARK,
-    WallType::ChristmasTreeWallpaper => HEATH,
-    WallType::OrnamentWallpaper => FRIAR_GRAY,
-    WallType::CandyCaneWallpaper => COUNTY_GREEN,
-    WallType::FestiveWallpaper => HEATH,
-    WallType::StarsWallpaper => BLUE_ZODIAC,
-    WallType::SquigglesWallpaper => INDIAN_KHAKI,
-    WallType::SnowflakeWallpaper => STORM_GRAY,
-    WallType::KrampusHornWallpaper => HACIENDA,
-    WallType::BluegreenWallpaper => DARK_FERN,
-    WallType::GrinchFingerWallpaper => DINGLEY,
-    WallType::FancyGrayWallpaper => SHUTTLE_GRAY,
-    WallType::IceFloeWallpaper => MARINER,
-    WallType::MusicWallpaper => CLAIRVOYANT,
-    WallType::PurpleRainWallpaper => DAISY_BUSH,
-    WallType::RainbowWallpaper => ULTRAMARINE,
-    WallType::SparkleStoneWallpaper => COMET,
-    WallType::StarlitHeavenWallpaper => COD_GRAY,
-    WallType::BubbleWallpaper => GOVERNOR_BAY,
-    WallType::CopperPipeWallpaper => RED_BEECH,
-    WallType::DuckyWallpaper => DEEP_CERULEAN,
-    WallType::Waterfall => ST_TROPAZ,
-    WallType::Lavafall => VESUVIUS,
-    WallType::EbonwoodFence => SCARPA_FLOW,
-    WallType::RichMahoganyFence => BUCCANEER,
-    WallType::PearlwoodFence => GO_BEN,
-    WallType::ShadewoodFence => CAPE_COD,
-    WallType::WhiteDynasty => JUNGLE_GREEN,
-    WallType::BlueDynasty => CORDUROY,
-    WallType::ArcaneRunes => GRAPE,
-    WallType::IronFence => BLACK,
-    WallType::CopperPlating => COPPER_CANYON,
-    WallType::StoneSlab => TUATARA,
-    WallType::Sail => ZOMBIE,
-    WallType::BorealWood => TAUPE,
-    WallType::BorealWoodFence => BLACK,
-    WallType::PalmWood => DALLAS,
-    WallType::PalmWoodFence => BLACK,
-    WallType::AmberGemspark => JAFFA,
-    WallType::AmethystGemspark => PINK_FLAMINGO,
-    WallType::DiamondGemspark => ATHENS_GRAY,
-    WallType::EmeraldGemspark => SCREAMIN_GREEN,
-    WallType::AmberGemsparkOff => SEPIA_SKIN,
-    WallType::AmethystGemsparkOff => ROYAL_PURPLE,
-    WallType::DiamondGemsparkOff => COMET,
-    WallType::EmeraldGemsparkOff => CHATEAU_GREEN,
-    WallType::RubyGemsparkOff => NIGHT_SHADZ,
-    WallType::SapphireGemsparkOff => SMALT,
-    WallType::TopazGemsparkOff => SYCAMORE,
-    WallType::RubyGemspark => SUNSET_ORANGE,
-    WallType::SapphireGemspark => BLUE_RIBBON,
-    WallType::TopazGemspark => GOLDEN_FIZZ,
-    WallType::TinPlating => KELP,
-    WallType::Confetti => BLACK,
-    WallType::ConfettiBlack => BLACK,
-    WallType::CaveWall => BLACK_MARLIN,
-    WallType::CaveWall2 => BLACK_MARLIN,
-    WallType::Honeyfall => RENO_SAND,
-    WallType::ChlorophyteBrick => VIDA_LOCA,
-    WallType::CrimtaneBrick => BLACK_ROSE,
-    WallType::ShroomitePlating => DARK_BLUE,
-    WallType::MartianConduit => GUN_POWDER,
-    WallType::HellstoneBrick => JON,
-    WallType::MarbleUnsafe => STORM_GRAY,
-    WallType::MarbleBlock => STORM_GRAY,
-    WallType::GraniteUnsafe => HAITI,
-    WallType::GraniteBlock => HAITI,
-    WallType::MeteoriteBrick => EAST_BAY,
-    WallType::Marble => STORM_GRAY,
-    WallType::Granite => HAITI,
-    WallType::Cave8unsafe => MINE_SHAFT,
-    WallType::Crystal => VIOLET,
-    WallType::Sandstone => MULE_FAWN,
-    WallType::CorruptionUnsafe1 => MORTAR,
-    WallType::CorruptionUnsafe2 => BRIGHT_GRAY,
-    WallType::CorruptionUnsafe3 => GUN_POWDER,
-    WallType::CorruptionUnsafe4 => VOODOO,
-    WallType::CrimsonUnsafe1 => EL_SALVA,
-    WallType::CrimsonUnsafe2 => STILETTO,
-    WallType::CrimsonUnsafe3 => PERSIAN_PLUM,
-    WallType::CrimsonUnsafe4 => STILETTO,
-    WallType::DirtUnsafe1 => QUINCY,
-    WallType::DirtUnsafe2 => ROMAN_COFFEE,
-    WallType::DirtUnsafe3 => MILLBROOK,
-    WallType::DirtUnsafe4 => ROMAN_COFFEE,
-    WallType::HallowUnsafe1 => PLUM,
-    WallType::HallowUnsafe2 => MAMBA,
-    WallType::HallowUnsafe3 => CRANBERRY,
-    WallType::HallowUnsafe4 => AFFAIR,
-    WallType::JungleUnsafe1 => ARMADILLO,
-    WallType::JungleUnsafe2 => CABBAGE_PONT,
-    WallType::JungleUnsafe3 => COUNTY_GREEN,
-    WallType::JungleUnsafe4 => AXOLOTL,
-    WallType::LavaUnsafe1 => SHARK,
-    WallType::LavaUnsafe2 => TUNDORA,
-    WallType::LavaUnsafe3 => LONESTAR,
-    WallType::LavaUnsafe4 => KABUL,
-    WallType::RocksUnsafe1 => FUSCOUS_GRAY,
-    WallType::RocksUnsafe2 => CAPE_COD,
-    WallType::RocksUnsafe3 => MATTERHORN,
-    WallType::RocksUnsafe4 => LIVID_BROWN,
-    WallType::HardenedSand => CAPE_PALLISER,
-    WallType::CorruptHardenedSand => MARTINIQUE,
-    WallType::CrimsonHardenedSand => AUBERGINE,
-    WallType::HallowHardenedSand => BUTTERFLY_BUSH,
-    WallType::CorruptSandstone => MARTINIQUE,
-    WallType::CrimsonSandstone => CORK,
-    WallType::HallowSandstone => VOODOO,
-    WallType::DesertFossil => CEDAR,
-    WallType::LunarBrickWall => DUNE,
-    WallType::CogWall => CAPE_COD,
-    WallType::SandFall => PESTO,
-    WallType::SnowFall => DANUBE,
-    WallType::SillyBalloonPinkWall => JAZZBERRY_JAM,
-    WallType::SillyBalloonPurpleWall => ROYAL_PURPLE,
-    WallType::SillyBalloonGreenWall => PINE_GREEN,
+  pub static ref WALLTYPE_COLOR_MAP: FnvHashMap<WallType, Rgba<u8>> = {
+    let mut walltype_map = FnvHashMap::default();
+
+    walltype_map.insert(WallType::Stone, MINE_SHAFT);
+    walltype_map.insert(WallType::DirtUnsafe, MILLBROOK);
+    walltype_map.insert(WallType::EbonstoneUnsafe, GUN_POWDER);
+    walltype_map.insert(WallType::Wood, IROKO);
+    walltype_map.insert(WallType::GrayBrick, MINE_SHAFT);
+    walltype_map.insert(WallType::RedBrick, HEATH);
+    walltype_map.insert(WallType::BlueDungeonUnsafe, MIRAGE);
+    walltype_map.insert(WallType::GreenDungeonUnsafe, LOG_CABIN);
+    walltype_map.insert(WallType::PinkDungeonUnsafe, BASTILLE);
+    walltype_map.insert(WallType::GoldBrick, BRONZETONE);
+    walltype_map.insert(WallType::SilverBrick, OUTER_SPACE);
+    walltype_map.insert(WallType::CopperBrick, MOROCCO_BROWN);
+    walltype_map.insert(WallType::HellstoneBrickUnsafe, CRATER_BROWN);
+    walltype_map.insert(WallType::ObsidianBrickUnsafe, WOODSMOKE);
+    walltype_map.insert(WallType::MudUnsafe, THUNDER);
+    walltype_map.insert(WallType::Dirt, MILLBROOK);
+    walltype_map.insert(WallType::BlueDungeon, MIRAGE);
+    walltype_map.insert(WallType::GreenDungeon, LOG_CABIN);
+    walltype_map.insert(WallType::PinkDungeon, BASTILLE);
+    walltype_map.insert(WallType::ObsidianBrick, WOODSMOKE);
+    walltype_map.insert(WallType::Glass, BLACK);
+    walltype_map.insert(WallType::PearlstoneBrick, SCORPION);
+    walltype_map.insert(WallType::IridescentBrick, SHARK);
+    walltype_map.insert(WallType::MudstoneBrick, THUNDER);
+    walltype_map.insert(WallType::CobaltBrick, BIG_STONE);
+    walltype_map.insert(WallType::MythrilBrick, BLUE_DIANNE);
+    walltype_map.insert(WallType::Planked, MILLBROOK);
+    walltype_map.insert(WallType::PearlstoneBrickUnsafe, SCARPA_FLOW);
+    walltype_map.insert(WallType::CandyCane, HEATH);
+    walltype_map.insert(WallType::GreenCandyCane, CAMARONE);
+    walltype_map.insert(WallType::SnowBrick, TROUT);
+    walltype_map.insert(WallType::AdamantiteBeam, CASTRO);
+    walltype_map.insert(WallType::DemoniteBrick, MARTINIQUE);
+    walltype_map.insert(WallType::SandstoneBrick, LISBON_BROWN);
+    walltype_map.insert(WallType::EbonstoneBrick, TUNA);
+    walltype_map.insert(WallType::RedStucco, CONGO_BROWN);
+    walltype_map.insert(WallType::YellowStucco, LISBON_BROWN);
+    walltype_map.insert(WallType::GreenStucco, HEAVY_METAL);
+    walltype_map.insert(WallType::Gray, FUSCOUS_GRAY);
+    walltype_map.insert(WallType::SnowWallUnsafe, CORDUROY);
+    walltype_map.insert(WallType::Ebonwood, TUNA);
+    walltype_map.insert(WallType::RichMaogany, CRATER_BROWN);
+    walltype_map.insert(WallType::Pearlwood, MONDO);
+    walltype_map.insert(WallType::RainbowBrick, MINE_SHAFT);
+    walltype_map.insert(WallType::TinBrick, ARMADILLO);
+    walltype_map.insert(WallType::TungstenBrick, HEAVY_METAL);
+    walltype_map.insert(WallType::PlatinumBrick, ABBEY);
+    walltype_map.insert(WallType::AmethystUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::TopazUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::SapphireUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::EmeraldUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::RubyUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::DiamondUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::CaveUnsafe, HEAVY_METAL);
+    walltype_map.insert(WallType::Cave2unsafe, RANGITOTO);
+    walltype_map.insert(WallType::Cave3unsafe, COCOA_BROWN);
+    walltype_map.insert(WallType::Cave4unsafe, SHARK);
+    walltype_map.insert(WallType::Cave5unsafe, BLEACHED_CEDAR);
+    walltype_map.insert(WallType::Cave6unsafe, MILLBROOK);
+    walltype_map.insert(WallType::LivingLeaf, COUNTY_GREEN);
+    walltype_map.insert(WallType::Cave7unsafe, BISTRE);
+    walltype_map.insert(WallType::SpiderUnsafe, ZEUS);
+    walltype_map.insert(WallType::GrassUnsafe, ZUCCINI);
+    walltype_map.insert(WallType::JungleUnsafe, CLOVER);
+    walltype_map.insert(WallType::FlowerUnsafe, ZUCCINI);
+    walltype_map.insert(WallType::Grass, ZUCCINI);
+    walltype_map.insert(WallType::Jungle, CLOVER);
+    walltype_map.insert(WallType::Flower, ZUCCINI);
+    walltype_map.insert(WallType::CorruptGrassUnsafe, EBONY_CLAY);
+    walltype_map.insert(WallType::HallowedGrassUnsafe, BLUE_DIANNE);
+    walltype_map.insert(WallType::IceUnsafe, KASHMIR_BLUE);
+    walltype_map.insert(WallType::Cactus, GREEN_HOUSE);
+    walltype_map.insert(WallType::Cloud, PERIWINKLE_GRAY);
+    walltype_map.insert(WallType::Mushroom, GUN_POWDER);
+    walltype_map.insert(WallType::Bone, THATCH_GREEN);
+    walltype_map.insert(WallType::Slime, MADISON);
+    walltype_map.insert(WallType::Flesh, AUBERGINE);
+    walltype_map.insert(WallType::LivingWood, CORK);
+    walltype_map.insert(WallType::ObsidianBackUnsafe, BISCAY);
+    walltype_map.insert(WallType::MushroomUnsafe, GUN_POWDER);
+    walltype_map.insert(WallType::CrimsonGrassUnsafe, BUCCANEER);
+    walltype_map.insert(WallType::DiscWall, METALLIC_BRONZE);
+    walltype_map.insert(WallType::CrimstoneUnsafe, JON);
+    walltype_map.insert(WallType::IceBrick, BLUE_DIANNE);
+    walltype_map.insert(WallType::Shadewood, OUTER_SPACE);
+    walltype_map.insert(WallType::HiveUnsafe, RUSSET);
+    walltype_map.insert(WallType::LihzahrdBrickUnsafe, TAMARIND);
+    walltype_map.insert(WallType::PurpleStainedGlass, BLACK);
+    walltype_map.insert(WallType::YellowStainedGlass, BLACK);
+    walltype_map.insert(WallType::BlueStainedGlass, BLACK);
+    walltype_map.insert(WallType::GreenStainedGlass, BLACK);
+    walltype_map.insert(WallType::RedStainedGlass, BLACK);
+    walltype_map.insert(WallType::RainbowStainedGlass, BLACK);
+    walltype_map.insert(WallType::BlueDungeonSlabUnsafe, SHARK);
+    walltype_map.insert(WallType::BlueDungeonTileUnsafe, BALTIC_SEA);
+    walltype_map.insert(WallType::PinkDungeonSlabUnsafe, VOODOO);
+    walltype_map.insert(WallType::PinkDungeonTileUnsafe, EGGPLANT);
+    walltype_map.insert(WallType::GreenDungeonSlabUnsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::GreenDungeonTileUnsafe, OUTER_SPACE);
+    walltype_map.insert(WallType::BlueDungeonSlab, SHARK);
+    walltype_map.insert(WallType::BlueDungeonTile, BALTIC_SEA);
+    walltype_map.insert(WallType::PinkDungeonSlab, VOODOO);
+    walltype_map.insert(WallType::PinkDungeonTile, EGGPLANT);
+    walltype_map.insert(WallType::GreenDungeonSlab, MINE_SHAFT);
+    walltype_map.insert(WallType::GreenDungeonTile, OUTER_SPACE);
+    walltype_map.insert(WallType::WoodenFence, BLACK);
+    walltype_map.insert(WallType::MetalFence, BLACK);
+    walltype_map.insert(WallType::Hive, RUSSET);
+    walltype_map.insert(WallType::PalladiumColumn, CHERRYWOOD);
+    walltype_map.insert(WallType::BubblegumBlock, PLUM);
+    walltype_map.insert(WallType::TitanstoneBlock, TREEHOUSE);
+    walltype_map.insert(WallType::LihzahrdBrick, TAMARIND);
+    walltype_map.insert(WallType::Pumpkin, PERU_TAN);
+    walltype_map.insert(WallType::Hay, MADRAS);
+    walltype_map.insert(WallType::SpookyWood, SHARK);
+    walltype_map.insert(WallType::ChristmasTreeWallpaper, HEATH);
+    walltype_map.insert(WallType::OrnamentWallpaper, FRIAR_GRAY);
+    walltype_map.insert(WallType::CandyCaneWallpaper, COUNTY_GREEN);
+    walltype_map.insert(WallType::FestiveWallpaper, HEATH);
+    walltype_map.insert(WallType::StarsWallpaper, BLUE_ZODIAC);
+    walltype_map.insert(WallType::SquigglesWallpaper, INDIAN_KHAKI);
+    walltype_map.insert(WallType::SnowflakeWallpaper, STORM_GRAY);
+    walltype_map.insert(WallType::KrampusHornWallpaper, HACIENDA);
+    walltype_map.insert(WallType::BluegreenWallpaper, DARK_FERN);
+    walltype_map.insert(WallType::GrinchFingerWallpaper, DINGLEY);
+    walltype_map.insert(WallType::FancyGrayWallpaper, SHUTTLE_GRAY);
+    walltype_map.insert(WallType::IceFloeWallpaper, MARINER);
+    walltype_map.insert(WallType::MusicWallpaper, CLAIRVOYANT);
+    walltype_map.insert(WallType::PurpleRainWallpaper, DAISY_BUSH);
+    walltype_map.insert(WallType::RainbowWallpaper, ULTRAMARINE);
+    walltype_map.insert(WallType::SparkleStoneWallpaper, COMET);
+    walltype_map.insert(WallType::StarlitHeavenWallpaper, COD_GRAY);
+    walltype_map.insert(WallType::BubbleWallpaper, GOVERNOR_BAY);
+    walltype_map.insert(WallType::CopperPipeWallpaper, RED_BEECH);
+    walltype_map.insert(WallType::DuckyWallpaper, DEEP_CERULEAN);
+    walltype_map.insert(WallType::Waterfall, ST_TROPAZ);
+    walltype_map.insert(WallType::Lavafall, VESUVIUS);
+    walltype_map.insert(WallType::EbonwoodFence, SCARPA_FLOW);
+    walltype_map.insert(WallType::RichMahoganyFence, BUCCANEER);
+    walltype_map.insert(WallType::PearlwoodFence, GO_BEN);
+    walltype_map.insert(WallType::ShadewoodFence, CAPE_COD);
+    walltype_map.insert(WallType::WhiteDynasty, JUNGLE_GREEN);
+    walltype_map.insert(WallType::BlueDynasty, CORDUROY);
+    walltype_map.insert(WallType::ArcaneRunes, GRAPE);
+    walltype_map.insert(WallType::IronFence, BLACK);
+    walltype_map.insert(WallType::CopperPlating, COPPER_CANYON);
+    walltype_map.insert(WallType::StoneSlab, TUATARA);
+    walltype_map.insert(WallType::Sail, ZOMBIE);
+    walltype_map.insert(WallType::BorealWood, TAUPE);
+    walltype_map.insert(WallType::BorealWoodFence, BLACK);
+    walltype_map.insert(WallType::PalmWood, DALLAS);
+    walltype_map.insert(WallType::PalmWoodFence, BLACK);
+    walltype_map.insert(WallType::AmberGemspark, JAFFA);
+    walltype_map.insert(WallType::AmethystGemspark, PINK_FLAMINGO);
+    walltype_map.insert(WallType::DiamondGemspark, ATHENS_GRAY);
+    walltype_map.insert(WallType::EmeraldGemspark, SCREAMIN_GREEN);
+    walltype_map.insert(WallType::AmberGemsparkOff, SEPIA_SKIN);
+    walltype_map.insert(WallType::AmethystGemsparkOff, ROYAL_PURPLE);
+    walltype_map.insert(WallType::DiamondGemsparkOff, COMET);
+    walltype_map.insert(WallType::EmeraldGemsparkOff, CHATEAU_GREEN);
+    walltype_map.insert(WallType::RubyGemsparkOff, NIGHT_SHADZ);
+    walltype_map.insert(WallType::SapphireGemsparkOff, SMALT);
+    walltype_map.insert(WallType::TopazGemsparkOff, SYCAMORE);
+    walltype_map.insert(WallType::RubyGemspark, SUNSET_ORANGE);
+    walltype_map.insert(WallType::SapphireGemspark, BLUE_RIBBON);
+    walltype_map.insert(WallType::TopazGemspark, GOLDEN_FIZZ);
+    walltype_map.insert(WallType::TinPlating, KELP);
+    walltype_map.insert(WallType::Confetti, BLACK);
+    walltype_map.insert(WallType::ConfettiBlack, BLACK);
+    walltype_map.insert(WallType::CaveWall, BLACK_MARLIN);
+    walltype_map.insert(WallType::CaveWall2, BLACK_MARLIN);
+    walltype_map.insert(WallType::Honeyfall, RENO_SAND);
+    walltype_map.insert(WallType::ChlorophyteBrick, VIDA_LOCA);
+    walltype_map.insert(WallType::CrimtaneBrick, BLACK_ROSE);
+    walltype_map.insert(WallType::ShroomitePlating, DARK_BLUE);
+    walltype_map.insert(WallType::MartianConduit, GUN_POWDER);
+    walltype_map.insert(WallType::HellstoneBrick, JON);
+    walltype_map.insert(WallType::MarbleUnsafe, STORM_GRAY);
+    walltype_map.insert(WallType::MarbleBlock, STORM_GRAY);
+    walltype_map.insert(WallType::GraniteUnsafe, HAITI);
+    walltype_map.insert(WallType::GraniteBlock, HAITI);
+    walltype_map.insert(WallType::MeteoriteBrick, EAST_BAY);
+    walltype_map.insert(WallType::Marble, STORM_GRAY);
+    walltype_map.insert(WallType::Granite, HAITI);
+    walltype_map.insert(WallType::Cave8unsafe, MINE_SHAFT);
+    walltype_map.insert(WallType::Crystal, VIOLET);
+    walltype_map.insert(WallType::Sandstone, MULE_FAWN);
+    walltype_map.insert(WallType::CorruptionUnsafe1, MORTAR);
+    walltype_map.insert(WallType::CorruptionUnsafe2, BRIGHT_GRAY);
+    walltype_map.insert(WallType::CorruptionUnsafe3, GUN_POWDER);
+    walltype_map.insert(WallType::CorruptionUnsafe4, VOODOO);
+    walltype_map.insert(WallType::CrimsonUnsafe1, EL_SALVA);
+    walltype_map.insert(WallType::CrimsonUnsafe2, STILETTO);
+    walltype_map.insert(WallType::CrimsonUnsafe3, PERSIAN_PLUM);
+    walltype_map.insert(WallType::CrimsonUnsafe4, STILETTO);
+    walltype_map.insert(WallType::DirtUnsafe1, QUINCY);
+    walltype_map.insert(WallType::DirtUnsafe2, ROMAN_COFFEE);
+    walltype_map.insert(WallType::DirtUnsafe3, MILLBROOK);
+    walltype_map.insert(WallType::DirtUnsafe4, ROMAN_COFFEE);
+    walltype_map.insert(WallType::HallowUnsafe1, PLUM);
+    walltype_map.insert(WallType::HallowUnsafe2, MAMBA);
+    walltype_map.insert(WallType::HallowUnsafe3, CRANBERRY);
+    walltype_map.insert(WallType::HallowUnsafe4, AFFAIR);
+    walltype_map.insert(WallType::JungleUnsafe1, ARMADILLO);
+    walltype_map.insert(WallType::JungleUnsafe2, CABBAGE_PONT);
+    walltype_map.insert(WallType::JungleUnsafe3, COUNTY_GREEN);
+    walltype_map.insert(WallType::JungleUnsafe4, AXOLOTL);
+    walltype_map.insert(WallType::LavaUnsafe1, SHARK);
+    walltype_map.insert(WallType::LavaUnsafe2, TUNDORA);
+    walltype_map.insert(WallType::LavaUnsafe3, LONESTAR);
+    walltype_map.insert(WallType::LavaUnsafe4, KABUL);
+    walltype_map.insert(WallType::RocksUnsafe1, FUSCOUS_GRAY);
+    walltype_map.insert(WallType::RocksUnsafe2, CAPE_COD);
+    walltype_map.insert(WallType::RocksUnsafe3, MATTERHORN);
+    walltype_map.insert(WallType::RocksUnsafe4, LIVID_BROWN);
+    walltype_map.insert(WallType::HardenedSand, CAPE_PALLISER);
+    walltype_map.insert(WallType::CorruptHardenedSand, MARTINIQUE);
+    walltype_map.insert(WallType::CrimsonHardenedSand, AUBERGINE);
+    walltype_map.insert(WallType::HallowHardenedSand, BUTTERFLY_BUSH);
+    walltype_map.insert(WallType::CorruptSandstone, MARTINIQUE);
+    walltype_map.insert(WallType::CrimsonSandstone, CORK);
+    walltype_map.insert(WallType::HallowSandstone, VOODOO);
+    walltype_map.insert(WallType::DesertFossil, CEDAR);
+    walltype_map.insert(WallType::LunarBrickWall, DUNE);
+    walltype_map.insert(WallType::CogWall, CAPE_COD);
+    walltype_map.insert(WallType::SandFall, PESTO);
+    walltype_map.insert(WallType::SnowFall, DANUBE);
+    walltype_map.insert(WallType::SillyBalloonPinkWall, JAZZBERRY_JAM);
+    walltype_map.insert(WallType::SillyBalloonPurpleWall, ROYAL_PURPLE);
+    walltype_map.insert(WallType::SillyBalloonGreenWall, PINE_GREEN);
+    walltype_map
   };
-  pub static ref PAINT_COLOR_MAP: HashMap<u8, Rgba<u8>> = hashmap! {
-    0 => BLACK,
-    1 => RED,
-    2 => FLUSH_ORANGE,
-    3 => YELLOW,
-    4 => CHARTREUSE,
-    5 => GREEN,
-    6 => SPRING_GREEN,
-    7 => CYAN_AQUA,
-    8 => AZURE_RADIANCE,
-    9 => BLUE,
-    10 => ELECTRIC_VIOLET,
-    11 => MAGENTA_FUCHSIA,
-    12 => ROSE,
-    13 => RED,
-    14 => FLUSH_ORANGE,
-    15 => YELLOW,
-    16 => CHARTREUSE,
-    17 => GREEN,
-    18 => SPRING_GREEN,
-    19 => CYAN_AQUA,
-    20 => AZURE_RADIANCE,
-    21 => BLUE,
-    22 => ELECTRIC_VIOLET,
-    23 => MAGENTA_FUCHSIA,
-    24 => ROSE,
-    25 => ABBEY,
-    26 => WHITE,
-    27 => SILVER_CHALICE,
-    28 => MACARONI_AND_CHEESE,
-    29 => WOODSMOKE,
-    30 => SILVER_SAND
+  pub static ref PAINT_COLOR_MAP: FnvHashMap<u8, Rgba<u8>> = {
+    let mut paint_map = FnvHashMap::default();
+    paint_map.insert(0, BLACK);
+    paint_map.insert(1, RED);
+    paint_map.insert(2, FLUSH_ORANGE);
+    paint_map.insert(3, YELLOW);
+    paint_map.insert(4, CHARTREUSE);
+    paint_map.insert(5, GREEN);
+    paint_map.insert(6, SPRING_GREEN);
+    paint_map.insert(7, CYAN_AQUA);
+    paint_map.insert(8, AZURE_RADIANCE);
+    paint_map.insert(9, BLUE);
+    paint_map.insert(10, ELECTRIC_VIOLET);
+    paint_map.insert(11, MAGENTA_FUCHSIA);
+    paint_map.insert(12, ROSE);
+    paint_map.insert(13, RED);
+    paint_map.insert(14, FLUSH_ORANGE);
+    paint_map.insert(15, YELLOW);
+    paint_map.insert(16, CHARTREUSE);
+    paint_map.insert(17, GREEN);
+    paint_map.insert(18, SPRING_GREEN);
+    paint_map.insert(19, CYAN_AQUA);
+    paint_map.insert(20, AZURE_RADIANCE);
+    paint_map.insert(21, BLUE);
+    paint_map.insert(22, ELECTRIC_VIOLET);
+    paint_map.insert(23, MAGENTA_FUCHSIA);
+    paint_map.insert(24, ROSE);
+    paint_map.insert(25, ABBEY);
+    paint_map.insert(26, WHITE);
+    paint_map.insert(27, SILVER_CHALICE);
+    paint_map.insert(28, MACARONI_AND_CHEESE);
+    paint_map.insert(29, WOODSMOKE);
+    paint_map.insert(30, SILVER_SAND);
+    paint_map
   };
 }
 

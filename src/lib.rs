@@ -5,8 +5,6 @@ extern crate num_derive;
 #[macro_use]
 extern crate derive_more;
 #[macro_use]
-extern crate maplit;
-#[macro_use]
 extern crate lazy_static;
 
 use crate::model::world::World;
