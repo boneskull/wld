@@ -1,4 +1,4 @@
-pub mod blocks;
+pub mod block;
 pub mod common;
 pub mod header;
 pub mod items;

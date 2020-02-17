@@ -1,16 +1,16 @@
-use super::{
-  blocks::*,
-  items::*,
-  tile_entity::*,
-  walls::*,
-};
 use crate::{
   enums::{
     BlockShape,
     LiquidType,
     RLEType,
   },
-  model::common::*,
+  model::{
+    block::*,
+    common::*,
+    items::*,
+    tile_entity::*,
+    walls::*,
+  },
 };
 use scroll::{
   ctx::TryFromCtx,
