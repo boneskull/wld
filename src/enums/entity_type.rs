@@ -1,8 +1,13 @@
 use num_traits::FromPrimitive;
 use scroll::{
-  ctx::TryFromCtx,
+  ctx::{
+    TryFromCtx,
+    TryIntoCtx,
+  },
+  Endian,
   Error as ScrollError,
   Pread,
+  Pwrite,
   LE,
 };
 
@@ -654,15 +659,43 @@ pub enum EntityType {
   BartenderUnconscious = 579,
 }
 
-impl<'a> TryFromCtx<'a, ()> for EntityType {
+impl<'a> TryFromCtx<'a, Endian> for EntityType {
   type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    _: (),
+    _: Endian,
   ) -> std::result::Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let raw = buf.gread_with::<i32>(offset, LE)? as i64;
-    Ok((Self::from_i64(raw).unwrap(), *offset))
+    let raw = buf.gread_with::<i32>(offset, LE)?;
+    Ok((Self::from_i32(raw).unwrap(), *offset))
+  }
+}
+
+impl TryIntoCtx<Endian> for EntityType {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let value = self as i32;
+    buf.gwrite_with(value, offset, LE)?;
+    Ok(*offset)
+  }
+}
+
+#[cfg(test)]
+mod test_entity_type {
+  use super::*;
+
+  #[test]
+  fn test_entity_type_rw() {
+    let entity_type = EntityType::AncientCultistSquidhead;
+    let mut buf = [0; 4];
+    assert_eq!(4, buf.pwrite(entity_type, 0).unwrap());
+    assert_eq!(entity_type, buf.pread::<EntityType>(0).unwrap());
   }
 }
