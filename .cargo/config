@@ -5,6 +5,8 @@ dev = [
   "*.snap*",
   "-i",
   "Cargo.{toml,lock}",
+  "-i",
+  ".*",
   "-x",
   "test"
 ]
@@ -13,6 +15,8 @@ devlib = [
   "-i",
   "*.snap*",
   "-i",
+  "-i",
+  ".*",
   "Cargo.{toml,lock}",
   "-x",
   "test --lib"
