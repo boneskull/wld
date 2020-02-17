@@ -5,180 +5,169 @@ expression: PARSED_WORLD.npcs
 NPCVec(
     [
         NPC {
-            entity: OldMan,
-            position: (
-                54816.504,
-                3336.0,
-            ),
+            entity_type: OldMan,
+            position: Point {
+                x: 54816,
+                y: 3336,
+            },
             name: TString(
                 "",
             ),
-            home_position: Some(
-                Point {
-                    x: 3426,
-                    y: 211,
-                },
-            ),
+            home_position: Point {
+                x: 3426,
+                y: 211,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Guide,
-            position: (
-                30897.0,
-                6168.0,
-            ),
+            entity_type: Guide,
+            position: Point {
+                x: 30897,
+                y: 6168,
+            },
             name: TString(
                 "Asher",
             ),
-            home_position: Some(
-                Point {
-                    x: 1929,
-                    y: 388,
-                },
-            ),
+            home_position: Point {
+                x: 1929,
+                y: 388,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Merchant,
-            position: (
-                34435.805,
-                3640.0,
-            ),
+            entity_type: Merchant,
+            position: Point {
+                x: 34435,
+                y: 3640,
+            },
             name: TString(
                 "Louis",
             ),
-            home_position: Some(
-                Point {
-                    x: 2102,
-                    y: 229,
-                },
-            ),
+            home_position: Point {
+                x: 2102,
+                y: 229,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Nurse,
-            position: (
-                34006.137,
-                3656.0,
-            ),
+            entity_type: Nurse,
+            position: Point {
+                x: 34006,
+                y: 3656,
+            },
             name: TString(
                 "Emma",
             ),
-            home_position: Some(
-                Point {
-                    x: 2127,
-                    y: 231,
-                },
-            ),
+            home_position: Point {
+                x: 2127,
+                y: 231,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Angler,
-            position: (
-                9471.102,
-                3592.0,
-            ),
+            entity_type: Angler,
+            position: Point {
+                x: 9471,
+                y: 3592,
+            },
             name: TString(
                 "Bobby",
             ),
-            home_position: Some(
-                Point {
-                    x: 606,
-                    y: 234,
-                },
-            ),
+            home_position: Point {
+                x: 606,
+                y: 234,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Demolitionist,
-            position: (
-                9656.912,
-                3592.0,
-            ),
+            entity_type: Demolitionist,
+            position: Point {
+                x: 9656,
+                y: 3592,
+            },
             name: TString(
                 "Urist",
             ),
-            home_position: Some(
-                Point {
-                    x: 611,
-                    y: 227,
-                },
-            ),
+            home_position: Point {
+                x: 611,
+                y: 227,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Dryad,
-            position: (
-                10332.0205,
-                3280.0,
-            ),
+            entity_type: Dryad,
+            position: Point {
+                x: 10332,
+                y: 3280,
+            },
             name: TString(
                 "Chryseis",
             ),
-            home_position: Some(
-                Point {
-                    x: 616,
-                    y: 220,
-                },
-            ),
+            home_position: Point {
+                x: 616,
+                y: 220,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: ArmsDealer,
-            position: (
-                9624.998,
-                3400.0,
-            ),
+            entity_type: ArmsDealer,
+            position: Point {
+                x: 9624,
+                y: 3400,
+            },
             name: TString(
                 "Darius",
             ),
-            home_position: Some(
-                Point {
-                    x: 602,
-                    y: 220,
-                },
-            ),
+            home_position: Point {
+                x: 602,
+                y: 220,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: Dd2bartender,
-            position: (
-                34137.824,
-                3656.0,
-            ),
+            entity_type: Dd2bartender,
+            position: Point {
+                x: 34137,
+                y: 3656,
+            },
             name: TString(
                 "Jerry",
             ),
-            home_position: Some(
-                Point {
-                    x: 2159,
-                    y: 230,
-                },
-            ),
+            home_position: Point {
+                x: 2159,
+                y: 230,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: DyeTrader,
-            position: (
-                10342.9,
-                3272.0,
-            ),
+            entity_type: DyeTrader,
+            position: Point {
+                x: 10342,
+                y: 3272,
+            },
             name: TString(
                 "Hannibal",
             ),
-            home_position: Some(
-                Point {
-                    x: 613,
-                    y: 215,
-                },
-            ),
+            home_position: Point {
+                x: 613,
+                y: 215,
+            },
+            is_homeless: False,
         },
         NPC {
-            entity: GoblinTinkerer,
-            position: (
-                9514.8545,
-                3403.1455,
-            ),
+            entity_type: GoblinTinkerer,
+            position: Point {
+                x: 9514,
+                y: 3403,
+            },
             name: TString(
                 "Grodax",
             ),
-            home_position: Some(
-                Point {
-                    x: 607,
-                    y: 215,
-                },
-            ),
+            home_position: Point {
+                x: 607,
+                y: 215,
+            },
+            is_homeless: False,
         },
     ],
 )
