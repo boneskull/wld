@@ -1,8 +1,13 @@
 use num_traits::FromPrimitive;
 use scroll::{
-  ctx::TryFromCtx,
+  ctx::{
+    TryFromCtx,
+    TryIntoCtx,
+  },
   Endian,
+  Error as ScrollError,
   Pread,
+  Pwrite,
   LE,
 };
 
@@ -3990,7 +3995,7 @@ pub enum ItemType {
 }
 
 impl<'a> TryFromCtx<'a, Endian> for ItemType {
-  type Error = scroll::Error;
+  type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
@@ -3998,6 +4003,34 @@ impl<'a> TryFromCtx<'a, Endian> for ItemType {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_value = buf.gread_with::<i32>(offset, LE)?;
-    Ok((Self::from_i64(raw_value as i64).unwrap(), *offset))
+    Ok((Self::from_i32(raw_value).unwrap(), *offset))
+  }
+}
+
+impl TryIntoCtx<Endian> for ItemType {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let value = self as i32;
+    buf.gwrite_with(value, offset, LE)?;
+    Ok(*offset)
+  }
+}
+
+#[cfg(test)]
+mod test_item_type {
+  use super::*;
+
+  #[test]
+  fn test_item_type_rw() {
+    let duck = ItemType::Duck;
+    let mut buf = [0; 4];
+    assert_eq!(4, buf.pwrite(duck, 0).unwrap());
+    assert_eq!(duck, buf.pread::<ItemType>(0).unwrap());
   }
 }
