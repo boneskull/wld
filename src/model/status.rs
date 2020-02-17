@@ -209,16 +209,16 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
+    let offset = &mut 0;
     let mob_kills = self.as_ref();
     let mob_kills_count = mob_kills.len();
-    size += mob_kills_count.try_into_ctx(&mut buf[size..], ctx)?;
-    mob_kills
-      .iter()
-      .for_each(|k| size += k.try_into_ctx(&mut buf[size..], ctx).unwrap());
-    Ok(size)
+    buf.gwrite_with(mob_kills_count as i16, offset, LE)?;
+    for i in 0..mob_kills_count {
+      buf.gwrite_with(&mob_kills[i], offset, LE)?;
+    }
+    Ok(*offset)
   }
 }
 
@@ -320,7 +320,7 @@ mod test_status {
   use super::*;
 
   #[test]
-  fn test_angler_quest_status() {
+  fn test_angler_quest_status_rw() {
     //   pub completed_players: Vec<TString>,
     // pub angler_saved: TBool,
     // pub target: AnglerQuestFish,
@@ -334,4 +334,16 @@ mod test_status {
     assert_eq!(14, buf.pwrite(&aqs, 0).unwrap());
     assert_eq!(aqs, buf.pread::<AnglerQuestStatus>(0).unwrap());
   }
+
+  #[test]
+  fn test_mob_kill_vec_rw() {
+    let mkv = MobKillVec(vec![2i32, 4i32, 6i32, 8i32]);
+
+    let mut buf = [0; 18];
+    assert_eq!(18, buf.pwrite(&mkv, 0).unwrap());
+    assert_eq!(mkv, buf.pread::<MobKillVec>(0).unwrap());
+  }
+
+  #[test]
+  fn test_partying_npc_vec_rw() {}
 }
