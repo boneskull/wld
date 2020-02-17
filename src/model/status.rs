@@ -248,16 +248,16 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
+    let offset = &mut 0;
     let partying_npcs = self.as_ref();
     let partying_npcs_count = partying_npcs.len();
-    size += partying_npcs_count.try_into_ctx(&mut buf[size..], ctx)?;
-    partying_npcs
-      .iter()
-      .for_each(|k| size += k.try_into_ctx(&mut buf[size..], ctx).unwrap());
-    Ok(size)
+    buf.gwrite_with(partying_npcs_count as i32, offset, LE)?;
+    for i in 0..partying_npcs_count {
+      buf.gwrite_with(&partying_npcs[i], offset, LE)?;
+    }
+    Ok(*offset)
   }
 }
 
@@ -345,5 +345,11 @@ mod test_status {
   }
 
   #[test]
-  fn test_partying_npc_vec_rw() {}
+  fn test_partying_npc_vec_rw() {
+    let pnpcv = PartyingNPCVec(vec![2i32, 4i32, 6i32, 8i32]);
+
+    let mut buf = [0; 20];
+    assert_eq!(20, buf.pwrite(&pnpcv, 0).unwrap());
+    assert_eq!(pnpcv, buf.pread::<PartyingNPCVec>(0).unwrap());
+  }
 }
