@@ -158,17 +158,28 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let completed_players_count = self.completed_players.len();
-    size += completed_players_count.try_into_ctx(&mut buf[size..], ctx)?;
-    self
-      .completed_players
-      .iter()
-      .for_each(|s| size += s.try_into_ctx(&mut buf[size..], ctx).unwrap());
-    size += self.target.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    let offset = &mut 0;
+    let AnglerQuestStatus {
+      completed_players,
+      angler_saved,
+      target,
+    } = self;
+    let completed_players_count = completed_players.len();
+    buf.gwrite(completed_players_count as u8, offset)?;
+
+    if completed_players_count == 0 {
+      buf.gwrite(&TString::from(""), offset)?;
+    } else {
+      for i in 0..completed_players_count {
+        buf.gwrite(&completed_players[i], offset)?;
+      }
+    }
+    buf.gwrite(angler_saved, offset)?;
+    buf.gwrite(target, offset)?;
+
+    Ok(*offset)
   }
 }
 
@@ -302,4 +313,25 @@ pub struct Status {
   pub sandstorm_status: SandstormStatus,
   pub bartender_saved: TBool,
   pub old_ones_army_status: OldOnesArmyStatus,
+}
+
+#[cfg(test)]
+mod test_status {
+  use super::*;
+
+  #[test]
+  fn test_angler_quest_status() {
+    //   pub completed_players: Vec<TString>,
+    // pub angler_saved: TBool,
+    // pub target: AnglerQuestFish,
+    let aqs = AnglerQuestStatus {
+      completed_players: vec![TString::from("foo"), TString::from("bar")],
+      angler_saved: TBool::True,
+      target: AnglerQuestFish::Bonefish,
+    };
+
+    let mut buf = [0; 14];
+    assert_eq!(14, buf.pwrite(&aqs, 0).unwrap());
+    assert_eq!(aqs, buf.pread::<AnglerQuestStatus>(0).unwrap());
+  }
 }
