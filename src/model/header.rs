@@ -29,7 +29,7 @@ pub struct Offsets {
 pub struct Header {
   pub version: String,
   pub revision: u32,
-  pub is_favorite: bool, // TODO tbool
+  pub is_favorite: bool, // is weird & cannot be a TBool
   pub offsets: Offsets,
 }
 
