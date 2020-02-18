@@ -21,7 +21,10 @@ use imageproc::{
   rect::Rect,
 };
 use scroll::{
-  ctx::TryFromCtx,
+  ctx::{
+    TryFromCtx,
+    TryIntoCtx,
+  },
   Error as ScrollError,
   Pread,
   Pwrite,
@@ -46,10 +49,7 @@ pub struct WorldStatus {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Footer {
-  pub name: TString,
-  pub id: i32,
-}
+pub struct Footer;
 
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Footer {
   type Error = ScrollError;
@@ -76,7 +76,23 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Footer {
         "invalid footer: id mismatch".to_string(),
       ));
     }
-    Ok((Self { id, name }, *offset))
+    Ok((Self, *offset))
+  }
+}
+
+impl<'a> TryIntoCtx<WorldCtx<'a>> for Footer {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: WorldCtx<'a>,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    buf.gwrite(&TBool::True, offset)?;
+    buf.gwrite(ctx.name, offset)?;
+    buf.gwrite(ctx.id, offset)?;
+    Ok(*offset)
   }
 }
 
