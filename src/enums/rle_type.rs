@@ -14,3 +14,18 @@ impl From<&TBitVec> for RLEType {
     Self::from_u8(value).unwrap()
   }
 }
+
+impl RLEType {
+  pub fn assign_bits(&self, tbv: &mut TBitVec) {
+    let bv = tbv.as_mut();
+    match self {
+      Self::SingleByte => {
+        bv.set(6, true);
+      }
+      Self::DoubleByte => {
+        bv.set(7, true);
+      }
+      _ => {}
+    }
+  }
+}

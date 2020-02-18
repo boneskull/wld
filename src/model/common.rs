@@ -170,7 +170,7 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef, AsMut)]
 pub struct TBitVec(BitVec<Lsb0, u8>);
 
 impl From<Vec<bool>> for TBitVec {
@@ -212,7 +212,6 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
 mod test_common {
   use super::*;
   use scroll::LE;
-
   #[test]
   fn test_tbool_rw() {
     let t = &TBool::True;
