@@ -63,16 +63,29 @@ impl TryIntoCtx<Endian> for Liquid {
   }
 }
 
+/**
+Represents wires on a [`Tile`].  A `Tile` can have all of these, none of these, or any in between.
+
+For more information, see [Wire](https://terraria.gamepedia.com/Wire) on the [Official Terraria Wiki](https://terraria.gamepedia.com).
+*/
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Wiring {
+  /// If `true`, a red wire is present
   pub red: bool,
+  /// If `true`, a green wire is present
   pub green: bool,
+  /// If `true`, a blue wire is present
   pub blue: bool,
+  /// If `true`, a yellow wire is present
   pub yellow: bool,
+  /// If `true`, an actuator is present
   pub actuator: bool,
 }
 
 impl From<(&TBitVec, &TBitVec)> for Wiring {
+  /// Used when extended attributes are present.  Extended attributes are used
+  /// if [`yellow`](Wiring::yellow) or [`actuator`](Wiring::actuator) should be
+  /// set.
   fn from(flags: (&TBitVec, &TBitVec)) -> Self {
     let (flags, more_flags) = flags;
     Self {
@@ -98,9 +111,11 @@ impl From<&TBitVec> for Wiring {
 }
 
 impl Wiring {
-  pub fn assign_bits(&self, attrs: &mut TBitVec, extended_attrs: &mut TBitVec) {
+  /// Flips the bit flags in a [`TBitVec`] depending on our internal flags.
+  /// If either [`Wiring::yellow`] or [`Wiring::actuator`] is `true`, the
+  /// `TBitVec` should be two (2) bytes in size (length 16).
+  pub fn assign_bits(&self, attrs: &mut TBitVec) {
     let attrs = attrs.as_mut();
-    let extended_attrs = extended_attrs.as_mut();
     if self.red {
       attrs.set(1, true);
     }
@@ -111,10 +126,10 @@ impl Wiring {
       attrs.set(3, true);
     }
     if self.yellow {
-      extended_attrs.set(5, true);
+      attrs.set(13, true);
     }
     if self.actuator {
-      extended_attrs.set(1, true);
+      attrs.set(8, true);
     }
   }
 }
@@ -245,16 +260,10 @@ pub struct TileAttributes {
   pub is_block_active: bool,
   pub is_block_painted: bool,
   pub is_wall_painted: bool,
+  pub has_extended_attributes: bool,
   pub wiring: Option<Wiring>,
 }
 
-// impl From<&TBitVec> for TileAttributes {
-//   fn from(flags: &TBitVec) -> Self {
-//     let shape = BlockShape::from(flags);
-//     let has_extended_attributes = flags[0];
-//     if (has_extended_attributes) {}
-//   }
-// }
 impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
   type Error = ScrollError;
 
@@ -285,6 +294,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
         shape,
         is_block_active,
         is_block_painted,
+        has_extended_attributes,
         is_wall_painted,
         wiring,
       },
@@ -293,12 +303,60 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
   }
 }
 
+impl TryIntoCtx<Endian> for TileAttributes {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let Self {
+      shape,
+      is_block_active,
+      is_block_painted,
+      is_wall_painted,
+      has_extended_attributes,
+      wiring,
+    } = self;
+    let mut attrs = TBitVec::from(vec![
+      has_extended_attributes,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    shape.assign_bits(&mut attrs);
+    if has_extended_attributes {
+      // this is dumb, but it works.
+      let bv = attrs.as_mut();
+      bv.push(false);
+      bv.push(false);
+      bv.push(!is_block_active);
+      bv.push(is_block_painted);
+      bv.push(is_wall_painted);
+      bv.push(false);
+      bv.push(false);
+      bv.push(false);
+    }
+    if wiring.is_some() {
+      wiring.unwrap().assign_bits(&mut attrs);
+    }
+    buf.gwrite(&attrs, offset)?;
+    Ok(*offset)
+  }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct ExtendedTileAttributes {
-  pub is_block_active: bool,
-  pub is_block_painted: bool,
-  pub is_wall_painted: bool,
-  pub wiring: Wiring,
+struct ExtendedTileAttributes {
+  is_block_active: bool,
+  is_block_painted: bool,
+  is_wall_painted: bool,
+  wiring: Wiring,
 }
 
 impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
@@ -323,36 +381,6 @@ impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
       },
       *offset,
     ))
-  }
-}
-
-impl TryIntoCtx<TileAttributes> for ExtendedTileAttributes {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    attrs: TileAttributes,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    let Self {
-      is_block_active,
-      is_block_painted,
-      is_wall_painted,
-      wiring,
-    } = self;
-    let mut flags = TBitVec::from(vec![
-      false,
-      false,
-      !is_block_active,
-      is_block_painted,
-      is_wall_painted,
-      false,
-      false,
-      false,
-    ]);
-    // wiring.assign_bits(&mut attr_flags, &mut flags);
-    Ok(*offset)
   }
 }
 
@@ -570,5 +598,46 @@ mod test_tiles {
     let mut buf = [0; 1];
     assert_eq!(1, buf.pwrite(th.clone(), 0).unwrap());
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+  }
+
+  #[test]
+  fn test_tile_attributes_rw() {
+    let attrs = TileAttributes {
+      shape: BlockShape::HalfTile,
+      is_block_active: true,
+      is_block_painted: true,
+      is_wall_painted: false,
+      has_extended_attributes: true,
+      wiring: Some(Wiring {
+        red: true,
+        blue: false,
+        green: false,
+        yellow: true,
+        actuator: false,
+      }),
+    };
+
+    let mut buf = [0; 2];
+    assert_eq!(2, buf.pwrite(attrs, 0).unwrap());
+    assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
+
+    let attrs = TileAttributes {
+      shape: BlockShape::HalfTile,
+      is_block_active: false,
+      is_block_painted: false,
+      is_wall_painted: false,
+      has_extended_attributes: false,
+      wiring: Some(Wiring {
+        red: true,
+        blue: false,
+        green: false,
+        yellow: false,
+        actuator: false,
+      }),
+    };
+
+    let mut buf = [0; 1];
+    assert_eq!(1, buf.pwrite(attrs, 0).unwrap());
+    assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
   }
 }
