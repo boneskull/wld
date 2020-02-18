@@ -18,3 +18,29 @@ impl From<&TBitVec> for BlockShape {
     Self::from_u8(value).unwrap()
   }
 }
+
+impl BlockShape {
+  pub fn assign_bits(&self, attrs: &mut TBitVec) {
+    let attrs = attrs.as_mut();
+    match self {
+      Self::HalfTile => {
+        attrs.set(4, true);
+      }
+      Self::TopRightSlope => {
+        attrs.set(5, true);
+      }
+      Self::TopLeftSlope => {
+        attrs.set(4, true);
+        attrs.set(5, true);
+      }
+      Self::BottomRightSlope => {
+        attrs.set(6, true);
+      }
+      Self::BottomLeftSlope => {
+        attrs.set(4, true);
+        attrs.set(6, true);
+      }
+      _ => {}
+    }
+  }
+}
