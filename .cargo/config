@@ -8,6 +8,8 @@ dev = [
   "-i",
   ".*",
   "-x",
+  "check",
+  "-x",
   "test"
 ]
 devlib = [
@@ -18,6 +20,8 @@ devlib = [
   "-i",
   ".*",
   "Cargo.{toml,lock}",
+  "-x",
+  "check",
   "-x",
   "test --lib"
 ]
