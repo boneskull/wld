@@ -66,7 +66,7 @@ impl<'a> TryIntoCtx<Endian> for NPC {
       home_position,
       is_homeless,
     } = self;
-    buf.gwrite(entity_type, offset)?;
+    buf.gwrite(&entity_type, offset)?;
     buf.gwrite(&name, offset)?;
     let Point { x, y } = position;
     buf.gwrite_with(x as f32, offset, LE)?;
@@ -77,55 +77,12 @@ impl<'a> TryIntoCtx<Endian> for NPC {
   }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
 pub struct Mob {
   pub entity_type: EntityType,
   pub position: Point,
 }
 
-impl<'a> TryFromCtx<'a, Endian> for Mob {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let entity_type = buf.gread::<EntityType>(offset)?;
-    let position = Point {
-      x: buf.gread_with::<f32>(offset, LE)? as i32,
-      y: buf.gread_with::<f32>(offset, LE)? as i32,
-    };
-    Ok((
-      Self {
-        entity_type,
-        position,
-      },
-      *offset,
-    ))
-  }
-}
-
-impl TryIntoCtx<Endian> for Mob {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    let Self {
-      entity_type,
-      position,
-    } = self;
-    buf.gwrite(entity_type, offset)?;
-    let Point { x, y } = position;
-    buf.gwrite_with(x as f32, offset, LE)?;
-    buf.gwrite_with(y as f32, offset, LE)?;
-    Ok(*offset)
-  }
-}
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
 pub struct NPCVec(Vec<NPC>);
 
