@@ -672,7 +672,7 @@ impl<'a> TryFromCtx<'a, Endian> for EntityType {
   }
 }
 
-impl TryIntoCtx<Endian> for EntityType {
+impl<'a> TryIntoCtx<Endian> for &'a EntityType {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -681,7 +681,7 @@ impl TryIntoCtx<Endian> for EntityType {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let value = self as i32;
+    let value = *self as i32;
     buf.gwrite_with(value, offset, LE)?;
     Ok(*offset)
   }
@@ -695,7 +695,7 @@ mod test_entity_type {
   fn test_entity_type_rw() {
     let entity_type = EntityType::AncientCultistSquidhead;
     let mut buf = [0; 4];
-    assert_eq!(4, buf.pwrite(entity_type, 0).unwrap());
+    assert_eq!(4, buf.pwrite(&entity_type, 0).unwrap());
     assert_eq!(entity_type, buf.pread::<EntityType>(0).unwrap());
   }
 }
