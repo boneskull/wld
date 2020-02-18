@@ -17,11 +17,22 @@ devlib = [
   "-i",
   "*.snap*",
   "-i",
-  "-i",
   ".*",
+  "-i",
   "Cargo.{toml,lock}",
   "-x",
   "check",
   "-x",
   "test --lib"
+]
+devdoc = [
+  "watch",
+  "-i",
+  "*.snap*",
+  "-i",
+  ".*",
+  "-i",
+  "Cargo.{toml,lock}",
+  "-x",
+  "doc --no-deps",
 ]
