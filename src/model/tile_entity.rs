@@ -79,12 +79,15 @@ impl TryIntoCtx<Endian> for TileEntity {
       item_frame,
       logic_sensor,
     } = self;
-    let mut tile_entity_type = 0u8;
-    if item_frame.is_some() {
-      tile_entity_type = 1;
-    } else if logic_sensor.is_some() {
-      tile_entity_type = 2;
-    }
+    let tile_entity_type: u8 = match item_frame {
+      Some(_) => 1,
+      _ => {
+        match logic_sensor {
+          Some(_) => 2,
+          _ => 0,
+        }
+      }
+    };
     buf.gwrite(tile_entity_type, offset)?;
     buf.gwrite_with(id, offset, LE)?;
     buf.gwrite_with(position.x as i16, offset, LE)?;
