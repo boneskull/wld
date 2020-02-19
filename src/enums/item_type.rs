@@ -4003,7 +4003,16 @@ impl<'a> TryFromCtx<'a, Endian> for ItemType {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let raw_value = buf.gread_with::<i32>(offset, LE)?;
-    Ok((Self::from_i32(raw_value).unwrap(), *offset))
+    let value = match Self::from_i32(raw_value) {
+      Some(it) => it,
+      _ => {
+        return Err(Self::Error::Custom(format!(
+          "invalid ItemType: {:?}",
+          raw_value
+        )))
+      }
+    };
+    Ok((value, *offset))
   }
 }
 
