@@ -10,7 +10,9 @@ dev = [
   "-x",
   "check",
   "-x",
-  "test"
+  "test",
+  "-x",
+  "doc --no-deps"
 ]
 devlib = [
   "watch",
