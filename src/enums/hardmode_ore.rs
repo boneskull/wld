@@ -7,6 +7,7 @@ use scroll::{
   Endian,
   Error as ScrollError,
   Pread,
+  Pwrite,
   LE,
 };
 
@@ -30,15 +31,11 @@ impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread_with::<i32>(offset, LE)?;
-    let ore_opt = Self::from_i32(value);
-    Ok((
-      if ore_opt.is_none() {
-        Self::UnknownOre
-      } else {
-        ore_opt.unwrap()
-      },
-      *offset,
-    ))
+    let ore = match Self::from_i32(value) {
+      Some(o) => o,
+      _ => Self::UnknownOre,
+    };
+    Ok((ore, *offset))
   }
 }
 
@@ -48,11 +45,10 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    let value = *self as i32;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    let offset = &mut 0;
+    buf.gwrite_with(*self as i32, offset, LE)?;
+    Ok(*offset)
   }
 }
