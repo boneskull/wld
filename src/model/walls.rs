@@ -57,8 +57,11 @@ impl TryIntoCtx<Endian> for Wall {
     } = self;
     let wall_id = wall_type as u8;
     buf.gwrite(wall_id, offset)?;
-    if wall_paint.is_some() {
-      buf.gwrite(wall_paint.unwrap(), offset)?;
+    match wall_paint {
+      Some(wp) => {
+        buf.gwrite(wp, offset)?;
+      }
+      _ => {}
     }
     Ok(*offset)
   }
