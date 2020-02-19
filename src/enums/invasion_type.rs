@@ -28,15 +28,11 @@ impl<'a> TryFromCtx<'a, Endian> for InvasionType {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread_with::<i32>(offset, LE)?;
-    let ore_opt = Self::from_i32(value);
-    Ok((
-      if ore_opt.is_none() {
-        Self::NoInvasion
-      } else {
-        ore_opt.unwrap()
-      },
-      *offset,
-    ))
+    let invasion_type = match Self::from_i32(value) {
+      Some(it) => it,
+      _ => Self::NoInvasion,
+    };
+    Ok((invasion_type, *offset))
   }
 }
 
