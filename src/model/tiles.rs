@@ -132,6 +132,10 @@ impl Wiring {
       attrs.set(8, true);
     }
   }
+
+  pub fn has_wires(&self) -> bool {
+    self.red || self.blue || self.green || self.yellow || self.actuator
+  }
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Deref)]
@@ -166,21 +170,22 @@ impl TryIntoCtx<Endian> for RunLength {
     let value = *self;
     // this might be wrong, and we might need an RLEType
     match u8::try_from(value) {
-      Ok(value_u8) => buf.gwrite(value_u8, offset),
-      Err(_) => buf.gwrite_with(value, offset, LE),
+      Ok(value_u8) => buf.gwrite(value_u8 - 1, offset),
+      Err(_) => buf.gwrite_with(value - 1, offset, LE),
     }?;
     Ok(*offset)
   }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub struct TileHeader {
-  pub has_block: bool,
-  pub has_attributes: bool,
-  pub has_wall: bool,
-  pub liquid_type: Option<LiquidType>,
-  pub has_extended_block_id: bool,
-  pub rle_type: RLEType,
+struct TileHeader {
+  has_block: bool,
+  has_attributes: bool,
+  has_wall: bool,
+  liquid_type: Option<LiquidType>,
+  has_extended_block_id: bool,
+  has_extended_attributes: bool,
+  rle_type: RLEType,
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TileHeader {
@@ -211,6 +216,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileHeader {
         liquid_type,
         has_extended_block_id,
         rle_type,
+        has_extended_attributes: false,
       },
       *offset,
     ))
@@ -233,6 +239,7 @@ impl TryIntoCtx<Endian> for TileHeader {
       liquid_type,
       has_extended_block_id,
       rle_type,
+      has_extended_attributes: _,
     } = self;
     let mut flags = TBitVec::from(vec![
       has_attributes,
@@ -244,9 +251,10 @@ impl TryIntoCtx<Endian> for TileHeader {
       false,
       false,
     ]);
-    if liquid_type.is_some() {
-      liquid_type.unwrap().assign_bits(&mut flags);
-    }
+    match liquid_type {
+      Some(lt) => lt.assign_bits(&mut flags),
+      _ => {}
+    };
     flags.as_mut().set(5, has_extended_block_id);
     rle_type.assign_bits(&mut flags);
     buf.gwrite(&flags, offset)?;
@@ -257,7 +265,7 @@ impl TryIntoCtx<Endian> for TileHeader {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct TileAttributes {
   pub shape: BlockShape,
-  pub is_block_active: bool,
+  pub is_block_inactive: bool,
   pub is_block_painted: bool,
   pub is_wall_painted: bool,
   pub has_extended_attributes: bool,
@@ -275,24 +283,31 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
     let flags = buf.gread::<TBitVec>(offset)?;
     let has_extended_attributes = flags[0];
     let shape = BlockShape::from(&flags);
-    let mut is_block_active = false;
+    let mut is_block_inactive = false;
     let mut is_block_painted = false;
     let mut is_wall_painted = false;
     let wiring: Option<Wiring>;
     if has_extended_attributes {
       let extended_attrs =
         buf.gread_with::<ExtendedTileAttributes>(offset, &flags)?;
-      is_block_active = extended_attrs.is_block_active;
-      wiring = Some(extended_attrs.wiring);
+      is_block_inactive = extended_attrs.is_block_inactive;
+      wiring = match extended_attrs.wiring.has_wires() {
+        true => Some(extended_attrs.wiring),
+        false => None,
+      };
       is_block_painted = extended_attrs.is_block_painted;
       is_wall_painted = extended_attrs.is_wall_painted;
     } else {
-      wiring = Some(Wiring::from(&flags));
+      let w = Wiring::from(&flags);
+      wiring = match w.has_wires() {
+        true => Some(w),
+        false => None,
+      };
     }
     Ok((
       Self {
         shape,
-        is_block_active,
+        is_block_inactive,
         is_block_painted,
         has_extended_attributes,
         is_wall_painted,
@@ -314,7 +329,7 @@ impl TryIntoCtx<Endian> for TileAttributes {
     let offset = &mut 0;
     let Self {
       shape,
-      is_block_active,
+      is_block_inactive,
       is_block_painted,
       is_wall_painted,
       has_extended_attributes,
@@ -336,15 +351,16 @@ impl TryIntoCtx<Endian> for TileAttributes {
       let bv = attrs.as_mut();
       bv.push(false);
       bv.push(false);
-      bv.push(!is_block_active);
+      bv.push(is_block_inactive);
       bv.push(is_block_painted);
       bv.push(is_wall_painted);
       bv.push(false);
       bv.push(false);
       bv.push(false);
     }
-    if wiring.is_some() {
-      wiring.unwrap().assign_bits(&mut attrs);
+    match wiring {
+      Some(w) => w.assign_bits(&mut attrs),
+      _ => {}
     }
     buf.gwrite(&attrs, offset)?;
     Ok(*offset)
@@ -353,7 +369,7 @@ impl TryIntoCtx<Endian> for TileAttributes {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 struct ExtendedTileAttributes {
-  is_block_active: bool,
+  is_block_inactive: bool,
   is_block_painted: bool,
   is_wall_painted: bool,
   wiring: Wiring,
@@ -368,13 +384,13 @@ impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let extended_attrs = buf.gread::<TBitVec>(offset)?;
-    let is_block_active = !extended_attrs[2];
+    let is_block_inactive = extended_attrs[2];
     let wiring = Wiring::from((attrs, &extended_attrs));
     let is_block_painted = extended_attrs[3];
     let is_wall_painted = extended_attrs[4];
     Ok((
       Self {
-        is_block_active,
+        is_block_inactive,
         is_block_painted,
         is_wall_painted,
         wiring,
@@ -386,6 +402,7 @@ impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Tile {
+  tile_header: TileHeader,
   pub block: Option<Block>,
   pub wall: Option<Wall>,
   pub liquid: Option<Liquid>,
@@ -405,7 +422,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     ctx: WorldCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let mut is_block_active = true;
+    let mut is_block_inactive = false; // is this correct?
     let mut is_wall_painted = false;
     let mut is_block_painted = false;
     let mut wiring: Option<Wiring> = None;
@@ -414,15 +431,16 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
     let mut liquid: Option<Liquid> = None;
     let mut shape = BlockShape::Normal;
 
-    let tile_header = buf.gread::<TileHeader>(offset)?;
+    let mut tile_header = buf.gread::<TileHeader>(offset)?;
 
     if tile_header.has_attributes {
       let tile_attrs = buf.gread::<TileAttributes>(offset)?;
-      is_block_active = tile_attrs.is_block_active;
+      is_block_inactive = tile_attrs.is_block_inactive;
       is_block_painted = tile_attrs.is_block_painted;
       is_wall_painted = tile_attrs.is_wall_painted;
       wiring = tile_attrs.wiring;
       shape = tile_attrs.shape;
+      tile_header.has_extended_attributes = tile_attrs.has_extended_attributes;
     }
 
     if tile_header.has_block {
@@ -430,7 +448,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
         offset,
         BlockCtx {
           has_extended_block_id: tile_header.has_extended_block_id,
-          is_block_active,
+          is_block_inactive,
           is_block_painted,
           tile_frame_importances: ctx.tile_frame_importances,
           shape,
@@ -442,16 +460,16 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
       wall = Some(buf.gread_with::<Wall>(offset, is_wall_painted)?);
     }
 
-    if tile_header.liquid_type.is_some() {
-      liquid = Some(
-        buf.gread_with::<Liquid>(offset, tile_header.liquid_type.unwrap())?,
-      );
+    match tile_header.liquid_type {
+      Some(l) => liquid = Some(buf.gread_with::<Liquid>(offset, l)?),
+      _ => {}
     }
 
     let run_length =
       buf.gread_with::<RunLength>(offset, tile_header.rle_type)?;
     Ok((
       Tile {
+        tile_header,
         block,
         wall,
         liquid,
@@ -464,6 +482,82 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
       },
       *offset,
     ))
+  }
+}
+
+impl TryIntoCtx<Endian> for Tile {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let Tile {
+      tile_header,
+      block,
+      wall,
+      liquid,
+      wiring,
+      chest: _,
+      sign: _,
+      run_length,
+      tile_entity: _,
+      pressure_plate: _,
+    } = self;
+
+    buf.gwrite(tile_header, offset)?;
+    if tile_header.has_attributes {
+      let (is_block_inactive, is_block_painted, shape) = match block {
+        Some(block) => {
+          (
+            block.is_block_inactive,
+            block.block_paint.is_some(),
+            block.shape,
+          )
+        }
+        _ => (false, false, BlockShape::Normal),
+      };
+      let is_wall_painted = match wall {
+        Some(w) => w.wall_paint.is_some(),
+        _ => false,
+      };
+      let attrs = TileAttributes {
+        is_block_inactive,
+        is_block_painted,
+        shape,
+        is_wall_painted,
+        wiring,
+        has_extended_attributes: tile_header.has_extended_attributes,
+      };
+      buf.gwrite(attrs, offset)?;
+    }
+
+    match block {
+      Some(b) => {
+        buf.gwrite(b, offset)?;
+      }
+      _ => {}
+    };
+
+    match wall {
+      Some(w) => {
+        buf.gwrite(w, offset)?;
+      }
+      _ => {}
+    };
+
+    match liquid {
+      Some(l) => {
+        buf.gwrite(l, offset)?;
+      }
+      _ => {}
+    }
+
+    buf.gwrite(run_length, offset)?;
+
+    Ok(*offset)
   }
 }
 
@@ -529,6 +623,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
 #[cfg(test)]
 mod test_tiles {
   use super::*;
+  use crate::enums::BlockType;
 
   #[test]
   fn test_liquid_rw() {
@@ -548,6 +643,7 @@ mod test_tiles {
   #[test]
   fn test_tile_header_rw() {
     let th = TileHeader {
+      has_extended_attributes: false,
       has_block: true,
       has_attributes: true,
       has_wall: false,
@@ -561,6 +657,7 @@ mod test_tiles {
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
+      has_extended_attributes: false,
       has_block: true,
       has_attributes: true,
       has_wall: false,
@@ -574,6 +671,7 @@ mod test_tiles {
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
+      has_extended_attributes: false,
       has_block: true,
       has_attributes: true,
       has_wall: false,
@@ -587,6 +685,7 @@ mod test_tiles {
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
+      has_extended_attributes: false,
       has_block: false,
       has_attributes: false,
       has_wall: true,
@@ -604,7 +703,7 @@ mod test_tiles {
   fn test_tile_attributes_rw() {
     let attrs = TileAttributes {
       shape: BlockShape::HalfTile,
-      is_block_active: true,
+      is_block_inactive: true,
       is_block_painted: true,
       is_wall_painted: false,
       has_extended_attributes: true,
@@ -623,7 +722,7 @@ mod test_tiles {
 
     let attrs = TileAttributes {
       shape: BlockShape::HalfTile,
-      is_block_active: false,
+      is_block_inactive: false,
       is_block_painted: false,
       is_wall_painted: false,
       has_extended_attributes: false,
@@ -639,5 +738,49 @@ mod test_tiles {
     let mut buf = [0; 1];
     assert_eq!(1, buf.pwrite(attrs, 0).unwrap());
     assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
+  }
+
+  #[test]
+  fn test_tile_rw() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: None,
+        has_extended_block_id: false,
+        has_extended_attributes: true,
+        rle_type: RLEType::SingleByte,
+      },
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::Normal,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: true,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: None,
+      chest: None,
+      sign: None,
+      tile_entity: None,
+      pressure_plate: None,
+      run_length: RunLength(2),
+    };
+    let ctx = WorldCtx {
+      world_width: &4200,
+      world_height: &1200,
+      tile_frame_importances: &VariableTBitVec::from(vec![
+        false, false, false, false, false, false, false, false,
+      ]),
+      id: &123,
+      name: &TString::from("Fat City"),
+    };
+
+    let mut buf = [0; 5];
+
+    assert_eq!(5, buf.pwrite(tile.clone(), 0).unwrap());
+    assert_eq!(tile, buf.pread_with::<Tile>(0, ctx).unwrap());
   }
 }

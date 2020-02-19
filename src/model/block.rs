@@ -23,7 +23,7 @@ pub struct Block {
   pub shape: BlockShape,
   pub frame_data: Option<Point>,
   pub block_paint: Option<u8>,
-  pub is_block_active: bool,
+  pub is_block_inactive: bool,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -31,7 +31,7 @@ pub struct BlockCtx<'a> {
   pub has_extended_block_id: bool,
   pub tile_frame_importances: &'a VariableTBitVec,
   pub is_block_painted: bool,
-  pub is_block_active: bool,
+  pub is_block_inactive: bool,
   pub shape: BlockShape,
 }
 
@@ -69,7 +69,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
         shape: ctx.shape,
         frame_data,
         block_paint,
-        is_block_active: ctx.is_block_active,
+        is_block_inactive: ctx.is_block_inactive,
       },
       *offset,
     ))
@@ -90,21 +90,25 @@ impl<'a> TryIntoCtx<Endian> for Block {
       shape: _,
       frame_data,
       block_paint,
-      is_block_active: _,
+      is_block_inactive: _,
     } = self;
     let block_id = block_type as u16;
     match u8::try_from(block_id) {
       Ok(block_id_u8) => buf.gwrite(block_id_u8, offset),
       Err(_) => buf.gwrite_with(block_id, offset, LE),
     }?;
-    if frame_data.is_some() {
-      let frame_data = frame_data.unwrap();
-      buf.gwrite_with(frame_data.x as u16, offset, LE)?;
-      buf.gwrite_with(frame_data.y as u16, offset, LE)?;
+    match frame_data {
+      Some(fd) => {
+        buf.gwrite_with(fd.x as u16, offset, LE)?;
+        buf.gwrite_with(fd.y as u16, offset, LE)?;
+      }
+      _ => {}
     };
-    if block_paint.is_some() {
-      let block_paint = block_paint.unwrap();
-      buf.gwrite(block_paint, offset)?;
+    match block_paint {
+      Some(bp) => {
+        buf.gwrite(bp, offset)?;
+      }
+      _ => {}
     };
     Ok(*offset)
   }
@@ -118,7 +122,7 @@ mod test_blocks {
     let ctx = BlockCtx {
       has_extended_block_id: false,
       is_block_painted: true,
-      is_block_active: true,
+      is_block_inactive: true,
       shape: BlockShape::Normal,
       tile_frame_importances: &VariableTBitVec::from(vec![true]),
     };
@@ -128,7 +132,7 @@ mod test_blocks {
       shape: BlockShape::Normal,
       frame_data: Some(Point { x: 100, y: 100 }),
       block_paint: Some(1),
-      is_block_active: true,
+      is_block_inactive: true,
     };
 
     let mut bytes = [0; 6];
