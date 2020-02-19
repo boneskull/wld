@@ -61,8 +61,15 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestFish {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, LE)?;
-    Ok((Self::from_i32(value).unwrap(), *offset))
+    let value = match Self::from_i32(buf.gread_with::<i32>(offset, LE)?) {
+      Some(v) => v,
+      None => {
+        return Err(Self::Error::Custom(
+          "failed to convert i32 to AnglerQuestFish".to_string(),
+        ))
+      }
+    };
+    Ok((value, *offset))
   }
 }
 
