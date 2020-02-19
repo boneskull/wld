@@ -67,12 +67,21 @@ impl TryIntoCtx<Endian> for ItemStack {
     } = self;
     let offset = &mut 0;
     buf.gwrite_with(quantity, offset, LE)?;
-    if quantity > 0 {
-      if item_type.is_some() {
-        buf.gwrite(item_type.unwrap(), offset)?;
-      }
-      if modifier.is_some() {
-        buf.gwrite(modifier.unwrap(), offset)?;
+    match quantity {
+      0 => {}
+      _ => {
+        match item_type {
+          Some(it) => {
+            buf.gwrite(it, offset)?;
+          }
+          _ => {}
+        };
+        match modifier {
+          Some(m) => {
+            buf.gwrite(m, offset)?;
+          }
+          _ => {}
+        }
       }
     }
     Ok(*offset)
