@@ -1,6 +1,11 @@
 use crate::constants::WALLTYPE_COLOR_MAP;
 use image::Rgba;
 
+/**
+A list of vanilla Walls by internal name, mapped to their IDs.
+
+See [the list on the Official Terraria Wiki](https://terraria.gamepedia.com/Wall_IDs).
+*/
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive, Hash)]
 pub enum WallType {
   Stone = 1,
@@ -236,7 +241,19 @@ pub enum WallType {
 }
 
 impl WallType {
+  /// Returns the associated [`Rgba`] color for this `WallType`.
   pub fn color(&self) -> Rgba<u8> {
     WALLTYPE_COLOR_MAP[self]
+  }
+}
+
+#[cfg(test)]
+mod test_wall_type {
+  use super::*;
+  use crate::constants::BLACK;
+
+  #[test]
+  fn test_wall_type_color() {
+    assert_eq!(WallType::Glass.color(), BLACK)
   }
 }
