@@ -186,7 +186,7 @@ impl World {
         };
         img.put_pixel(x, y, *color);
       }
-      None => {}
+      _ => {}
     };
   }
 
@@ -202,7 +202,7 @@ impl World {
         };
         img.put_pixel(x, y, color);
       }
-      None => {}
+      _ => {}
     };
   }
 
@@ -216,7 +216,7 @@ impl World {
         };
         img.put_pixel(x, y, *color);
       }
-      None => {}
+      _ => {}
     };
   }
 
@@ -235,7 +235,7 @@ impl World {
         };
         img.put_pixel(x, y, color);
       }
-      None => {}
+      _ => {}
     };
   }
 }
