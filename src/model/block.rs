@@ -76,7 +76,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for Block {
+impl<'a> TryIntoCtx<Endian> for &Block {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -85,14 +85,14 @@ impl<'a> TryIntoCtx<Endian> for Block {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let Self {
+    let Block {
       block_type,
       shape: _,
       frame_data,
       block_paint,
       is_block_inactive: _,
     } = self;
-    let block_id = block_type as u16;
+    let block_id = *block_type as u16;
     match u8::try_from(block_id) {
       Ok(block_id_u8) => buf.gwrite(block_id_u8, offset),
       Err(_) => buf.gwrite_with(block_id, offset, LE),
@@ -136,7 +136,7 @@ mod test_blocks {
     };
 
     let mut bytes = [0; 6];
-    let size = bytes.pwrite::<Block>(block, 0).unwrap();
+    let size = bytes.pwrite::<&Block>(&block, 0).unwrap();
     assert_eq!(size, 6);
 
     let new_block = bytes.pread_with::<Block>(0, ctx).unwrap();

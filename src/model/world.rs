@@ -35,6 +35,9 @@ use scroll::{
 pub struct World {
   pub status: WorldStatus,
   pub tiles: TileMatrix,
+  pub chests_info: ChestsInfo,
+  pub signs_info: SignsInfo,
+  pub tile_entities_info: TileEntitiesInfo,
   pub npcs: NPCVec,
   pub mobs: MobVec,
   pub rooms: RoomVec,
@@ -80,7 +83,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Footer {
   }
 }
 
-impl<'a> TryIntoCtx<WorldCtx<'a>> for Footer {
+impl<'a> TryIntoCtx<WorldCtx<'a>> for &Footer {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -108,14 +111,16 @@ impl World {
 
     let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
     let chests = bytes.gread::<ChestVec>(offset)?;
-    ChestVec::assign_to_tile(chests, &mut tiles);
+    let chests_info = chests.chests_info();
+    ChestVec::move_to_tile(chests, &mut tiles);
     let signs = bytes.gread::<SignVec>(offset)?;
-    SignVec::assign_to_tile(signs, &mut tiles);
-
+    let signs_info = signs.signs_info();
+    SignVec::move_to_tile(signs, &mut tiles);
     let npcs = bytes.gread::<NPCVec>(offset)?;
     let mobs = bytes.gread::<MobVec>(offset)?;
     let tile_entities = bytes.gread::<TileEntityVec>(offset)?;
-    TileEntityVec::assign_to_tile(tile_entities, &mut tiles);
+    let tile_entities_info = tile_entities.tile_entities_info();
+    TileEntityVec::move_to_tile(tile_entities, &mut tiles);
     let rooms = bytes.gread::<RoomVec>(offset)?;
     // footer is essentially useless, but needed on output and performs
     // assertions
@@ -124,15 +129,37 @@ impl World {
     Ok(World {
       status,
       tiles,
+      chests_info,
+      signs_info,
+      tile_entities_info,
       npcs,
       mobs,
       rooms,
       footer,
     })
   }
-}
 
-impl World {
+  pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
+    let offset = &mut 0;
+    let mut v: Vec<u8> = vec![0; 4194304];
+    v.gwrite(&self.status, offset)?;
+    v.gwrite(&self.tiles, offset)?;
+    v.gwrite_with(&self.chests_info, offset, &self.tiles)?;
+    v.gwrite_with(&self.signs_info, offset, &self.tiles)?;
+    v.gwrite(&self.npcs, offset)?;
+    v.gwrite(&self.mobs, offset)?;
+    v.gwrite_with(&self.tile_entities_info, offset, &self.tiles)?;
+    v.gwrite(&self.rooms, offset)?;
+    let mut offset = self.status.header.offsets.footer as usize;
+    v.gwrite_with(
+      &self.footer,
+      &mut offset,
+      self.status.properties.as_world_context(),
+    )?;
+    v.shrink_to_fit();
+    Ok(v.into_boxed_slice())
+  }
+
   pub fn render<P>(&self, path: P) -> Result<(), Box<dyn std::error::Error>>
   where
     P: AsRef<std::path::Path>,

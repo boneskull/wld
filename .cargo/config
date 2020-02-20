@@ -1,5 +1,5 @@
 [alias]
-dev = [
+devall = [
   "watch",
   "-i",
   "*.snap*",
@@ -26,6 +26,19 @@ devlib = [
   "check",
   "-x",
   "test --lib"
+]
+devtest = [
+  "watch",
+  "-i",
+  "*.snap*",
+  "-i",
+  ".*",
+  "-i",
+  "Cargo.{toml,lock}",
+  "-x",
+  "check",
+  "-x",
+  "test --test=wld"
 ]
 devdoc = [
   "watch",

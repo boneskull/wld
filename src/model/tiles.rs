@@ -49,7 +49,7 @@ impl<'a> TryFromCtx<'a, LiquidType> for Liquid {
   }
 }
 
-impl TryIntoCtx<Endian> for Liquid {
+impl TryIntoCtx<Endian> for &Liquid {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -138,7 +138,7 @@ impl Wiring {
   }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Deref)]
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, AsRef)]
 pub struct RunLength(u16);
 
 impl<'a> TryFromCtx<'a, RLEType> for RunLength {
@@ -158,7 +158,7 @@ impl<'a> TryFromCtx<'a, RLEType> for RunLength {
   }
 }
 
-impl TryIntoCtx<Endian> for RunLength {
+impl TryIntoCtx<Endian> for &RunLength {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -167,11 +167,17 @@ impl TryIntoCtx<Endian> for RunLength {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let value = *self;
+    let value = self.as_ref();
     // this might be wrong, and we might need an RLEType
-    match u8::try_from(value) {
-      Ok(value_u8) => buf.gwrite(value_u8 - 1, offset),
-      Err(_) => buf.gwrite_with(value - 1, offset, LE),
+    match u8::try_from(*value) {
+      Ok(value_u8) => {
+        // eprintln!("u8 {}", value_u8 - 1);
+        buf.gwrite(value_u8 - 1, offset)
+      }
+      Err(_) => {
+        // eprintln!("u16 {}", value - 1);
+        buf.gwrite_with(value - 1, offset, LE)
+      }
     }?;
     Ok(*offset)
   }
@@ -223,7 +229,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileHeader {
   }
 }
 
-impl TryIntoCtx<Endian> for TileHeader {
+impl TryIntoCtx<Endian> for &TileHeader {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -232,7 +238,7 @@ impl TryIntoCtx<Endian> for TileHeader {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let Self {
+    let TileHeader {
       has_block,
       has_attributes,
       has_wall,
@@ -240,7 +246,7 @@ impl TryIntoCtx<Endian> for TileHeader {
       has_extended_block_id,
       rle_type,
       has_extended_attributes: _,
-    } = self;
+    } = *self;
     let mut flags = TBitVec::from(vec![
       has_attributes,
       has_block,
@@ -318,7 +324,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
   }
 }
 
-impl TryIntoCtx<Endian> for TileAttributes {
+impl<'a> TryIntoCtx<Endian> for &'a TileAttributes {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -327,7 +333,7 @@ impl TryIntoCtx<Endian> for TileAttributes {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let Self {
+    let TileAttributes {
       shape,
       is_block_inactive,
       is_block_painted,
@@ -336,7 +342,7 @@ impl TryIntoCtx<Endian> for TileAttributes {
       wiring,
     } = self;
     let mut attrs = TBitVec::from(vec![
-      has_extended_attributes,
+      *has_extended_attributes,
       false,
       false,
       false,
@@ -346,14 +352,14 @@ impl TryIntoCtx<Endian> for TileAttributes {
       false,
     ]);
     shape.assign_bits(&mut attrs);
-    if has_extended_attributes {
+    if *has_extended_attributes {
       // this is dumb, but it works.
       let bv = attrs.as_mut();
       bv.push(false);
       bv.push(false);
-      bv.push(is_block_inactive);
-      bv.push(is_block_painted);
-      bv.push(is_wall_painted);
+      bv.push(*is_block_inactive);
+      bv.push(*is_block_painted);
+      bv.push(*is_wall_painted);
       bv.push(false);
       bv.push(false);
       bv.push(false);
@@ -485,7 +491,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
   }
 }
 
-impl TryIntoCtx<Endian> for Tile {
+impl TryIntoCtx<Endian> for &Tile {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -507,7 +513,13 @@ impl TryIntoCtx<Endian> for Tile {
       pressure_plate: _,
     } = self;
 
-    buf.gwrite(tile_header, offset)?;
+    match buf.gwrite(tile_header, offset) {
+      Err(e) => {
+        eprintln!("{}", e);
+        return Err(e);
+      }
+      _ => {}
+    }
     if tile_header.has_attributes {
       let (is_block_inactive, is_block_painted, shape) = match block {
         Some(block) => {
@@ -528,34 +540,65 @@ impl TryIntoCtx<Endian> for Tile {
         is_block_painted,
         shape,
         is_wall_painted,
-        wiring,
+        wiring: *wiring,
         has_extended_attributes: tile_header.has_extended_attributes,
       };
-      buf.gwrite(attrs, offset)?;
+
+      match buf.gwrite(&attrs, offset) {
+        Err(e) => {
+          eprintln!("{}", e);
+          return Err(e);
+        }
+        _ => {}
+      }
     }
 
     match block {
       Some(b) => {
-        buf.gwrite(b, offset)?;
+        match buf.gwrite(b, offset) {
+          Err(e) => {
+            eprintln!("{}", e);
+            return Err(e);
+          }
+          _ => {}
+        }
       }
       _ => {}
     };
 
     match wall {
       Some(w) => {
-        buf.gwrite(w, offset)?;
+        match buf.gwrite(w, offset) {
+          Err(e) => {
+            eprintln!("{}", e);
+            return Err(e);
+          }
+          _ => {}
+        }
       }
       _ => {}
     };
 
     match liquid {
       Some(l) => {
-        buf.gwrite(l, offset)?;
+        match buf.gwrite(l, offset) {
+          Err(e) => {
+            eprintln!("{}", e);
+            return Err(e);
+          }
+          _ => {}
+        }
       }
       _ => {}
     }
 
-    buf.gwrite(run_length, offset)?;
+    match buf.gwrite(run_length, offset) {
+      Err(e) => {
+        eprintln!("{}", e);
+        return Err(e);
+      }
+      _ => {}
+    }
 
     Ok(*offset)
   }
@@ -570,7 +613,7 @@ pub struct WorldCtx<'a> {
   pub name: &'a TString,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IndexMut, Index)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, IndexMut, Index, AsRef)]
 pub struct TileVec(Vec<Tile>);
 
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
@@ -585,7 +628,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
     let mut tiles: Vec<Tile> = Vec::with_capacity(size);
     while tiles.len() < size {
       let tile = buf.gread_with::<Tile>(offset, ctx)?;
-      for _ in 0..*tile.run_length {
+      for _ in 0..*tile.run_length.as_ref() {
         tiles.push(tile.clone());
       }
     }
@@ -593,7 +636,29 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index)]
+impl TryIntoCtx<Endian> for &TileVec {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let len = self.as_ref().len();
+    let mut i = 0;
+    while i < len {
+      let tile: &Tile = &self[i];
+      buf.gwrite(tile, offset)?;
+      // this handles the RLE; the vector is bigger than the actual data
+      // because of it.
+      i += *tile.run_length.as_ref() as usize;
+    }
+    Ok(*offset)
+  }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index, AsRef)]
 pub struct TileMatrix(Vec<TileVec>);
 
 impl TileMatrix {
@@ -620,6 +685,22 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
   }
 }
 
+impl TryIntoCtx<Endian> for &TileMatrix {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    for i in 0..self.as_ref().len() {
+      buf.gwrite(&self[i], offset)?;
+    }
+    Ok(*offset)
+  }
+}
+
 #[cfg(test)]
 mod test_tiles {
   use super::*;
@@ -633,7 +714,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(liquid.clone(), 0).unwrap());
+    assert_eq!(1, buf.pwrite(&liquid, 0).unwrap());
     assert_eq!(
       liquid,
       buf.pread_with::<Liquid>(0, LiquidType::Water).unwrap()
@@ -653,7 +734,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(th.clone(), 0).unwrap());
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
@@ -667,7 +748,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(th.clone(), 0).unwrap());
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
@@ -681,7 +762,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(th.clone(), 0).unwrap());
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
     let th = TileHeader {
@@ -695,7 +776,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(th.clone(), 0).unwrap());
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
   }
 
@@ -717,7 +798,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 2];
-    assert_eq!(2, buf.pwrite(attrs, 0).unwrap());
+    assert_eq!(2, buf.pwrite(&attrs, 0).unwrap());
     assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
 
     let attrs = TileAttributes {
@@ -736,7 +817,7 @@ mod test_tiles {
     };
 
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(attrs, 0).unwrap());
+    assert_eq!(1, buf.pwrite(&attrs, 0).unwrap());
     assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
   }
 
@@ -780,7 +861,7 @@ mod test_tiles {
 
     let mut buf = [0; 5];
 
-    assert_eq!(5, buf.pwrite(tile.clone(), 0).unwrap());
+    assert_eq!(5, buf.pwrite(&tile, 0).unwrap());
     assert_eq!(tile, buf.pread_with::<Tile>(0, ctx).unwrap());
   }
 }

@@ -1,9 +1,15 @@
 use super::tiles::TileMatrix;
 use crate::{
   enums::ItemType,
-  model::common::{
-    Point,
-    TString,
+  model::{
+    common::{
+      Point,
+      TString,
+    },
+    tiles::{
+      Tile,
+      TileVec,
+    },
   },
 };
 use scroll::{
@@ -153,8 +159,45 @@ impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator)]
-pub struct ChestVec(Vec<Chest>);
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+pub struct ChestsInfo {
+  pub count: u16,
+  pub max_items: u16,
+}
+
+impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: &TileMatrix,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    buf.gwrite(self.count, offset)?;
+    buf.gwrite(self.max_items, offset)?;
+    let len = ctx.as_ref().len();
+    for i in 0..len {
+      let mut j = 0;
+      let tv: &TileVec = &ctx[i];
+      let tv_len = tv.as_ref().len();
+      while j < tv_len {
+        let tile: &Tile = &tv[j];
+        match &tile.chest {
+          Some(chest) => {
+            buf.gwrite_with(chest, offset, LE)?;
+          }
+          _ => {}
+        };
+        j += *tile.run_length.as_ref() as usize;
+      }
+    }
+    Ok(*offset)
+  }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct ChestVec(Vec<Chest>, ChestsInfo);
 
 impl<'a> TryFromCtx<'a, Endian> for ChestVec {
   type Error = ScrollError;
@@ -164,37 +207,24 @@ impl<'a> TryFromCtx<'a, Endian> for ChestVec {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let chests_count = buf.gread_with::<u16>(offset, LE)?;
-    let chests_max_items = buf.gread_with::<u16>(offset, LE)?;
+    let chests_info = buf.gread_with::<ChestsInfo>(offset, LE)?;
     let mut chests: Vec<Chest> = vec![];
-    for _ in 0..chests_count {
-      let chest = buf.gread_with::<Chest>(offset, chests_max_items)?;
+    for _ in 0..chests_info.count {
+      let chest = buf.gread_with::<Chest>(offset, chests_info.max_items)?;
       chests.push(chest);
     }
-    Ok((Self(chests), *offset))
-  }
-}
-
-impl TryIntoCtx<Endian> for ChestVec {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    self.into_iter().for_each(|stack| {
-      buf.gwrite(stack, offset).unwrap();
-    });
-    Ok(*offset)
+    Ok((Self(chests, chests_info), *offset))
   }
 }
 
 impl ChestVec {
+  pub fn chests_info(&self) -> ChestsInfo {
+    self.1
+  }
+
   #[inline]
-  pub fn assign_to_tile(chests: Self, tiles: &mut TileMatrix) {
-    chests.into_iter().for_each(|chest| {
+  pub fn move_to_tile(chests: Self, tiles: &mut TileMatrix) {
+    chests.0.into_iter().for_each(|chest| {
       let mut tile = tiles.tile_at_point(&chest.position);
       tile.chest = Some(chest);
     });
@@ -207,8 +237,49 @@ pub struct Sign {
   pub position: Point,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
-pub struct SignVec(Vec<Sign>);
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+pub struct SignsInfo {
+  pub count: u16,
+}
+
+impl TryIntoCtx<&TileMatrix> for &SignsInfo {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: &TileMatrix,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    buf.gwrite(self.count, offset)?;
+    let len = ctx.as_ref().len();
+    for i in 0..len {
+      let mut j = 0;
+      let tv: &TileVec = &ctx[i];
+      let tv_len = tv.as_ref().len();
+      while j < tv_len {
+        let tile: &Tile = &tv[j];
+        match &tile.sign {
+          Some(sign) => {
+            buf.gwrite_with(sign, offset, LE)?;
+          }
+          _ => {}
+        };
+        j += *tile.run_length.as_ref() as usize;
+      }
+    }
+    Ok(*offset)
+  }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct SignVec(Vec<Sign>, SignsInfo);
+
+impl SignVec {
+  pub fn signs_info(&self) -> SignsInfo {
+    self.1
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for SignVec {
   type Error = ScrollError;
@@ -218,37 +289,20 @@ impl<'a> TryFromCtx<'a, Endian> for SignVec {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let signs_count = buf.gread_with::<u16>(offset, LE)?;
+    let signs_info = buf.gread_with::<SignsInfo>(offset, LE)?;
     let signs = Vec::from_iter(
-      (0..signs_count)
+      (0..signs_info.count)
         .into_iter()
         .map(|_| buf.gread::<Sign>(offset).unwrap()),
     );
-    Ok((Self(signs), *offset))
-  }
-}
-
-impl TryIntoCtx<Endian> for SignVec {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    buf.gwrite(self.as_ref().len() as u16, offset)?;
-    self.into_iter().for_each(|stack| {
-      buf.gwrite(stack, offset).unwrap();
-    });
-    Ok(*offset)
+    Ok((Self(signs, signs_info), *offset))
   }
 }
 
 impl SignVec {
   #[inline]
-  pub fn assign_to_tile(signs: Self, tiles: &mut TileMatrix) {
-    signs.into_iter().for_each(|sign| {
+  pub fn move_to_tile(signs: Self, tiles: &mut TileMatrix) {
+    signs.0.into_iter().for_each(|sign| {
       let mut tile = tiles.tile_at_point(&sign.position);
       tile.sign = Some(sign);
     });
@@ -289,23 +343,5 @@ mod test_items {
     let mut buf = [0; 14];
     assert_eq!(14, buf.pwrite(&vec, 0).unwrap());
     assert_eq!(vec, buf.pread_with::<ItemStackVec>(0, 2u16).unwrap());
-  }
-
-  #[test]
-  fn test_sign_vec_rw() {
-    let signs = SignVec(vec![
-      Sign {
-        text: TString::from("foo"),
-        position: Point { x: 0, y: 0 },
-      },
-      Sign {
-        text: TString::from("bar"),
-        position: Point { x: 10, y: 10 },
-      },
-    ]);
-
-    let mut buf = [0; 26];
-    assert_eq!(26, buf.pwrite(signs.clone(), 0).unwrap());
-    assert_eq!(signs, buf.pread::<SignVec>(0).unwrap());
   }
 }

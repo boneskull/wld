@@ -50,7 +50,7 @@ impl<'a> TryFromCtx<'a, Endian> for NPC {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for NPC {
+impl TryIntoCtx<Endian> for &NPC {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -59,19 +59,19 @@ impl<'a> TryIntoCtx<Endian> for NPC {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let Self {
+    let NPC {
       entity_type,
       name,
       position,
       home_position,
       is_homeless,
     } = self;
-    buf.gwrite(&entity_type, offset)?;
-    buf.gwrite(&name, offset)?;
+    buf.gwrite(entity_type, offset)?;
+    buf.gwrite(name, offset)?;
     let Point { x, y } = position;
-    buf.gwrite_with(x as f32, offset, LE)?;
-    buf.gwrite_with(y as f32, offset, LE)?;
-    buf.gwrite(&is_homeless, offset)?;
+    buf.gwrite_with(*x as f32, offset, LE)?;
+    buf.gwrite_with(*y as f32, offset, LE)?;
+    buf.gwrite(is_homeless, offset)?;
     buf.gwrite(home_position, offset)?;
     Ok(*offset)
   }
@@ -107,7 +107,7 @@ impl<'a> TryFromCtx<'a, Endian> for NPCVec {
   }
 }
 
-impl TryIntoCtx<Endian> for NPCVec {
+impl TryIntoCtx<Endian> for &NPCVec {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -124,7 +124,7 @@ impl TryIntoCtx<Endian> for NPCVec {
       buf.gwrite(&TBool::False, offset)?;
     }
     for i in 0..len {
-      buf.gwrite(vec[i].clone(), offset)?;
+      buf.gwrite(&vec[i], offset)?;
       if i == len - 1 {
         buf.gwrite(&TBool::False, offset)?;
       } else {
@@ -138,10 +138,13 @@ impl TryIntoCtx<Endian> for NPCVec {
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
 pub struct MobVec(Vec<Mob>);
 
-impl<'a> TryFromCtx<'a, ()> for MobVec {
+impl<'a> TryFromCtx<'a, Endian> for MobVec {
   type Error = ScrollError;
 
-  fn try_from_ctx(buf: &'a [u8], _: ()) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let mut mobs: Vec<Mob> = vec![];
     let mut more_mobs = buf.gread_with::<TBool>(offset, LE)?;
@@ -154,7 +157,7 @@ impl<'a> TryFromCtx<'a, ()> for MobVec {
   }
 }
 
-impl TryIntoCtx<Endian> for MobVec {
+impl TryIntoCtx<Endian> for &MobVec {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -171,7 +174,7 @@ impl TryIntoCtx<Endian> for MobVec {
       buf.gwrite(&TBool::False, offset)?;
     }
     for i in 0..len {
-      buf.gwrite(vec[i].clone(), offset)?;
+      buf.gwrite(&vec[i], offset)?;
       if i == len - 1 {
         buf.gwrite(&TBool::False, offset)?;
       } else {
@@ -196,7 +199,7 @@ mod test_npc {
     };
 
     let mut buf = [0; 38];
-    assert_eq!(38, buf.pwrite(npc.clone(), 0).unwrap());
+    assert_eq!(38, buf.pwrite(&npc, 0).unwrap());
     assert_eq!(npc, buf.pread::<NPC>(0).unwrap());
   }
 
@@ -208,7 +211,7 @@ mod test_npc {
     };
 
     let mut buf = [0; 12];
-    assert_eq!(12, buf.pwrite(mob.clone(), 0).unwrap());
+    assert_eq!(12, buf.pwrite(&mob, 0).unwrap());
     assert_eq!(mob, buf.pread::<Mob>(0).unwrap());
   }
 
@@ -218,21 +221,21 @@ mod test_npc {
       NPC {
         entity_type: EntityType::TruffleWorm,
         position: Point { x: 0, y: 0 },
-        name: TString::from("Marvin K. Mooney"),
+        name: "Marvin K. Mooney".into(),
         home_position: Point { x: -100, y: -100 },
         is_homeless: TBool::False,
       },
       NPC {
         entity_type: EntityType::Duck,
         position: Point { x: 0, y: 0 },
-        name: TString::from("Dave"),
+        name: "Dave".into(),
         home_position: Point { x: -100, y: -100 },
         is_homeless: TBool::False,
       },
     ]);
 
     let mut buf = [0; 67];
-    assert_eq!(67, buf.pwrite(npc_vec.clone(), 0).unwrap());
+    assert_eq!(67, buf.pwrite(&npc_vec, 0).unwrap());
     assert_eq!(npc_vec, buf.pread::<NPCVec>(0).unwrap());
   }
 
@@ -250,7 +253,7 @@ mod test_npc {
     ]);
 
     let mut buf = [0; 27];
-    assert_eq!(27, buf.pwrite(mob_vec.clone(), 0).unwrap());
+    assert_eq!(27, buf.pwrite(&mob_vec, 0).unwrap());
     assert_eq!(mob_vec, buf.pread::<MobVec>(0).unwrap());
   }
 }

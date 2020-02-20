@@ -54,6 +54,12 @@ fn test_parse_footer() {
   assert_debug_snapshot!(PARSED_WORLD.footer);
 }
 
+#[test]
+fn test_write() {
+  let res = PARSED_WORLD.write();
+  assert!(res.is_ok());
+}
+
 // #[test]
 // fn test_render() {
 //   assert_eq!(PARSED_WORLD.render().dimensions(), (4200, 1200));

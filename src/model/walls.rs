@@ -42,7 +42,7 @@ impl<'a> TryFromCtx<'a, bool> for Wall {
   }
 }
 
-impl TryIntoCtx<Endian> for Wall {
+impl TryIntoCtx<Endian> for &Wall {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -51,11 +51,11 @@ impl TryIntoCtx<Endian> for Wall {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let Self {
+    let Wall {
       wall_type,
       wall_paint,
     } = self;
-    let wall_id = wall_type as u8;
+    let wall_id = *wall_type as u8;
     buf.gwrite(wall_id, offset)?;
     match wall_paint {
       Some(wp) => {
@@ -78,7 +78,7 @@ mod test_wall {
       wall_type: WallType::Wood,
     };
     let mut buf = [0; 1];
-    assert_eq!(1, buf.pwrite(wall, 0).unwrap());
+    assert_eq!(1, buf.pwrite(&wall, 0).unwrap());
     assert_eq!(wall, buf.pread::<Wall>(0).unwrap());
 
     let wall = Wall {
@@ -86,7 +86,7 @@ mod test_wall {
       wall_type: WallType::Wood,
     };
     let mut buf = [0; 2];
-    assert_eq!(2, buf.pwrite(wall, 0).unwrap());
+    assert_eq!(2, buf.pwrite(&wall, 0).unwrap());
     assert_eq!(wall, buf.pread_with::<Wall>(0, true).unwrap());
   }
 }

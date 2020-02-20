@@ -3,7 +3,13 @@ use super::{
   items::ItemStack,
   tiles::TileMatrix,
 };
-use crate::enums::EntityType;
+use crate::{
+  enums::EntityType,
+  model::tiles::{
+    Tile,
+    TileVec,
+  },
+};
 use scroll::{
   ctx::{
     TryFromCtx,
@@ -63,7 +69,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileEntity {
   }
 }
 
-impl TryIntoCtx<Endian> for TileEntity {
+impl TryIntoCtx<Endian> for &TileEntity {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -108,8 +114,49 @@ impl TryIntoCtx<Endian> for TileEntity {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
-pub struct TileEntityVec(Vec<TileEntity>);
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+pub struct TileEntitiesInfo {
+  pub count: i32,
+}
+
+impl TryIntoCtx<&TileMatrix> for &TileEntitiesInfo {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    ctx: &TileMatrix,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    buf.gwrite(self.count, offset)?;
+    let len = ctx.as_ref().len();
+    for i in 0..len {
+      let mut j = 0;
+      let tv: &TileVec = &ctx[i];
+      let tv_len = tv.as_ref().len();
+      while j < tv_len {
+        let tile: &Tile = &tv[j];
+        match &tile.tile_entity {
+          Some(tile_entity) => {
+            buf.gwrite_with(tile_entity, offset, LE)?;
+          }
+          _ => {}
+        };
+        j += *tile.run_length.as_ref() as usize;
+      }
+    }
+    Ok(*offset)
+  }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct TileEntityVec(Vec<TileEntity>, TileEntitiesInfo);
+
+impl TileEntityVec {
+  pub fn tile_entities_info(&self) -> TileEntitiesInfo {
+    self.1
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for TileEntityVec {
   type Error = ScrollError;
@@ -119,39 +166,20 @@ impl<'a> TryFromCtx<'a, Endian> for TileEntityVec {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let tile_entity_count = buf.gread_with::<i32>(offset, LE)?;
+    let tile_entity_info = buf.gread_with::<TileEntitiesInfo>(offset, LE)?;
     let mut tile_entities: Vec<TileEntity> = vec![];
-    for _ in 0..tile_entity_count {
+    for _ in 0..tile_entity_info.count {
       let tile_entity = buf.gread::<TileEntity>(offset)?;
       tile_entities.push(tile_entity);
     }
-    Ok((Self(tile_entities), *offset))
-  }
-}
-
-impl TryIntoCtx<Endian> for TileEntityVec {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    let vec = self.as_ref();
-    let len = vec.len();
-    buf.gwrite_with(len as i32, offset, LE)?;
-    for i in 0..len {
-      buf.gwrite(vec[i], offset)?;
-    }
-    Ok(*offset)
+    Ok((Self(tile_entities, tile_entity_info), *offset))
   }
 }
 
 impl TileEntityVec {
   #[inline]
-  pub fn assign_to_tile(tile_entities: Self, tiles: &mut TileMatrix) {
-    tile_entities.into_iter().for_each(|tile_entity| {
+  pub fn move_to_tile(tile_entities: Self, tiles: &mut TileMatrix) {
+    &tile_entities.0.into_iter().for_each(|tile_entity| {
       let mut tile = tiles.tile_at_point(&tile_entity.position);
       tile.tile_entity = Some(tile_entity);
     });
@@ -228,7 +256,7 @@ impl TryIntoCtx<Endian> for PressurePlateVec {
 
 impl PressurePlateVec {
   #[inline]
-  pub fn assign_to_tile(pressure_plates: Self, tiles: &mut TileMatrix) {
+  pub fn move_to_tile(pressure_plates: Self, tiles: &mut TileMatrix) {
     pressure_plates.into_iter().for_each(|pressure_plate| {
       let mut tile = tiles.tile_at_point(pressure_plate.as_ref());
       tile.pressure_plate = Some(pressure_plate);
@@ -245,10 +273,13 @@ pub struct Room {
 #[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
 pub struct RoomVec(Vec<Room>);
 
-impl<'a> TryFromCtx<'a, ()> for RoomVec {
+impl<'a> TryFromCtx<'a, Endian> for RoomVec {
   type Error = ScrollError;
 
-  fn try_from_ctx(buf: &'a [u8], _: ()) -> Result<(Self, usize), Self::Error> {
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let room_count = buf.gread_with::<i32>(offset, LE)?;
     let mut rooms: Vec<Room> = vec![];
@@ -260,7 +291,7 @@ impl<'a> TryFromCtx<'a, ()> for RoomVec {
   }
 }
 
-impl TryIntoCtx<Endian> for RoomVec {
+impl TryIntoCtx<Endian> for &RoomVec {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -294,7 +325,7 @@ mod test_tile_entity {
       item_frame: None,
     };
     let mut buf = [0; 11];
-    assert_eq!(11, buf.pwrite(te1, 0).unwrap());
+    assert_eq!(11, buf.pwrite(&te1, 0).unwrap());
     assert_eq!(te1, buf.pread::<TileEntity>(0).unwrap());
 
     let te2 = TileEntity {
@@ -308,7 +339,7 @@ mod test_tile_entity {
       item_frame: None,
     };
     let mut buf = [0; 11];
-    assert_eq!(11, buf.pwrite(te2, 0).unwrap());
+    assert_eq!(11, buf.pwrite(&te2, 0).unwrap());
     assert_eq!(te2, buf.pread::<TileEntity>(0).unwrap());
 
     let te3 = TileEntity {
@@ -323,36 +354,8 @@ mod test_tile_entity {
       }),
     };
     let mut buf = [0; 16];
-    assert_eq!(16, buf.pwrite(te3, 0).unwrap());
+    assert_eq!(16, buf.pwrite(&te3, 0).unwrap());
     assert_eq!(te3, buf.pread::<TileEntity>(0).unwrap());
-  }
-
-  #[test]
-  fn test_tile_entity_vec_rw() {
-    let tev = TileEntityVec(vec![
-      TileEntity {
-        id: 123,
-        position: Point { x: 0, y: 0 },
-        target_dummy: Some(1),
-        logic_sensor: None,
-        item_frame: None,
-      },
-      TileEntity {
-        id: 123,
-        position: Point { x: 0, y: 0 },
-        target_dummy: None,
-        logic_sensor: None,
-        item_frame: Some(ItemStack {
-          quantity: 1,
-          item_type: Some(ItemType::Pwnhammer),
-          modifier: Some(0),
-        }),
-      },
-    ]);
-
-    let mut buf = [0; 31];
-    assert_eq!(31, buf.pwrite(tev.clone(), 0).unwrap());
-    assert_eq!(tev, buf.pread::<TileEntityVec>(0).unwrap());
   }
 
   #[test]
@@ -387,7 +390,7 @@ mod test_tile_entity {
       },
     ]);
     let mut buf = [0; 28];
-    assert_eq!(28, buf.pwrite(rv.clone(), 0).unwrap());
+    assert_eq!(28, buf.pwrite(&rv, 0).unwrap());
     assert_eq!(rv, buf.pread::<RoomVec>(0).unwrap());
   }
 }
