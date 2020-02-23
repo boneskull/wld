@@ -1,6 +1,7 @@
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -11,12 +12,19 @@ use scroll::{
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[repr(C)]
 pub enum InvasionType {
   NoInvasion = 0,
   GoblinInvasion = 1,
   FrostLegion = 2,
   PirateInvasion = 3,
   MartianMadness = 4,
+}
+
+impl SizeWith<Endian> for InvasionType {
+  fn size_with(_: &Endian) -> usize {
+    i32::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for InvasionType {

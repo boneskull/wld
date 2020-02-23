@@ -32,6 +32,7 @@ use scroll::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct World {
   pub status: WorldStatus,
   pub tiles: TileMatrix,
@@ -45,6 +46,7 @@ pub struct World {
 }
 
 #[derive(Clone, Debug, PartialEq, Pwrite, Pread)]
+#[repr(C)]
 pub struct WorldStatus {
   pub header: Header,
   pub properties: Properties,
@@ -141,7 +143,10 @@ impl World {
 
   pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
     let offset = &mut 0;
-    let mut v: Vec<u8> = vec![0; 4194304];
+    let mut v: Vec<u8> = Vec::with_capacity(4000000);
+    unsafe {
+      v.set_len(4000000);
+    }
     v.gwrite(&self.status, offset)?;
     v.gwrite(&self.tiles, offset)?;
     v.gwrite_with(&self.chests_info, offset, &self.tiles)?;

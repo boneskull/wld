@@ -8,6 +8,7 @@ use crate::{
 };
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -17,7 +18,8 @@ use scroll::{
   LE,
 };
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct BossesSlain {
   pub eye_of_cthulhu: TBool,
   pub eater_of_worlds: TBool,
@@ -32,7 +34,8 @@ pub struct BossesSlain {
   pub king_slime: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct BossesSlain2 {
   pub duke_fishron: TBool,
   pub martian_madness: TBool,
@@ -49,7 +52,8 @@ pub struct BossesSlain2 {
   pub stardust_pillar: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct PillarStatus {
   pub solar: TBool,
   pub vortex: TBool,
@@ -58,14 +62,15 @@ pub struct PillarStatus {
   pub is_active: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct SavedNPCs {
   pub goblin_tinkerer: TBool,
   pub wizard: TBool,
   pub mechanic: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
 pub struct EventsCompleted {
   pub goblin_army: TBool,
   pub clown: TBool,
@@ -73,21 +78,24 @@ pub struct EventsCompleted {
   pub pirates: TBool,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct ShadowOrbStatus {
   pub smashed: TBool,
   pub meteorite_spawned: TBool,
   pub evil_boss_counter: i32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct RainStatus {
   pub is_active: TBool,
   pub time_left: i32,
   pub max_rain: f32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct InvasionStatus {
   pub delay: i32,
   pub size: i32,
@@ -96,7 +104,8 @@ pub struct InvasionStatus {
   pub slime_rain_time_left: f64,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct Backgrounds {
   pub forest: u8,
   pub corruption: u8,
@@ -108,7 +117,8 @@ pub struct Backgrounds {
   pub ocean: u8,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct Clouds {
   pub background: i32,
   pub count: i16,
@@ -116,10 +126,24 @@ pub struct Clouds {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct AnglerQuestStatus {
   pub completed_players: Vec<TString>,
   pub angler_saved: TBool,
   pub target: AnglerQuestFish,
+}
+
+impl SizeWith<AnglerQuestStatus> for AnglerQuestStatus {
+  fn size_with(ctx: &AnglerQuestStatus) -> usize {
+    let completed_players_size: usize = ctx
+      .completed_players
+      .iter()
+      .map(|tstr| TString::size_with(tstr))
+      .fold(0, |acc, len| acc + len);
+    completed_players_size
+      + TBool::size_with(&LE)
+      + AnglerQuestFish::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for AnglerQuestStatus {
@@ -184,7 +208,14 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
+#[repr(C)]
 pub struct MobKillVec(Vec<i32>);
+
+impl SizeWith<MobKillVec> for MobKillVec {
+  fn size_with(ctx: &MobKillVec) -> usize {
+    i16::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for MobKillVec {
   type Error = scroll::Error;
@@ -223,7 +254,14 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
+#[repr(C)]
 pub struct PartyingNPCVec(Vec<i32>);
+
+impl SizeWith<PartyingNPCVec> for PartyingNPCVec {
+  fn size_with(ctx: &PartyingNPCVec) -> usize {
+    (ctx.as_ref().len() + 1) * i32::size_with(&LE)
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for PartyingNPCVec {
   type Error = scroll::Error;
@@ -262,6 +300,7 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[repr(C)]
 pub struct PartyStatus {
   pub party_center_is_active: TBool,
   pub natural_party_is_active: TBool,
@@ -269,7 +308,17 @@ pub struct PartyStatus {
   pub partying_npcs: PartyingNPCVec,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite)]
+impl SizeWith<PartyStatus> for PartyStatus {
+  fn size_with(ctx: &PartyStatus) -> usize {
+    TBool::size_with(&LE)
+      + TBool::size_with(&LE)
+      + i32::size_with(&LE)
+      + PartyingNPCVec::size_with(&ctx.partying_npcs)
+  }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct SandstormStatus {
   pub is_active: TBool,
   pub time_left: i32,
@@ -277,7 +326,8 @@ pub struct SandstormStatus {
   pub intended_severity: f32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
 pub struct OldOnesArmyStatus {
   pub tier1: TBool,
   pub tier2: TBool,
@@ -285,6 +335,7 @@ pub struct OldOnesArmyStatus {
 }
 
 #[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
+#[repr(C)]
 pub struct Status {
   pub bosses_slain: BossesSlain,
   pub saved_npcs: SavedNPCs,
@@ -315,6 +366,29 @@ pub struct Status {
   pub old_ones_army_status: OldOnesArmyStatus,
 }
 
+impl SizeWith<Status> for Status {
+  fn size_with(ctx: &Status) -> usize {
+    BossesSlain::size_with(&LE)
+      + SavedNPCs::size_with(&LE)
+      + EventsCompleted::size_with(&LE)
+      + ShadowOrbStatus::size_with(&LE)
+      + (i32::size_with(&LE) * 3)
+      + InvasionStatus::size_with(&LE)
+      + u8::size_with(&LE)
+      + RainStatus::size_with(&LE)
+      + (HardmodeOre::size_with(&LE) * 3)
+      + Backgrounds::size_with(&LE)
+      + Clouds::size_with(&LE)
+      + AnglerQuestStatus::size_with(&ctx.angler_quest_status)
+      + (TBool::size_with(&LE) * 5)
+      + MobKillVec::size_with(&ctx.mob_kills)
+      + BossesSlain2::size_with(&LE)
+      + PillarStatus::size_with(&LE)
+      + SandstormStatus::size_with(&LE)
+      + OldOnesArmyStatus::size_with(&LE)
+  }
+}
+
 #[cfg(test)]
 mod test_status {
   use super::*;
@@ -333,6 +407,17 @@ mod test_status {
     let mut buf = [0; 14];
     assert_eq!(14, buf.pwrite(&aqs, 0).unwrap());
     assert_eq!(aqs, buf.pread::<AnglerQuestStatus>(0).unwrap());
+  }
+
+  #[test]
+  fn test_angler_quest_status_sizewith() {
+    // each tstring will be 8 + 3, tbool is 1, and target is 4.
+    let aqs = AnglerQuestStatus {
+      completed_players: vec![TString::from("foo"), TString::from("bar")],
+      angler_saved: TBool::True,
+      target: AnglerQuestFish::Bonefish,
+    };
+    assert_eq!(27, AnglerQuestStatus::size_with(&aqs));
   }
 
   #[test]

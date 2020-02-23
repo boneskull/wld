@@ -1,6 +1,7 @@
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -12,6 +13,7 @@ use scroll::{
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[repr(C)]
 pub enum HardmodeOre {
   UnknownOre = -1,
   CobaltOre = 107,
@@ -20,6 +22,12 @@ pub enum HardmodeOre {
   PalladiumOre = 221,
   OrichalcumOre = 222,
   TitaniumOre = 223,
+}
+
+impl SizeWith<Endian> for HardmodeOre {
+  fn size_with(_: &Endian) -> usize {
+    i32::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {

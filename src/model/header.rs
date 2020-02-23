@@ -1,5 +1,6 @@
 use scroll::{
   ctx::{
+    SizeWith,
     StrCtx,
     TryFromCtx,
     TryIntoCtx,
@@ -12,7 +13,10 @@ use scroll::{
 
 static RELOGIC: &str = "relogic";
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pwrite, Pread)]
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Pwrite, Pread, SizeWith,
+)]
+#[repr(C)]
 pub struct Offsets {
   pub header: i32,
   pub tiles: i32,
@@ -26,6 +30,7 @@ pub struct Offsets {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[repr(C)]
 pub struct Header {
   pub version: String,
   pub revision: u32,
@@ -115,15 +120,15 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _ctx: Endian,
   ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
     let Header {
       version,
       revision,
       is_favorite,
       offsets,
     } = self;
-    let mut size = 0;
 
     let v: i32 = match version.as_str() {
       "1.2.0.3.1" => 71,
@@ -144,23 +149,36 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
       }
     };
 
-    size += v.try_into_ctx(&mut buf[size..], ctx)?;
-    size += RELOGIC.as_bytes().try_into_ctx(&mut buf[size..], ())?;
-    size += 2u8.try_into_ctx(&mut buf[size..], ctx)?;
-    size += revision.try_into_ctx(&mut buf[size..], ctx)?;
-    size += if *is_favorite { 1u64 } else { 0u64 }
-      .try_into_ctx(&mut buf[size..], ctx)?;
-    // TODO: there may be extra cruft at the end of offsets.
-    size += 9u16.try_into_ctx(&mut buf[size..], ctx)?;
-    size += offsets.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    buf.gwrite_with(v, offset, LE)?;
+    buf.gwrite(RELOGIC.as_bytes(), offset)?;
+    buf.gwrite(2u8, offset)?;
+    buf.gwrite(revision, offset)?;
+    let is_favorite: u64 = match is_favorite {
+      true => 1,
+      false => 0,
+    };
+    buf.gwrite_with(is_favorite, offset, LE)?;
+    buf.gwrite_with(9u16, offset, LE)?; // offset count
+    buf.gwrite_with(offsets, offset, LE)?;
+    Ok(*offset)
+  }
+}
+
+impl SizeWith<Endian> for &Header {
+  fn size_with(_: &Endian) -> usize {
+    i32::size_with(&LE) // version
+      + (7 * u8::size_with(&LE)) // signature
+      + u8::size_with(&LE) // savefile type
+      + u32::size_with(&LE) // revision
+      + u8::size_with(&LE) // is favorite
+      + u16::size_with(&LE) // offset count (always 9?)
+      + Offsets::size_with(&LE) // offsets
   }
 }
 
 #[cfg(test)]
 mod test_header {
   use super::*;
-  use scroll::LE;
 
   #[test]
   fn test_header_rw() {
@@ -208,5 +226,10 @@ mod test_header {
     ];
     let res = bytes.pread_with::<Header>(0, LE);
     assert!(res.is_err());
+  }
+
+  #[test]
+  fn test_header_offsets_size() {
+    assert_eq!(36, Offsets::size_with(&LE));
   }
 }

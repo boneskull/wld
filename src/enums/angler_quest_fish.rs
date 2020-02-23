@@ -1,6 +1,7 @@
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -11,6 +12,7 @@ use scroll::{
 };
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[repr(C)]
 pub enum AnglerQuestFish {
   Batfish = 0,
   BumblebeeTuna = 1,
@@ -51,6 +53,12 @@ pub enum AnglerQuestFish {
   Mudfish = 36,
   Slimefish = 37,
   TropicalBarracuda = 38,
+}
+
+impl SizeWith<Endian> for AnglerQuestFish {
+  fn size_with(_: &Endian) -> usize {
+    i32::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for AnglerQuestFish {

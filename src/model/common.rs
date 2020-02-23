@@ -2,6 +2,7 @@ use bitvec::prelude::*;
 use nano_leb128::ULEB128 as NanoUleb128;
 use scroll::{
   ctx::{
+    SizeWith,
     StrCtx,
     TryFromCtx,
     TryIntoCtx,
@@ -18,7 +19,10 @@ use std::convert::{
   TryInto,
 };
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite)]
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, SizeWith,
+)]
+#[repr(C)]
 pub struct Rect {
   pub left: i32,
   pub right: i32,
@@ -27,15 +31,32 @@ pub struct Rect {
 }
 
 #[derive(
-  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, Constructor,
+  Copy,
+  Clone,
+  Debug,
+  Default,
+  PartialEq,
+  Eq,
+  Pread,
+  Pwrite,
+  Constructor,
+  SizeWith,
 )]
+#[repr(C)]
 pub struct Point {
   pub x: i32,
   pub y: i32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, AsRef)]
+#[repr(C)]
 pub struct TString(String);
+
+impl SizeWith<TString> for TString {
+  fn size_with(ctx: &TString) -> usize {
+    u64::size_with(&LE) + (ctx.as_ref().len() * u8::size_with(&LE))
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for TString {
   type Error = ScrollError;
@@ -60,18 +81,20 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
     buf: &mut [u8],
     _: Endian,
   ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
     let value = self.as_ref();
-    let mut size = 0;
+
     let str_len = match u64::try_from(value.len()) {
       Ok(l) => l,
       Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
-    size += match NanoUleb128::from(str_len).write_into(buf) {
+    // Uleb128 does not implement Pwrite!!!
+    *offset += match NanoUleb128::from(str_len).write_into(buf) {
       Ok(s) => s,
       Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
-    size += value.as_bytes().try_into_ctx(&mut buf[size..], ())?;
-    Ok(size)
+    buf.gwrite(value.as_bytes(), offset)?;
+    Ok(*offset)
   }
 }
 
@@ -88,9 +111,16 @@ impl From<String> for TString {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub enum TBool {
   False,
   True,
+}
+
+impl SizeWith<Endian> for TBool {
+  fn size_with(ctx: &Endian) -> usize {
+    u8::size_with(ctx)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TBool {
@@ -136,6 +166,12 @@ impl From<Vec<bool>> for VariableTBitVec {
   }
 }
 
+impl SizeWith<VariableTBitVec> for VariableTBitVec {
+  fn size_with(ctx: &VariableTBitVec) -> usize {
+    i16::size_with(&LE) + (ctx.as_ref().len() * u8::size_with(&LE))
+  }
+}
+
 impl<'a> TryFromCtx<'a, Endian> for VariableTBitVec {
   type Error = ScrollError;
 
@@ -171,7 +207,14 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef, AsMut)]
+#[repr(C)]
 pub struct TBitVec(BitVec<Lsb0, u8>);
+
+impl SizeWith<TBitVec> for TBitVec {
+  fn size_with(ctx: &TBitVec) -> usize {
+    ctx.as_ref().len() * u8::size_with(&LE)
+  }
+}
 
 impl From<Vec<bool>> for TBitVec {
   fn from(v: Vec<bool>) -> Self {

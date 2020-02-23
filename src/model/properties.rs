@@ -5,6 +5,7 @@ use crate::{
 };
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -22,8 +23,18 @@ pub type UndergroundJungleStyle = i32;
 pub type HellStyle = i32;
 
 #[derive(
-  Copy, Clone, Debug, Default, PartialEq, Eq, Constructor, Pread, Pwrite,
+  Copy,
+  Clone,
+  Debug,
+  Default,
+  PartialEq,
+  Eq,
+  Constructor,
+  Pread,
+  Pwrite,
+  SizeWith,
 )]
+#[repr(C)]
 pub struct QuadrantStyle {
   pub x1: i32,
   pub x2: i32,
@@ -34,7 +45,10 @@ pub struct QuadrantStyle {
   pub far_right: i32,
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite)]
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, SizeWith,
+)]
+#[repr(C)]
 pub struct WorldStyle {
   pub moon: MoonStyle,
   pub trees: QuadrantStyle,
@@ -48,6 +62,12 @@ pub struct WorldStyle {
 pub struct GeneratorInfo {
   pub seed: TString,
   pub version: u64,
+}
+
+impl SizeWith<GeneratorInfo> for GeneratorInfo {
+  fn size_with(ctx: &GeneratorInfo) -> usize {
+    TString::size_with(&ctx.seed) + u64::size_with(&LE)
+  }
 }
 
 impl GeneratorInfo {
@@ -95,6 +115,12 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, AsRef)]
 pub struct TUuid(Uuid);
 
+impl SizeWith<Endian> for TUuid {
+  fn size_with(_: &Endian) -> usize {
+    u128::size_with(&LE)
+  }
+}
+
 impl<'a> TryFromCtx<'a, Endian> for TUuid {
   type Error = scroll::Error;
 
@@ -114,12 +140,12 @@ impl<'a> TryIntoCtx<Endian> for &'a TUuid {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
     let uuid = self.as_ref();
-    let mut size = 0;
-    size += uuid.to_u128_le().try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    let offset = &mut 0;
+    buf.gwrite_with(uuid.to_u128_le(), offset, LE)?;
+    Ok(*offset)
   }
 }
 
@@ -130,6 +156,7 @@ impl From<Uuid> for TUuid {
 }
 
 #[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
+#[repr(C)]
 pub struct Properties {
   pub tile_frame_importances: VariableTBitVec,
   pub name: TString,
