@@ -16,25 +16,27 @@ use scroll::{
   Pwrite,
   LE,
 };
-use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
 pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
+  // actually a u16,u16
   pub frame_data: Option<Point>,
   pub block_paint: Option<u8>,
   pub is_block_inactive: bool,
+  pub has_extended_block_id: bool,
 }
 
 impl SizeWith<Block> for Block {
   fn size_with(ctx: &Block) -> usize {
     // note that shape is ignored
-    BlockType::size_with(&LE)
-      + ctx.frame_data.map_or(0, |_| Point::size_with(&LE))
+    (match ctx.has_extended_block_id {
+      true => u16::size_with(&LE),
+      false => u8::size_with(&LE),
+    }) + ctx.frame_data.map_or(0, |_| (u16::size_with(&LE) * 2))
       + ctx.block_paint.map_or(0, |_| u8::size_with(&LE))
-      + u8::size_with(&LE)
   }
 }
 
@@ -82,6 +84,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
         frame_data,
         block_paint,
         is_block_inactive: ctx.is_block_inactive,
+        has_extended_block_id: ctx.has_extended_block_id,
       },
       *offset,
     ))
@@ -103,12 +106,17 @@ impl<'a> TryIntoCtx<Endian> for &Block {
       frame_data,
       block_paint,
       is_block_inactive: _,
+      has_extended_block_id,
     } = self;
     let block_id = *block_type as u16;
-    match u8::try_from(block_id) {
-      Ok(block_id_u8) => buf.gwrite(block_id_u8, offset),
-      Err(_) => buf.gwrite_with(block_id, offset, LE),
-    }?;
+    match has_extended_block_id {
+      true => {
+        buf.gwrite_with(block_id, offset, LE)?;
+      }
+      false => {
+        buf.gwrite(block_id as u8, offset)?;
+      }
+    }
     match frame_data {
       Some(fd) => {
         buf.gwrite_with(fd.x as u16, offset, LE)?;
@@ -145,6 +153,7 @@ mod test_blocks {
       frame_data: Some(Point { x: 100, y: 100 }),
       block_paint: Some(1),
       is_block_inactive: true,
+      has_extended_block_id: false,
     };
 
     let mut bytes = [0; 6];

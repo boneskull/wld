@@ -208,7 +208,7 @@ impl SizeWith<Properties> for Properties {
       + (f64::size_with(&LE) * 3)
       + u32::size_with(&LE)
       + EvilType::size_with(&LE);
-    eprintln!("Properties size: {}", size);
+    debug!("Properties size: {}", size);
     size
   }
 }

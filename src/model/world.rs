@@ -73,7 +73,7 @@ impl SizeWith<WorldStatus> for WorldStatus {
     let size = Header::size_with(&ctx.header)
       + Properties::size_with(&ctx.properties)
       + Status::size_with(&ctx.status);
-    eprintln!("WorldStatus size: {}", size);
+    debug!("WorldStatus size: {}", size);
     size
   }
 }
@@ -131,7 +131,7 @@ impl<'a> SizeWith<WorldCtx<'a>> for Footer {
     let size = TBool::size_with(&LE)
       + TString::size_with(&ctx.name)
       + i32::size_with(&LE);
-    eprintln!("Footer size: {}", size);
+    debug!("Footer size: {}", size);
     size
   }
 }
@@ -147,6 +147,10 @@ impl World {
     let world_ctx = status.properties.as_world_context();
 
     let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
+    debug!(
+      "Reading chests @ offset {}; expected offset {}",
+      offset, status.header.offsets.chests
+    );
     let chests = bytes.gread::<ChestVec>(offset)?;
     let chests_info = chests.chests_info();
     ChestVec::move_to_tile(chests, &mut tiles);
@@ -179,7 +183,6 @@ impl World {
   pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
     let offset = &mut 0;
     let size = World::size_with(self);
-    println!("{}", size);
     let mut v: Vec<u8> = Vec::with_capacity(size);
     unsafe {
       v.set_len(size);
@@ -198,7 +201,7 @@ impl World {
       &mut offset,
       self.status.properties.as_world_context(),
     )?;
-    v.shrink_to_fit();
+    debug!("Size in bytes - actual: {}, expected: {}", offset, size);
     Ok(v.into_boxed_slice())
   }
 

@@ -150,7 +150,7 @@ impl SizeWith<TileMatrix> for TileEntitiesInfo {
             .fold(0usize, |acc, len| acc + len)
         })
         .fold(0, |acc, len| acc + len);
-    eprintln!("TileEntitiesInfo size: {}", size);
+    debug!("TileEntitiesInfo size: {}", size);
     size
   }
 }
@@ -315,7 +315,7 @@ impl SizeWith<RoomVec> for RoomVec {
   fn size_with(ctx: &RoomVec) -> usize {
     let size =
       i32::size_with(&LE) + (ctx.as_ref().len() * Room::size_with(&LE));
-    eprintln!("RoomVec size: {}", size);
+    debug!("RoomVec size: {}", size);
     size
   }
 }

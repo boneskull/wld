@@ -100,9 +100,9 @@ impl SizeWith<NPCVec> for NPCVec {
       .map(|npc| u8::size_with(&LE) + NPC::size_with(&npc))
       .fold(0, |acc, len| acc + len);
     if size == 0 {
-      size = u8::size_with(&LE);
+      size = u8::size_with(&LE)
     }
-    eprintln!("NPCVec size: {}", size);
+    debug!("NPCVec size: {}", size);
     size
   }
 }
@@ -173,7 +173,7 @@ impl SizeWith<MobVec> for MobVec {
     if size == 0 {
       size = u8::size_with(&LE);
     }
-    eprintln!("MobVec size: {}", size);
+    debug!("MobVec size: {}", size);
     size
   }
 }

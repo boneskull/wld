@@ -32,9 +32,12 @@ pub struct Liquid {
   pub volume: u8,
 }
 
-impl SizeWith<Endian> for Liquid {
-  fn size_with(_: &Endian) -> usize {
-    u8::size_with(&LE)
+impl SizeWith<Liquid> for Liquid {
+  fn size_with(ctx: &Liquid) -> usize {
+    match ctx.liquid_type {
+      LiquidType::NoLiquid => 0,
+      _ => u8::size_with(&LE),
+    }
   }
 }
 
@@ -152,9 +155,13 @@ pub struct RunLength {
   pub rle_type: RLEType,
 }
 
-impl SizeWith<Endian> for RunLength {
-  fn size_with(_: &Endian) -> usize {
-    u16::size_with(&LE)
+impl SizeWith<RunLength> for RunLength {
+  fn size_with(ctx: &RunLength) -> usize {
+    match ctx.rle_type {
+      RLEType::DoubleByte => u16::size_with(&LE),
+      RLEType::SingleByte => u8::size_with(&LE),
+      _ => 0,
+    }
   }
 }
 
@@ -185,7 +192,6 @@ impl TryIntoCtx<Endian> for &RunLength {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     let value = self.length;
-    // this might be wrong, and we might need an RLEType
     match self.rle_type {
       RLEType::DoubleByte => {
         buf.gwrite_with(value - 1, offset, LE)?;
@@ -453,7 +459,7 @@ pub struct Tile {
 
 impl SizeWith<Tile> for Tile {
   fn size_with(ctx: &Tile) -> usize {
-    TileHeader::size_with(&LE)
+    let size = TileHeader::size_with(&LE)
       + match ctx.tile_header.has_attributes {
         true => {
           u8::size_with(&LE)
@@ -466,16 +472,10 @@ impl SizeWith<Tile> for Tile {
       }
       + ctx.block.map_or(0, |block| Block::size_with(&block))
       + ctx.wall.map_or(0, |wall| Wall::size_with(&wall))
-      + ctx
-        .tile_header
-        .liquid_type
-        .map_or(0, |_| Liquid::size_with(&LE))
-      + match ctx.run_length.rle_type {
-        RLEType::SingleByte => u8::size_with(&LE),
-        RLEType::DoubleByte => u16::size_with(&LE),
-        _ => 0,
-      }
-    // Chest, Sign, TileEntity & PressurePlate are calculated by TileMatrix
+      + ctx.liquid.map_or(0, |liquid| Liquid::size_with(&liquid))
+      + RunLength::size_with(&ctx.run_length);
+    // trace!("Tile size: {}", size);
+    size
   }
 }
 
@@ -574,7 +574,7 @@ impl TryIntoCtx<Endian> for &Tile {
 
     match buf.gwrite(tile_header, offset) {
       Err(e) => {
-        eprintln!("{}", e);
+        debug!("{}", e);
         return Err(e);
       }
       _ => {}
@@ -605,7 +605,7 @@ impl TryIntoCtx<Endian> for &Tile {
 
       match buf.gwrite(&attrs, offset) {
         Err(e) => {
-          eprintln!("{}", e);
+          debug!("{}", e);
           return Err(e);
         }
         _ => {}
@@ -616,7 +616,7 @@ impl TryIntoCtx<Endian> for &Tile {
       Some(b) => {
         match buf.gwrite(b, offset) {
           Err(e) => {
-            eprintln!("{}", e);
+            debug!("{}", e);
             return Err(e);
           }
           _ => {}
@@ -629,7 +629,7 @@ impl TryIntoCtx<Endian> for &Tile {
       Some(w) => {
         match buf.gwrite(w, offset) {
           Err(e) => {
-            eprintln!("{}", e);
+            debug!("{}", e);
             return Err(e);
           }
           _ => {}
@@ -642,7 +642,7 @@ impl TryIntoCtx<Endian> for &Tile {
       Some(l) => {
         match buf.gwrite(l, offset) {
           Err(e) => {
-            eprintln!("{}", e);
+            debug!("{}", e);
             return Err(e);
           }
           _ => {}
@@ -653,7 +653,7 @@ impl TryIntoCtx<Endian> for &Tile {
 
     match buf.gwrite(run_length, offset) {
       Err(e) => {
-        eprintln!("{}", e);
+        debug!("{}", e);
         return Err(e);
       }
       _ => {}
@@ -784,7 +784,7 @@ impl SizeWith<TileMatrix> for TileMatrix {
       .iter()
       .map(|tv| TileVec::size_with(&tv))
       .fold(0, |acc, len| acc + len);
-    eprintln!("TileMatrix size: {}", size);
+    debug!("TileMatrix size: {}", size);
     size
   }
 }
@@ -927,6 +927,7 @@ mod test_tiles {
         frame_data: None,
         block_paint: None,
         is_block_inactive: true,
+        has_extended_block_id: false,
       }),
       wall: None,
       liquid: None,
@@ -971,6 +972,7 @@ mod test_tiles {
         frame_data: None,
         block_paint: None,
         is_block_inactive: true,
+        has_extended_block_id: false,
       }),
       wall: None,
       liquid: None,
@@ -1003,6 +1005,7 @@ mod test_tiles {
         frame_data: None,
         block_paint: None,
         is_block_inactive: true,
+        has_extended_block_id: false,
       }),
       wall: None,
       liquid: None,

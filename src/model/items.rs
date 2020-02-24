@@ -24,14 +24,41 @@ use scroll::{
   Pwrite,
   LE,
 };
-use std::iter::FromIterator;
+use std::{
+  fmt::Debug,
+  iter::FromIterator,
+};
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct ItemStack {
   pub quantity: i16,
   pub item_type: Option<ItemType>,
   pub modifier: Option<u8>,
+}
+
+impl Debug for ItemStack {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if self.quantity > 0 {
+      write!(
+        f,
+        "ItemStack {{ {:?}, {:?}, {:?} }}",
+        self.quantity, self.item_type, self.modifier
+      )
+    } else {
+      write!(f, "ItemStack {{}}")
+    }
+  }
+}
+
+impl SizeWith<ItemStack> for ItemStack {
+  fn size_with(ctx: &ItemStack) -> usize {
+    let size = i16::size_with(&LE)
+      + ctx.item_type.map_or(0, |_| ItemType::size_with(&LE))
+      + ctx.modifier.map_or(0, |_| u8::size_with(&LE));
+    trace!("ItemStack size: {}", size);
+    size
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for ItemStack {
@@ -78,17 +105,11 @@ impl TryIntoCtx<Endian> for ItemStack {
     match quantity {
       0 => {}
       _ => {
-        match item_type {
-          Some(it) => {
-            buf.gwrite(it, offset)?;
-          }
-          _ => {}
-        };
-        match modifier {
-          Some(m) => {
-            buf.gwrite(m, offset)?;
-          }
-          _ => {}
+        if let Some(it) = item_type {
+          buf.gwrite(it, offset)?;
+        }
+        if let Some(m) = modifier {
+          buf.gwrite(m, offset)?;
         }
       }
     }
@@ -96,15 +117,7 @@ impl TryIntoCtx<Endian> for ItemStack {
   }
 }
 
-impl SizeWith<ItemStack> for ItemStack {
-  fn size_with(ctx: &ItemStack) -> usize {
-    i16::size_with(&LE)
-      + ctx.item_type.map_or(0, |_| ItemType::size_with(&LE))
-      + ctx.modifier.map_or(0, |_| u8::size_with(&LE))
-  }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq, Pwrite)]
+#[derive(Clone, PartialEq, Eq, Pwrite)]
 #[repr(C)]
 pub struct Chest {
   pub position: Point,
@@ -114,9 +127,36 @@ pub struct Chest {
 
 impl SizeWith<Chest> for Chest {
   fn size_with(ctx: &Chest) -> usize {
-    Point::size_with(&LE)
+    let size = Point::size_with(&LE)
       + TString::size_with(&ctx.name)
-      + ItemStackVec::size_with(&ctx.contents)
+      + ItemStackVec::size_with(&ctx.contents);
+
+    trace!(
+      "Chest size (position: {:?} + name: {:?} + contents: {:?} = {:?})",
+      Point::size_with(&LE),
+      TString::size_with(&ctx.name),
+      ItemStackVec::size_with(&ctx.contents),
+      size
+    );
+    size
+  }
+}
+
+impl Debug for Chest {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    if self.contents.total_quantity() > 0 {
+      write!(
+        f,
+        "Chest {{ {:?}, {:?}, {:?} }}",
+        self.position, self.name, self.contents
+      )
+    } else {
+      write!(
+        f,
+        "Chest {{ {:?}, {:?}, (empty) }}",
+        self.position, self.name
+      )
+    }
   }
 }
 
@@ -131,28 +171,59 @@ impl<'a> TryFromCtx<'a, u16> for Chest {
     let position = buf.gread_with::<Point>(offset, LE)?;
     let name = buf.gread::<TString>(offset)?;
     let contents = buf.gread_with::<ItemStackVec>(offset, max_items)?;
-    Ok((
-      Self {
-        position,
-        name,
-        contents,
-      },
-      *offset,
-    ))
+    let chest = Self {
+      position,
+      name,
+      contents,
+    };
+    trace!(
+      "Found Chest with size {:?}: {:?}",
+      Chest::size_with(&chest),
+      chest
+    );
+    Ok((chest, *offset))
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
+#[derive(Clone, Default, PartialEq, Eq, IntoIterator, AsRef)]
 #[repr(C)]
 pub struct ItemStackVec(Vec<ItemStack>);
 
+impl ItemStackVec {
+  pub fn total_quantity(&self) -> i32 {
+    self
+      .as_ref()
+      .iter()
+      .map(|is| is.quantity)
+      .fold(0, |acc, len| acc + (len as i32))
+  }
+}
+
 impl SizeWith<ItemStackVec> for ItemStackVec {
   fn size_with(ctx: &ItemStackVec) -> usize {
-    ctx
+    let size = ctx
       .as_ref()
       .iter()
       .map(|is| ItemStack::size_with(&is))
-      .fold(0, |acc, len| acc + len)
+      .fold(0, |acc, len| acc + len);
+    trace!("ItemStackVec size: {}", size);
+    size
+  }
+}
+
+impl Debug for ItemStackVec {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    let total_quantity = self
+      .as_ref()
+      .iter()
+      .map(|is| is.quantity)
+      .fold(0, |acc, len| acc + len);
+
+    if total_quantity > 0 {
+      write!(f, "ItemStackVec {{ {:?} }}", self.as_ref())
+    } else {
+      write!(f, "ItemStackVec []")
+    }
   }
 }
 
@@ -164,7 +235,8 @@ impl<'a> TryFromCtx<'a, u16> for ItemStackVec {
     size: u16,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let stack = Vec::from_iter(
+    // XXX this should be a loop
+    let stack: Vec<ItemStack> = Vec::from_iter(
       (0..size)
         .into_iter()
         .map(|_| buf.gread::<ItemStack>(offset).unwrap()),
@@ -205,12 +277,16 @@ impl SizeWith<TileMatrix> for ChestsInfo {
         .map(|tv| {
           tv.as_ref()
             .iter()
-            .filter(|tile| tile.chest.is_some())
-            .map(|tile| Chest::size_with(&tile.chest.as_ref().unwrap()))
+            .map(|tile| {
+              tile
+                .chest
+                .as_ref()
+                .map_or(0, |chest| Chest::size_with(&chest))
+            })
             .fold(0usize, |acc, len| acc + len)
         })
         .fold(0, |acc, len| acc + len);
-    eprintln!("ChestsInfo size: {}", size);
+    debug!("ChestsInfo size: {}", size);
     size
   }
 }
@@ -233,12 +309,9 @@ impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
       let tv_len = tv.as_ref().len();
       while j < tv_len {
         let tile: &Tile = &tv[j];
-        match &tile.chest {
-          Some(chest) => {
-            buf.gwrite_with(chest, offset, LE)?;
-          }
-          _ => {}
-        };
+        if let Some(chest) = &tile.chest {
+          buf.gwrite(chest, offset)?;
+        }
         j += tile.run_length.length as usize;
       }
     }
@@ -258,7 +331,7 @@ impl<'a> TryFromCtx<'a, Endian> for ChestVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let chests_info = buf.gread_with::<ChestsInfo>(offset, LE)?;
-    let mut chests: Vec<Chest> = vec![];
+    let mut chests: Vec<Chest> = Vec::with_capacity(chests_info.count as usize);
     for _ in 0..chests_info.count {
       let chest = buf.gread_with::<Chest>(offset, chests_info.max_items)?;
       chests.push(chest);
@@ -314,7 +387,7 @@ impl SizeWith<TileMatrix> for SignsInfo {
             .fold(0usize, |acc, len| acc + len)
         })
         .fold(0, |acc, len| acc + len);
-    eprintln!("SignsInfo size: {}", size);
+    debug!("SignsInfo size: {}", size);
     size
   }
 }

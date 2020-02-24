@@ -48,13 +48,13 @@ pub struct Point {
   pub y: i32,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, AsRef)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[repr(C)]
-pub struct TString(String);
+pub struct TString(String, usize);
 
 impl SizeWith<TString> for TString {
   fn size_with(ctx: &TString) -> usize {
-    u64::size_with(&LE) + (ctx.as_ref().len() * u8::size_with(&LE))
+    (u8::size_with(&LE) * ctx.1) + (ctx.0.len() * u8::size_with(&LE))
   }
 }
 
@@ -66,10 +66,12 @@ impl<'a> TryFromCtx<'a, Endian> for TString {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let str_len = Uleb128::read(buf, offset)?;
-    let value =
-      buf.gread_with::<&str>(offset, StrCtx::Length(str_len as usize))?;
-    Ok((Self(value.to_string()), *offset))
+    let str_len = buf.gread::<Uleb128>(offset)?;
+    let count = str_len.size();
+    // let str_len = Uleb128::read(buf, offset)?;
+    let str_len = *str_len.as_ref() as usize;
+    let value = buf.gread_with::<&str>(offset, StrCtx::Length(str_len))?;
+    Ok((Self(value.to_string(), count), *offset))
   }
 }
 
@@ -82,7 +84,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let value = self.as_ref();
+    let value = &self.0;
 
     let str_len = match u64::try_from(value.len()) {
       Ok(l) => l,
@@ -100,13 +102,30 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
 
 impl From<&str> for TString {
   fn from(s: &str) -> Self {
-    Self(s.to_string())
+    Self(
+      s.to_string(),
+      match s.len() {
+        0..=128 => 1,
+        128..=256 => 2,
+        256..=512 => 3,
+        _ => 4,
+      },
+    )
   }
 }
 
 impl From<String> for TString {
   fn from(s: String) -> Self {
-    Self(s)
+    let len = &s.len();
+    Self(
+      s,
+      match len {
+        0..=128 => 1,
+        128..=256 => 2,
+        256..=512 => 3,
+        _ => 4,
+      },
+    )
   }
 }
 
@@ -276,12 +295,12 @@ mod test_common {
 
   #[test]
   fn test_tstring_rw() {
-    let t = &TString("foo".to_string());
+    let t = &TString::from("foo");
     let mut bytes = [0; 4];
     let _res = bytes.pwrite_with::<&TString>(t, 0, LE).unwrap();
     assert_eq!(
       TString::try_from_ctx(&bytes[..], LE).unwrap(),
-      (TString("foo".to_string()), 4)
+      (TString::from("foo"), 4)
     );
   }
 }

@@ -386,7 +386,7 @@ impl SizeWith<Status> for Status {
       + PillarStatus::size_with(&LE)
       + SandstormStatus::size_with(&LE)
       + OldOnesArmyStatus::size_with(&LE);
-    eprintln!("Status size: {}", size);
+    debug!("Status size: {}", size);
     size
   }
 }

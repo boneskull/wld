@@ -6,7 +6,8 @@ extern crate derive_more;
 extern crate lazy_static;
 #[macro_use]
 extern crate scroll_derive;
-
+#[macro_use]
+extern crate log;
 use crate::model::world::World;
 
 use std::{
