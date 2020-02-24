@@ -14,6 +14,7 @@ use crate::{
 };
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -23,12 +24,18 @@ use scroll::{
   Pwrite,
   LE,
 };
-use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct Liquid {
   pub liquid_type: LiquidType,
   pub volume: u8,
+}
+
+impl SizeWith<Endian> for Liquid {
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, LiquidType> for Liquid {
@@ -138,8 +145,18 @@ impl Wiring {
   }
 }
 
-#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, AsRef)]
-pub struct RunLength(u16);
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Constructor)]
+#[repr(C)]
+pub struct RunLength {
+  pub length: u16,
+  pub rle_type: RLEType,
+}
+
+impl SizeWith<Endian> for RunLength {
+  fn size_with(_: &Endian) -> usize {
+    u16::size_with(&LE)
+  }
+}
 
 impl<'a> TryFromCtx<'a, RLEType> for RunLength {
   type Error = ScrollError;
@@ -154,7 +171,7 @@ impl<'a> TryFromCtx<'a, RLEType> for RunLength {
       RLEType::SingleByte => buf.gread::<u8>(offset)? as u16 + 1,
       _ => 1,
     };
-    Ok((Self(run_length), *offset))
+    Ok((Self::new(run_length, rle_type), *offset))
   }
 }
 
@@ -167,23 +184,23 @@ impl TryIntoCtx<Endian> for &RunLength {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let value = self.as_ref();
+    let value = self.length;
     // this might be wrong, and we might need an RLEType
-    match u8::try_from(*value) {
-      Ok(value_u8) => {
-        // eprintln!("u8 {}", value_u8 - 1);
-        buf.gwrite(value_u8 - 1, offset)
+    match self.rle_type {
+      RLEType::DoubleByte => {
+        buf.gwrite_with(value - 1, offset, LE)?;
       }
-      Err(_) => {
-        // eprintln!("u16 {}", value - 1);
-        buf.gwrite_with(value - 1, offset, LE)
+      RLEType::SingleByte => {
+        buf.gwrite(value as u8 - 1, offset)?;
       }
-    }?;
+      _ => {}
+    };
     Ok(*offset)
   }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 struct TileHeader {
   has_block: bool,
   has_attributes: bool,
@@ -192,6 +209,12 @@ struct TileHeader {
   has_extended_block_id: bool,
   has_extended_attributes: bool,
   rle_type: RLEType,
+}
+
+impl SizeWith<Endian> for TileHeader {
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TileHeader {
@@ -257,10 +280,9 @@ impl TryIntoCtx<Endian> for &TileHeader {
       false,
       false,
     ]);
-    match liquid_type {
-      Some(lt) => lt.assign_bits(&mut flags),
-      _ => {}
-    };
+    if let Some(lt) = liquid_type {
+      lt.assign_bits(&mut flags);
+    }
     flags.as_mut().set(5, has_extended_block_id);
     rle_type.assign_bits(&mut flags);
     buf.gwrite(&flags, offset)?;
@@ -353,7 +375,8 @@ impl<'a> TryIntoCtx<Endian> for &'a TileAttributes {
     ]);
     shape.assign_bits(&mut attrs);
     if *has_extended_attributes {
-      // this is dumb, but it works.
+      // this is dumb, but it works. BitVec doesn't allow you to just extend it
+      // with e.g., a slice of bool's
       let bv = attrs.as_mut();
       bv.push(false);
       bv.push(false);
@@ -374,11 +397,18 @@ impl<'a> TryIntoCtx<Endian> for &'a TileAttributes {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 struct ExtendedTileAttributes {
   is_block_inactive: bool,
   is_block_painted: bool,
   is_wall_painted: bool,
   wiring: Wiring,
+}
+
+impl SizeWith<Endian> for ExtendedTileAttributes {
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
@@ -407,6 +437,7 @@ impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct Tile {
   tile_header: TileHeader,
   pub block: Option<Block>,
@@ -418,6 +449,34 @@ pub struct Tile {
   pub tile_entity: Option<TileEntity>,
   pub pressure_plate: Option<PressurePlate>,
   pub run_length: RunLength,
+}
+
+impl SizeWith<Tile> for Tile {
+  fn size_with(ctx: &Tile) -> usize {
+    TileHeader::size_with(&LE)
+      + match ctx.tile_header.has_attributes {
+        true => {
+          u8::size_with(&LE)
+            + match ctx.tile_header.has_extended_attributes {
+              true => u8::size_with(&LE),
+              _ => 0,
+            }
+        }
+        _ => 0,
+      }
+      + ctx.block.map_or(0, |block| Block::size_with(&block))
+      + ctx.wall.map_or(0, |wall| Wall::size_with(&wall))
+      + ctx
+        .tile_header
+        .liquid_type
+        .map_or(0, |_| Liquid::size_with(&LE))
+      + match ctx.run_length.rle_type {
+        RLEType::SingleByte => u8::size_with(&LE),
+        RLEType::DoubleByte => u16::size_with(&LE),
+        _ => 0,
+      }
+    // Chest, Sign, TileEntity & PressurePlate are calculated by TileMatrix
+  }
 }
 
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
@@ -614,7 +673,23 @@ pub struct WorldCtx<'a> {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, IndexMut, Index, AsRef)]
+#[repr(C)]
 pub struct TileVec(Vec<Tile>);
+
+impl SizeWith<TileVec> for TileVec {
+  fn size_with(ctx: &TileVec) -> usize {
+    let len = ctx.as_ref().len();
+    let mut i = 0;
+    let mut size = 0;
+    while i < len {
+      let tile = &ctx[i];
+      let run_length = tile.run_length.length as usize;
+      size += Tile::size_with(tile);
+      i += run_length;
+    }
+    size
+  }
+}
 
 impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
   type Error = ScrollError;
@@ -628,7 +703,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
     let mut tiles: Vec<Tile> = Vec::with_capacity(size);
     while tiles.len() < size {
       let tile = buf.gread_with::<Tile>(offset, ctx)?;
-      for _ in 0..*tile.run_length.as_ref() {
+      for _ in 0..tile.run_length.length {
         tiles.push(tile.clone());
       }
     }
@@ -652,13 +727,14 @@ impl TryIntoCtx<Endian> for &TileVec {
       buf.gwrite(tile, offset)?;
       // this handles the RLE; the vector is bigger than the actual data
       // because of it.
-      i += *tile.run_length.as_ref() as usize;
+      i += tile.run_length.length as usize;
     }
     Ok(*offset)
   }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, AsMut, Index, AsRef)]
+#[repr(C)]
 pub struct TileMatrix(Vec<TileVec>);
 
 impl TileMatrix {
@@ -698,6 +774,18 @@ impl TryIntoCtx<Endian> for &TileMatrix {
       buf.gwrite(&self[i], offset)?;
     }
     Ok(*offset)
+  }
+}
+
+impl SizeWith<TileMatrix> for TileMatrix {
+  fn size_with(ctx: &TileMatrix) -> usize {
+    let size = ctx
+      .as_ref()
+      .iter()
+      .map(|tv| TileVec::size_with(&tv))
+      .fold(0, |acc, len| acc + len);
+    eprintln!("TileMatrix size: {}", size);
+    size
   }
 }
 
@@ -847,7 +935,7 @@ mod test_tiles {
       sign: None,
       tile_entity: None,
       pressure_plate: None,
-      run_length: RunLength(2),
+      run_length: RunLength::new(2, RLEType::SingleByte),
     };
     let ctx = WorldCtx {
       world_width: &4200,
@@ -863,5 +951,70 @@ mod test_tiles {
 
     assert_eq!(5, buf.pwrite(&tile, 0).unwrap());
     assert_eq!(tile, buf.pread_with::<Tile>(0, ctx).unwrap());
+  }
+
+  #[test]
+  fn test_tile_sizewith() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: None,
+        has_extended_block_id: false,
+        has_extended_attributes: true,
+        rle_type: RLEType::SingleByte,
+      },
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::Normal,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: true,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: None,
+      chest: None,
+      sign: None,
+      tile_entity: None,
+      pressure_plate: None,
+      run_length: RunLength::new(2, RLEType::SingleByte),
+    };
+
+    assert_eq!(7, Tile::size_with(&tile));
+  }
+
+  #[test]
+  fn test_tilevec_sizewith() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: None,
+        has_extended_block_id: false,
+        has_extended_attributes: true,
+        rle_type: RLEType::SingleByte,
+      },
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::Normal,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: true,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: None,
+      chest: None,
+      sign: None,
+      tile_entity: None,
+      pressure_plate: None,
+      run_length: RunLength::new(2, RLEType::SingleByte),
+    };
+    let tv = TileVec(vec![tile.clone(), tile.clone()]);
+
+    assert_eq!(7, TileVec::size_with(&tv));
   }
 }

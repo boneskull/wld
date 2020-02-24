@@ -368,7 +368,7 @@ pub struct Status {
 
 impl SizeWith<Status> for Status {
   fn size_with(ctx: &Status) -> usize {
-    BossesSlain::size_with(&LE)
+    let size = BossesSlain::size_with(&LE)
       + SavedNPCs::size_with(&LE)
       + EventsCompleted::size_with(&LE)
       + ShadowOrbStatus::size_with(&LE)
@@ -385,7 +385,9 @@ impl SizeWith<Status> for Status {
       + BossesSlain2::size_with(&LE)
       + PillarStatus::size_with(&LE)
       + SandstormStatus::size_with(&LE)
-      + OldOnesArmyStatus::size_with(&LE)
+      + OldOnesArmyStatus::size_with(&LE);
+    eprintln!("Status size: {}", size);
+    size
   }
 }
 

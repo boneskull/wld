@@ -22,6 +22,7 @@ use imageproc::{
 };
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -45,12 +46,36 @@ pub struct World {
   pub footer: Footer,
 }
 
+impl SizeWith<World> for World {
+  fn size_with(ctx: &World) -> usize {
+    WorldStatus::size_with(&ctx.status)
+      + TileMatrix::size_with(&ctx.tiles)
+      + ChestsInfo::size_with(&ctx.tiles)
+      + SignsInfo::size_with(&ctx.tiles)
+      + TileEntitiesInfo::size_with(&ctx.tiles)
+      + NPCVec::size_with(&ctx.npcs)
+      + MobVec::size_with(&ctx.mobs)
+      + RoomVec::size_with(&ctx.rooms)
+      + Footer::size_with(&ctx.status.properties.as_world_context())
+  }
+}
+
 #[derive(Clone, Debug, PartialEq, Pwrite, Pread)]
 #[repr(C)]
 pub struct WorldStatus {
   pub header: Header,
   pub properties: Properties,
   pub status: Status,
+}
+
+impl SizeWith<WorldStatus> for WorldStatus {
+  fn size_with(ctx: &WorldStatus) -> usize {
+    let size = Header::size_with(&ctx.header)
+      + Properties::size_with(&ctx.properties)
+      + Status::size_with(&ctx.status);
+    eprintln!("WorldStatus size: {}", size);
+    size
+  }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -101,6 +126,16 @@ impl<'a> TryIntoCtx<WorldCtx<'a>> for &Footer {
   }
 }
 
+impl<'a> SizeWith<WorldCtx<'a>> for Footer {
+  fn size_with(ctx: &WorldCtx) -> usize {
+    let size = TBool::size_with(&LE)
+      + TString::size_with(&ctx.name)
+      + i32::size_with(&LE);
+    eprintln!("Footer size: {}", size);
+    size
+  }
+}
+
 impl World {
   #[inline]
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
@@ -143,9 +178,11 @@ impl World {
 
   pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
     let offset = &mut 0;
-    let mut v: Vec<u8> = Vec::with_capacity(4000000);
+    let size = World::size_with(self);
+    println!("{}", size);
+    let mut v: Vec<u8> = Vec::with_capacity(size);
     unsafe {
-      v.set_len(4000000);
+      v.set_len(size);
     }
     v.gwrite(&self.status, offset)?;
     v.gwrite(&self.tiles, offset)?;

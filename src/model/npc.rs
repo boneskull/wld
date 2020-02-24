@@ -2,6 +2,7 @@ use super::common::*;
 use crate::enums::EntityType;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -13,12 +14,22 @@ use scroll::{
 };
 
 #[derive(Clone, Debug, PartialEq)]
+#[repr(C)]
 pub struct NPC {
   pub entity_type: EntityType,
   pub position: Point,
   pub name: TString,
   pub home_position: Point,
   pub is_homeless: TBool,
+}
+
+impl SizeWith<NPC> for NPC {
+  fn size_with(ctx: &NPC) -> usize {
+    EntityType::size_with(&LE)
+      + TString::size_with(&ctx.name)
+      + (Point::size_with(&LE) * 2)
+      + TBool::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for NPC {
@@ -77,17 +88,26 @@ impl TryIntoCtx<Endian> for &NPC {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Pread, Pwrite)]
-pub struct Mob {
-  pub entity_type: EntityType,
-  pub position: Point,
-}
-
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
+#[repr(C)]
 pub struct NPCVec(Vec<NPC>);
 
-// todo: investigate a trait to dedupe this TryFromCtx
+impl SizeWith<NPCVec> for NPCVec {
+  fn size_with(ctx: &NPCVec) -> usize {
+    let mut size: usize = ctx
+      .as_ref()
+      .iter()
+      .map(|npc| u8::size_with(&LE) + NPC::size_with(&npc))
+      .fold(0, |acc, len| acc + len);
+    if size == 0 {
+      size = u8::size_with(&LE);
+    }
+    eprintln!("NPCVec size: {}", size);
+    size
+  }
+}
 
+// todo: investigate a trait to dedupe this TryFromCtx
 impl<'a> TryFromCtx<'a, Endian> for NPCVec {
   type Error = ScrollError;
 
@@ -135,8 +155,28 @@ impl TryIntoCtx<Endian> for &NPCVec {
   }
 }
 
+#[derive(Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[repr(C)]
+pub struct Mob {
+  pub entity_type: EntityType,
+  pub position: Point,
+}
+
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
+#[repr(C)]
 pub struct MobVec(Vec<Mob>);
+
+impl SizeWith<MobVec> for MobVec {
+  fn size_with(ctx: &MobVec) -> usize {
+    let mut size =
+      ctx.as_ref().len() * (Mob::size_with(&LE) + u8::size_with(&LE));
+    if size == 0 {
+      size = u8::size_with(&LE);
+    }
+    eprintln!("MobVec size: {}", size);
+    size
+  }
+}
 
 impl<'a> TryFromCtx<'a, Endian> for MobVec {
   type Error = ScrollError;

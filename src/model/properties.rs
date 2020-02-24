@@ -193,6 +193,26 @@ impl Properties {
   }
 }
 
+impl SizeWith<Properties> for Properties {
+  fn size_with(ctx: &Properties) -> usize {
+    let size = VariableTBitVec::size_with(&ctx.tile_frame_importances)
+      + TString::size_with(&ctx.name)
+      + GeneratorInfo::size_with(&ctx.generator)
+      + TUuid::size_with(&LE)
+      + (i32::size_with(&LE) * 3)
+      + Rect::size_with(&LE)
+      + (TBool::size_with(&LE) * 4)
+      + u64::size_with(&LE)
+      + WorldStyle::size_with(&LE)
+      + (Point::size_with(&LE) * 2)
+      + (f64::size_with(&LE) * 3)
+      + u32::size_with(&LE)
+      + EvilType::size_with(&LE);
+    eprintln!("Properties size: {}", size);
+    size
+  }
+}
+
 #[cfg(test)]
 mod test_properties {
   use super::*;

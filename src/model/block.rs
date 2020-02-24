@@ -6,6 +6,7 @@ use crate::enums::{
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -18,12 +19,23 @@ use scroll::{
 use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
   pub frame_data: Option<Point>,
   pub block_paint: Option<u8>,
   pub is_block_inactive: bool,
+}
+
+impl SizeWith<Block> for Block {
+  fn size_with(ctx: &Block) -> usize {
+    // note that shape is ignored
+    BlockType::size_with(&LE)
+      + ctx.frame_data.map_or(0, |_| Point::size_with(&LE))
+      + ctx.block_paint.map_or(0, |_| u8::size_with(&LE))
+      + u8::size_with(&LE)
+  }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

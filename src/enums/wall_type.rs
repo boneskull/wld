@@ -1,5 +1,10 @@
 use crate::constants::WALLTYPE_COLOR_MAP;
 use image::Rgba;
+use scroll::{
+  ctx::SizeWith,
+  Endian,
+  LE,
+};
 
 /**
 A list of vanilla Walls by internal name, mapped to their IDs.
@@ -7,6 +12,7 @@ A list of vanilla Walls by internal name, mapped to their IDs.
 See [the list on the Official Terraria Wiki](https://terraria.gamepedia.com/Wall_IDs).
 */
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive, Hash)]
+#[repr(C)]
 pub enum WallType {
   Stone = 1,
   DirtUnsafe = 2,
@@ -244,6 +250,12 @@ impl WallType {
   /// Returns the associated [`Rgba`] color for this `WallType`.
   pub fn color(&self) -> Rgba<u8> {
     WALLTYPE_COLOR_MAP[self]
+  }
+}
+
+impl SizeWith<Endian> for WallType {
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
   }
 }
 

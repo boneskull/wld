@@ -14,6 +14,7 @@ use crate::{
 };
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -26,6 +27,7 @@ use scroll::{
 use std::iter::FromIterator;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct ItemStack {
   pub quantity: i16,
   pub item_type: Option<ItemType>,
@@ -94,11 +96,28 @@ impl TryIntoCtx<Endian> for ItemStack {
   }
 }
 
+impl SizeWith<ItemStack> for ItemStack {
+  fn size_with(ctx: &ItemStack) -> usize {
+    i16::size_with(&LE)
+      + ctx.item_type.map_or(0, |_| ItemType::size_with(&LE))
+      + ctx.modifier.map_or(0, |_| u8::size_with(&LE))
+  }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq, Pwrite)]
+#[repr(C)]
 pub struct Chest {
   pub position: Point,
   pub name: TString,
   pub contents: ItemStackVec,
+}
+
+impl SizeWith<Chest> for Chest {
+  fn size_with(ctx: &Chest) -> usize {
+    Point::size_with(&LE)
+      + TString::size_with(&ctx.name)
+      + ItemStackVec::size_with(&ctx.contents)
+  }
 }
 
 impl<'a> TryFromCtx<'a, u16> for Chest {
@@ -124,7 +143,18 @@ impl<'a> TryFromCtx<'a, u16> for Chest {
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
+#[repr(C)]
 pub struct ItemStackVec(Vec<ItemStack>);
+
+impl SizeWith<ItemStackVec> for ItemStackVec {
+  fn size_with(ctx: &ItemStackVec) -> usize {
+    ctx
+      .as_ref()
+      .iter()
+      .map(|is| ItemStack::size_with(&is))
+      .fold(0, |acc, len| acc + len)
+  }
+}
 
 impl<'a> TryFromCtx<'a, u16> for ItemStackVec {
   type Error = ScrollError;
@@ -160,9 +190,29 @@ impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
 }
 
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+#[repr(C)]
 pub struct ChestsInfo {
   pub count: u16,
   pub max_items: u16,
+}
+
+impl SizeWith<TileMatrix> for ChestsInfo {
+  fn size_with(ctx: &TileMatrix) -> usize {
+    let size = (u16::size_with(&LE) * 2)
+      + ctx
+        .as_ref()
+        .iter()
+        .map(|tv| {
+          tv.as_ref()
+            .iter()
+            .filter(|tile| tile.chest.is_some())
+            .map(|tile| Chest::size_with(&tile.chest.as_ref().unwrap()))
+            .fold(0usize, |acc, len| acc + len)
+        })
+        .fold(0, |acc, len| acc + len);
+    eprintln!("ChestsInfo size: {}", size);
+    size
+  }
 }
 
 impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
@@ -189,7 +239,7 @@ impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
           }
           _ => {}
         };
-        j += *tile.run_length.as_ref() as usize;
+        j += tile.run_length.length as usize;
       }
     }
     Ok(*offset)
@@ -232,14 +282,41 @@ impl ChestVec {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
+#[repr(C)]
 pub struct Sign {
   pub text: TString,
   pub position: Point,
 }
 
+impl SizeWith<Sign> for Sign {
+  fn size_with(ctx: &Sign) -> usize {
+    TString::size_with(&ctx.text) + Point::size_with(&LE)
+  }
+}
+
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+#[repr(C)]
 pub struct SignsInfo {
   pub count: u16,
+}
+
+impl SizeWith<TileMatrix> for SignsInfo {
+  fn size_with(ctx: &TileMatrix) -> usize {
+    let size = u16::size_with(&LE)
+      + ctx
+        .as_ref()
+        .iter()
+        .map(|tv| {
+          tv.as_ref()
+            .iter()
+            .filter(|tile| tile.sign.is_some())
+            .map(|tile| Sign::size_with(&tile.sign.as_ref().unwrap()))
+            .fold(0usize, |acc, len| acc + len)
+        })
+        .fold(0, |acc, len| acc + len);
+    eprintln!("SignsInfo size: {}", size);
+    size
+  }
 }
 
 impl TryIntoCtx<&TileMatrix> for &SignsInfo {
@@ -265,7 +342,7 @@ impl TryIntoCtx<&TileMatrix> for &SignsInfo {
           }
           _ => {}
         };
-        j += *tile.run_length.as_ref() as usize;
+        j += tile.run_length.length as usize;
       }
     }
     Ok(*offset)

@@ -1,7 +1,13 @@
 use crate::constants::BLOCKTYPE_COLOR_MAP;
 use image::Rgba;
+use scroll::{
+  ctx::SizeWith,
+  Endian,
+  LE,
+};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive, Hash)]
+#[repr(C)]
 pub enum BlockType {
   Dirt = 0,
   Stone = 1,
@@ -478,5 +484,11 @@ pub enum BlockType {
 impl BlockType {
   pub fn color(&self) -> Rgba<u8> {
     BLOCKTYPE_COLOR_MAP[self]
+  }
+}
+
+impl SizeWith<Endian> for BlockType {
+  fn size_with(_: &Endian) -> usize {
+    u16::size_with(&LE)
   }
 }

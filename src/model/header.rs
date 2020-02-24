@@ -164,15 +164,17 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
   }
 }
 
-impl SizeWith<Endian> for &Header {
-  fn size_with(_: &Endian) -> usize {
-    i32::size_with(&LE) // version
+impl SizeWith<Header> for Header {
+  fn size_with(_: &Header) -> usize {
+    let size = i32::size_with(&LE) // version
       + (7 * u8::size_with(&LE)) // signature
       + u8::size_with(&LE) // savefile type
       + u32::size_with(&LE) // revision
       + u8::size_with(&LE) // is favorite
       + u16::size_with(&LE) // offset count (always 9?)
-      + Offsets::size_with(&LE) // offsets
+      + Offsets::size_with(&LE); // offsets
+    eprintln!("Header size: {}", size);
+    size
   }
 }
 

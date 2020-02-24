@@ -1,6 +1,7 @@
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -12,6 +13,7 @@ use scroll::{
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
+#[repr(C)]
 pub enum EntityType {
   BigHornetStingy = -65,
   LittleHornetStingy = -64,
@@ -684,6 +686,12 @@ impl<'a> TryIntoCtx<Endian> for &'a EntityType {
     let value = *self as i32;
     buf.gwrite_with(value, offset, LE)?;
     Ok(*offset)
+  }
+}
+
+impl SizeWith<Endian> for EntityType {
+  fn size_with(_: &Endian) -> usize {
+    i32::size_with(&LE)
   }
 }
 

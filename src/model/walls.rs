@@ -2,6 +2,7 @@ use crate::enums::WallType;
 use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
@@ -9,12 +10,20 @@ use scroll::{
   Error as ScrollError,
   Pread,
   Pwrite,
+  LE,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct Wall {
   pub wall_type: WallType,
   pub wall_paint: Option<u8>,
+}
+
+impl SizeWith<Wall> for Wall {
+  fn size_with(ctx: &Wall) -> usize {
+    WallType::size_with(&LE) + ctx.wall_paint.map_or(0, |_| u8::size_with(&LE))
+  }
 }
 
 impl<'a> TryFromCtx<'a, bool> for Wall {

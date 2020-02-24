@@ -1,17 +1,26 @@
 use scroll::{
   ctx::{
+    SizeWith,
     TryFromCtx,
     TryIntoCtx,
   },
   Endian,
   Error as ScrollError,
   Pread,
+  LE,
 };
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub enum EvilType {
   Corruption,
   Crimson,
+}
+
+impl SizeWith<Endian> for EvilType {
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
+  }
 }
 
 impl<'a> TryFromCtx<'a, Endian> for EvilType {

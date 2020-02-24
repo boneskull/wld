@@ -118,8 +118,8 @@ pub enum TBool {
 }
 
 impl SizeWith<Endian> for TBool {
-  fn size_with(ctx: &Endian) -> usize {
-    u8::size_with(ctx)
+  fn size_with(_: &Endian) -> usize {
+    u8::size_with(&LE)
   }
 }
 
