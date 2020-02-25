@@ -84,6 +84,8 @@ impl TryIntoCtx<Endian> for &NPC {
     buf.gwrite_with(*y as f32, offset, LE)?;
     buf.gwrite(is_homeless, offset)?;
     buf.gwrite(home_position, offset)?;
+
+    assert!(*offset == NPC::size_with(&self), "NPC size mismatch");
     Ok(*offset)
   }
 }
@@ -94,14 +96,12 @@ pub struct NPCVec(Vec<NPC>);
 
 impl SizeWith<NPCVec> for NPCVec {
   fn size_with(ctx: &NPCVec) -> usize {
-    let mut size: usize = ctx
-      .as_ref()
-      .iter()
-      .map(|npc| u8::size_with(&LE) + NPC::size_with(&npc))
-      .fold(0, |acc, len| acc + len);
-    if size == 0 {
-      size = u8::size_with(&LE)
-    }
+    let size: usize = TBool::size_with(&LE)
+      + ctx
+        .as_ref()
+        .iter()
+        .map(|npc| TBool::size_with(&LE) + NPC::size_with(&npc))
+        .fold(0, |acc, len| acc + len);
     debug!("NPCVec size: {}", size);
     size
   }
@@ -117,11 +117,9 @@ impl<'a> TryFromCtx<'a, Endian> for NPCVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let mut npcs: Vec<NPC> = vec![];
-    let mut more_npcs = buf.gread_with::<TBool>(offset, LE)?;
-    while more_npcs == TBool::True {
+    while buf.gread_with::<TBool>(offset, LE)? == TBool::True {
       let npc = buf.gread::<NPC>(offset)?;
       npcs.push(npc);
-      more_npcs = buf.gread_with::<TBool>(offset, LE)?;
     }
     Ok((Self(npcs), *offset))
   }
@@ -151,6 +149,8 @@ impl TryIntoCtx<Endian> for &NPCVec {
         buf.gwrite(&TBool::True, offset)?;
       }
     }
+    assert!(*offset == NPCVec::size_with(&self), "NPCVec size mismatch");
+
     Ok(*offset)
   }
 }
@@ -168,11 +168,8 @@ pub struct MobVec(Vec<Mob>);
 
 impl SizeWith<MobVec> for MobVec {
   fn size_with(ctx: &MobVec) -> usize {
-    let mut size =
-      ctx.as_ref().len() * (Mob::size_with(&LE) + u8::size_with(&LE));
-    if size == 0 {
-      size = u8::size_with(&LE);
-    }
+    let size = TBool::size_with(&LE)
+      + (ctx.as_ref().len() * (Mob::size_with(&LE) + TBool::size_with(&LE)));
     debug!("MobVec size: {}", size);
     size
   }
@@ -187,11 +184,9 @@ impl<'a> TryFromCtx<'a, Endian> for MobVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let mut mobs: Vec<Mob> = vec![];
-    let mut more_mobs = buf.gread_with::<TBool>(offset, LE)?;
-    while more_mobs == TBool::True {
+    while buf.gread_with::<TBool>(offset, LE)? == TBool::True {
       let mob = buf.gread::<Mob>(offset)?;
       mobs.push(mob);
-      more_mobs = buf.gread_with::<TBool>(offset, LE)?;
     }
     Ok((Self(mobs), *offset))
   }
@@ -221,6 +216,8 @@ impl TryIntoCtx<Endian> for &MobVec {
         buf.gwrite(&TBool::True, offset)?;
       }
     }
+    assert!(*offset == MobVec::size_with(&self), "MobVec size mismatch");
+
     Ok(*offset)
   }
 }

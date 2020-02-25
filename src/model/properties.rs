@@ -102,13 +102,18 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
     let GeneratorInfo { seed, version } = self;
-    let mut size = 0;
-    size += seed.try_into_ctx(&mut buf[size..], ctx)?;
-    size += version.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    let offset = &mut 0;
+    buf.gwrite(seed, offset)?;
+    buf.gwrite_with(version, offset, LE)?;
+    assert!(
+      *offset == GeneratorInfo::size_with(&self),
+      "GeneratorInfo size mismatch"
+    );
+
+    Ok(*offset)
   }
 }
 

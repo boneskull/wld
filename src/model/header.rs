@@ -27,6 +27,7 @@ pub struct Offsets {
   pub pressure_plates: i32,
   pub town_manager: i32,
   pub footer: i32,
+  _extra: i32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -78,12 +79,12 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
     }
     let revision = buf.gread_with::<u32>(offset, LE)?;
     let is_favorite = buf.gread_with::<u64>(offset, LE)? != 0;
-    let raw_offset_lengths = buf.gread_with::<u16>(offset, LE)?;
+    let _raw_offset_lengths = buf.gread_with::<i16>(offset, LE)?;
     let offsets = buf.gread::<Offsets>(offset)?;
 
-    for _ in 9..raw_offset_lengths {
-      buf.gread_with::<i32>(offset, LE)?;
-    }
+    // for _ in 0..raw_offset_lengths {
+    //   buf.gread_with::<i32>(offset, LE)?;
+    // }
 
     let version = match raw_version {
       71 => Ok("1.2.0.3.1"),
@@ -160,19 +161,22 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
     buf.gwrite_with(is_favorite, offset, LE)?;
     buf.gwrite_with(9u16, offset, LE)?; // offset count
     buf.gwrite_with(offsets, offset, LE)?;
+    assert!(*offset == Header::size_with(&LE), "Header size mismatch");
     Ok(*offset)
   }
 }
 
-impl SizeWith<Header> for Header {
-  fn size_with(_: &Header) -> usize {
-    i32::size_with(&LE) // version
+impl SizeWith<Endian> for Header {
+  fn size_with(_: &Endian) -> usize {
+    let size = i32::size_with(&LE) // version
       + (7 * u8::size_with(&LE)) // signature
       + u8::size_with(&LE) // savefile type
       + u32::size_with(&LE) // revision
-      + u8::size_with(&LE) // is favorite
-      + u16::size_with(&LE) // offset count (always 9?)
-      + Offsets::size_with(&LE) // offsets
+      + u64::size_with(&LE) // is favorite
+      + i16::size_with(&LE) // offset count (always 9?)
+      + Offsets::size_with(&LE); // offsets
+    debug!("Header size: {:?}", size);
+    size
   }
 }
 
@@ -196,6 +200,7 @@ mod test_header {
         pressure_plates: 12,
         town_manager: 14,
         footer: 16,
+        _extra: 0,
       },
     };
     let mut bytes = [0; 70];

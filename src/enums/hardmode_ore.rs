@@ -57,6 +57,10 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     buf.gwrite_with(*self as i32, offset, LE)?;
+    assert!(
+      *offset == HardmodeOre::size_with(&LE),
+      "HardmodeOre size mismatch"
+    );
     Ok(*offset)
   }
 }

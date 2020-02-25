@@ -113,6 +113,10 @@ impl TryIntoCtx<Endian> for ItemStack {
         }
       }
     }
+    assert!(
+      *offset == ItemStack::size_with(&self),
+      "ItemStack size mismatch"
+    );
     Ok(*offset)
   }
 }
@@ -257,6 +261,11 @@ impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
     self.as_ref().iter().for_each(|stack| {
       buf.gwrite(*stack, offset).unwrap();
     });
+
+    assert!(
+      *offset == ItemStackVec::size_with(&self),
+      "ItemStackVec size mismatch"
+    );
     Ok(*offset)
   }
 }
@@ -315,6 +324,10 @@ impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
         j += tile.run_length.length as usize;
       }
     }
+    assert!(
+      *offset == ChestsInfo::size_with(ctx),
+      "ChestsInfo size mismatch"
+    );
     Ok(*offset)
   }
 }
@@ -418,18 +431,17 @@ impl TryIntoCtx<&TileMatrix> for &SignsInfo {
         j += tile.run_length.length as usize;
       }
     }
+
+    assert!(
+      *offset == SignsInfo::size_with(ctx),
+      "SignsInfo size mismatch"
+    );
     Ok(*offset)
   }
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct SignVec(Vec<Sign>, SignsInfo);
-
-impl SignVec {
-  pub fn signs_info(&self) -> SignsInfo {
-    self.1
-  }
-}
 
 impl<'a> TryFromCtx<'a, Endian> for SignVec {
   type Error = ScrollError;
@@ -450,6 +462,10 @@ impl<'a> TryFromCtx<'a, Endian> for SignVec {
 }
 
 impl SignVec {
+  pub fn signs_info(&self) -> SignsInfo {
+    self.1
+  }
+
   #[inline]
   pub fn move_to_tile(signs: Self, tiles: &mut TileMatrix) {
     signs.0.into_iter().for_each(|sign| {

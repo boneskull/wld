@@ -135,12 +135,12 @@ pub struct AnglerQuestStatus {
 
 impl SizeWith<AnglerQuestStatus> for AnglerQuestStatus {
   fn size_with(ctx: &AnglerQuestStatus) -> usize {
-    let completed_players_size: usize = ctx
-      .completed_players
-      .iter()
-      .map(|tstr| TString::size_with(tstr))
-      .fold(0, |acc, len| acc + len);
-    completed_players_size
+    u8::size_with(&LE)
+      + ctx
+        .completed_players
+        .iter()
+        .map(|tstr| TString::size_with(tstr))
+        .fold(0, |acc, len| acc + len)
       + TBool::size_with(&LE)
       + AnglerQuestFish::size_with(&LE)
   }
@@ -156,12 +156,8 @@ impl<'a> TryFromCtx<'a, Endian> for AnglerQuestStatus {
     let offset = &mut 0;
     let completed_players_count = buf.gread::<u8>(offset)?;
     let mut completed_players: Vec<TString> = vec![];
-    if completed_players_count == 0 {
-      completed_players.push(TString::from(""));
-    } else {
-      for _ in 0..completed_players_count {
-        completed_players.push(buf.gread::<TString>(offset)?);
-      }
+    for _ in 0..completed_players_count {
+      completed_players.push(buf.gread::<TString>(offset)?);
     }
     let angler_saved = buf.gread::<TBool>(offset)?;
     let target = buf.gread::<AnglerQuestFish>(offset)?;
@@ -193,16 +189,15 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
     let completed_players_count = completed_players.len();
     buf.gwrite(completed_players_count as u8, offset)?;
 
-    if completed_players_count == 0 {
-      buf.gwrite(&TString::from(""), offset)?;
-    } else {
-      for i in 0..completed_players_count {
-        buf.gwrite(&completed_players[i], offset)?;
-      }
+    for i in 0..completed_players_count {
+      buf.gwrite(&completed_players[i], offset)?;
     }
     buf.gwrite(angler_saved, offset)?;
     buf.gwrite(target, offset)?;
-
+    assert!(
+      *offset == AnglerQuestStatus::size_with(&self),
+      "Size mismatch for AnglerQuestStatus"
+    );
     Ok(*offset)
   }
 }
@@ -249,6 +244,10 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
     for i in 0..mob_kills_count {
       buf.gwrite_with(&mob_kills[i], offset, LE)?;
     }
+    assert!(
+      *offset == MobKillVec::size_with(&self),
+      "Size mismatch for MobKillVec"
+    );
     Ok(*offset)
   }
 }
@@ -259,7 +258,7 @@ pub struct PartyingNPCVec(Vec<i32>);
 
 impl SizeWith<PartyingNPCVec> for PartyingNPCVec {
   fn size_with(ctx: &PartyingNPCVec) -> usize {
-    (ctx.as_ref().len() + 1) * i32::size_with(&LE)
+    i32::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
   }
 }
 
@@ -295,6 +294,10 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
     for i in 0..partying_npcs_count {
       buf.gwrite_with(&partying_npcs[i], offset, LE)?;
     }
+    assert!(
+      *offset == PartyingNPCVec::size_with(&self),
+      "Size mismatch for PartyingNPCVec"
+    );
     Ok(*offset)
   }
 }
@@ -385,7 +388,8 @@ impl SizeWith<Status> for Status {
       + BossesSlain2::size_with(&LE)
       + PillarStatus::size_with(&LE)
       + SandstormStatus::size_with(&LE)
-      + OldOnesArmyStatus::size_with(&LE);
+      + OldOnesArmyStatus::size_with(&LE)
+      + PartyStatus::size_with(&ctx.party_status);
     debug!("Status size: {}", size);
     size
   }

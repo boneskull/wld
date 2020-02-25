@@ -685,6 +685,10 @@ impl<'a> TryIntoCtx<Endian> for &'a EntityType {
     let offset = &mut 0;
     let value = *self as i32;
     buf.gwrite_with(value, offset, LE)?;
+    assert!(
+      *offset == EntityType::size_with(&LE),
+      "EntityType size mismatch"
+    );
     Ok(*offset)
   }
 }

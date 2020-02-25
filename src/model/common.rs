@@ -96,6 +96,10 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
       Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
     buf.gwrite(value.as_bytes(), offset)?;
+    assert!(
+      *offset == TString::size_with(&self),
+      "TString size mismatch"
+    );
     Ok(*offset)
   }
 }
@@ -187,7 +191,7 @@ impl From<Vec<bool>> for VariableTBitVec {
 
 impl SizeWith<VariableTBitVec> for VariableTBitVec {
   fn size_with(ctx: &VariableTBitVec) -> usize {
-    i16::size_with(&LE) + (ctx.as_ref().len() * u8::size_with(&LE))
+    i16::size_with(&LE) + ctx.as_ref().as_slice().len()
   }
 }
 
@@ -231,7 +235,7 @@ pub struct TBitVec(BitVec<Lsb0, u8>);
 
 impl SizeWith<TBitVec> for TBitVec {
   fn size_with(ctx: &TBitVec) -> usize {
-    ctx.as_ref().len() * u8::size_with(&LE)
+    ctx.as_ref().as_slice().len()
   }
 }
 

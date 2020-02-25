@@ -130,6 +130,7 @@ impl<'a> TryIntoCtx<Endian> for &Block {
       }
       _ => {}
     };
+    assert!(*offset == Block::size_with(&self), "Block size mismatch");
     Ok(*offset)
   }
 }

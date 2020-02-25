@@ -125,6 +125,11 @@ impl TryIntoCtx<Endian> for &TileEntity {
       }
       _ => {}
     }
+    assert!(
+      *offset == TileEntity::size_with(&self),
+      "TileEntity size mismatch"
+    );
+
     Ok(*offset)
   }
 }
@@ -181,6 +186,11 @@ impl TryIntoCtx<&TileMatrix> for &TileEntitiesInfo {
         j += tile.run_length.length as usize;
       }
     }
+    assert!(
+      *offset == TileEntitiesInfo::size_with(ctx),
+      "TileEntitiesInfo size mismatch"
+    );
+
     Ok(*offset)
   }
 }
@@ -221,80 +231,100 @@ impl TileEntityVec {
   }
 }
 
-// #[derive(Copy, Clone, Debug, PartialEq, Eq, AsRef)]
-// pub struct PressurePlate(Point);
-
-// impl<'a> TryFromCtx<'a, Endian> for PressurePlate {
-//   type Error = ScrollError;
-
-//   fn try_from_ctx(
-//     buf: &'a [u8],
-//     _: Endian,
-//   ) -> Result<(Self, usize), Self::Error> {
-//     let offset = &mut 0;
-//     let point = buf.gread_with::<Point>(offset, LE)?;
-//     Ok((Self(point), *offset))
-//   }
-// }
-
-// impl TryIntoCtx<Endian> for PressurePlate {
-//   type Error = ScrollError;
-
-//   fn try_into_ctx(
-//     self,
-//     buf: &mut [u8],
-//     _: Endian,
-//   ) -> Result<usize, Self::Error> {
-//     let offset = &mut 0;
-//     let point = self.as_ref();
-//     buf.gwrite(point, offset)?;
-//     Ok(*offset)
-//   }
-// }
-
 pub type PressurePlate = Point;
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
-pub struct PressurePlateVec(Vec<PressurePlate>);
+#[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
+#[repr(C)]
+pub struct PressurePlatesInfo {
+  pub count: i32,
+}
 
-impl<'a> TryFromCtx<'a, ()> for PressurePlateVec {
-  type Error = ScrollError;
-
-  fn try_from_ctx(buf: &'a [u8], _: ()) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let pressure_plate_count = buf.gread_with::<i32>(offset, LE)?;
-    let mut pressure_plates: Vec<PressurePlate> = vec![];
-    for _ in 0..pressure_plate_count {
-      let pressure_plate = buf.gread::<PressurePlate>(offset)?;
-      pressure_plates.push(pressure_plate);
-    }
-    Ok((Self(pressure_plates), *offset))
+impl SizeWith<TileMatrix> for PressurePlatesInfo {
+  fn size_with(ctx: &TileMatrix) -> usize {
+    let size = i32::size_with(&LE)
+      + ctx
+        .as_ref()
+        .iter()
+        .map(|tv| {
+          tv.as_ref()
+            .iter()
+            .map(|tile| {
+              tile
+                .pressure_plate
+                .map_or(0, |_| PressurePlate::size_with(&LE))
+            })
+            .fold(0usize, |acc, len| acc + len)
+        })
+        .fold(0, |acc, len| acc + len);
+    debug!("PressurePlatesInfo size: {}", size);
+    size
   }
 }
 
-impl TryIntoCtx<Endian> for PressurePlateVec {
+impl TryIntoCtx<&TileMatrix> for &PressurePlatesInfo {
   type Error = ScrollError;
 
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    _: Endian,
+    ctx: &TileMatrix,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let vec = self.as_ref();
-    let len = vec.len();
-    buf.gwrite_with(len as i32, offset, LE)?;
+    buf.gwrite(self.count, offset)?;
+    let len = ctx.as_ref().len();
     for i in 0..len {
-      buf.gwrite(vec[i], offset)?;
+      let mut j = 0;
+      let tv: &TileVec = &ctx[i];
+      let tv_len = tv.as_ref().len();
+      while j < tv_len {
+        let tile: &Tile = &tv[j];
+        match &tile.pressure_plate {
+          Some(pressure_plate) => {
+            buf.gwrite(pressure_plate, offset)?;
+          }
+          _ => {}
+        };
+        j += tile.run_length.length as usize;
+      }
     }
+
+    assert!(
+      *offset == PressurePlatesInfo::size_with(ctx),
+      "PressurePlatesInfo size mismatch"
+    );
     Ok(*offset)
+  }
+}
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct PressurePlateVec(Vec<PressurePlate>, PressurePlatesInfo);
+
+impl<'a> TryFromCtx<'a, Endian> for PressurePlateVec {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    _: Endian,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let count = buf.gread_with::<i32>(offset, LE)?;
+    let mut pressure_plates: Vec<PressurePlate> =
+      Vec::with_capacity(count as usize);
+    for _ in 0..count {
+      let pressure_plate = buf.gread::<PressurePlate>(offset)?;
+      pressure_plates.push(pressure_plate);
+    }
+    Ok((Self(pressure_plates, PressurePlatesInfo { count }), *offset))
   }
 }
 
 impl PressurePlateVec {
+  pub fn pressure_plates_info(&self) -> PressurePlatesInfo {
+    self.1
+  }
+
   #[inline]
   pub fn move_to_tile(pressure_plates: Self, tiles: &mut TileMatrix) {
-    pressure_plates.into_iter().for_each(|pressure_plate| {
+    pressure_plates.0.into_iter().for_each(|pressure_plate| {
       let mut tile = tiles.tile_at_point(&pressure_plate);
       tile.pressure_plate = Some(pressure_plate);
     });
@@ -353,6 +383,11 @@ impl TryIntoCtx<Endian> for &RoomVec {
     for i in 0..len {
       buf.gwrite(vec[i], offset)?;
     }
+    assert!(
+      *offset == RoomVec::size_with(&self),
+      "RoomVec size mismatch"
+    );
+
     Ok(*offset)
   }
 }
@@ -411,17 +446,6 @@ mod test_tile_entity {
     let mut buf = [0; 8];
     assert_eq!(8, buf.pwrite(pp, 0).unwrap());
     assert_eq!(&pp, &buf.pread::<PressurePlate>(0).unwrap());
-  }
-
-  #[test]
-  fn test_pressure_plate_vec_rw() {
-    let ppv = PressurePlateVec(vec![
-      PressurePlate { x: 0, y: 0 },
-      PressurePlate { x: 1, y: 1 },
-    ]);
-    let mut buf = [0; 20];
-    assert_eq!(20, buf.pwrite(ppv.clone(), 0).unwrap());
-    assert_eq!(ppv, buf.pread::<PressurePlateVec>(0).unwrap());
   }
 
   #[test]

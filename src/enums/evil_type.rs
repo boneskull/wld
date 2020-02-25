@@ -7,6 +7,7 @@ use scroll::{
   Endian,
   Error as ScrollError,
   Pread,
+  Pwrite,
   LE,
 };
 
@@ -49,11 +50,15 @@ impl<'a> TryIntoCtx<Endian> for &'a EvilType {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
+    let offset = &mut 0;
     let value = *self as u8;
-    size += value.try_into_ctx(&mut buf[size..], ctx)?;
-    Ok(size)
+    buf.gwrite_with(value, offset, LE)?;
+    assert!(
+      *offset == EvilType::size_with(&LE),
+      "EvilType size mismatch"
+    );
+    Ok(*offset)
   }
 }

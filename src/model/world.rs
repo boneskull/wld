@@ -26,6 +26,7 @@ use scroll::{
     TryFromCtx,
     TryIntoCtx,
   },
+  Endian,
   Error as ScrollError,
   Pread,
   Pwrite,
@@ -40,9 +41,11 @@ pub struct World {
   pub chests_info: ChestsInfo,
   pub signs_info: SignsInfo,
   pub tile_entities_info: TileEntitiesInfo,
+  pub pressure_plates_info: PressurePlatesInfo,
   pub npcs: NPCVec,
   pub mobs: MobVec,
   pub rooms: RoomVec,
+  pub town_manager: TownManager,
   pub footer: Footer,
 }
 
@@ -55,7 +58,9 @@ impl SizeWith<World> for World {
       + TileEntitiesInfo::size_with(&ctx.tiles)
       + NPCVec::size_with(&ctx.npcs)
       + MobVec::size_with(&ctx.mobs)
+      + PressurePlatesInfo::size_with(&ctx.tiles)
       + RoomVec::size_with(&ctx.rooms)
+      + TownManager::size_with(&ctx.town_manager)
       + Footer::size_with(&ctx.status.properties.as_world_context())
   }
 }
@@ -70,7 +75,7 @@ pub struct WorldStatus {
 
 impl SizeWith<WorldStatus> for WorldStatus {
   fn size_with(ctx: &WorldStatus) -> usize {
-    let size = Header::size_with(&ctx.header)
+    let size = Header::size_with(&LE)
       + Properties::size_with(&ctx.properties)
       + Status::size_with(&ctx.status);
     debug!("WorldStatus size: {}", size);
@@ -121,7 +126,7 @@ impl<'a> TryIntoCtx<WorldCtx<'a>> for &Footer {
     let offset = &mut 0;
     buf.gwrite(&TBool::True, offset)?;
     buf.gwrite(ctx.name, offset)?;
-    buf.gwrite(ctx.id, offset)?;
+    buf.gwrite_with(ctx.id, offset, LE)?;
     Ok(*offset)
   }
 }
@@ -136,46 +141,122 @@ impl<'a> SizeWith<WorldCtx<'a>> for Footer {
   }
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq, AsRef, Index)]
+#[repr(C)]
+pub struct TownManager(Vec<u8>);
+
+impl SizeWith<TownManager> for TownManager {
+  fn size_with(ctx: &TownManager) -> usize {
+    ctx.as_ref().len()
+  }
+}
+
+impl<'a> TryFromCtx<'a, usize> for TownManager {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    ctx: usize,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let mut vec: Vec<u8> = Vec::with_capacity(ctx);
+    for _ in 0..ctx {
+      vec.push(buf.gread::<u8>(offset)?);
+    }
+    Ok((TownManager(vec), *offset))
+  }
+}
+
+impl<'a> TryIntoCtx<Endian> for &TownManager {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    for i in 0..self.as_ref().len() {
+      buf.gwrite(&self[i], offset)?;
+    }
+    Ok(*offset)
+  }
+}
+
 impl World {
   #[inline]
   pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
     let offset = &mut 0;
     // order matters
     let status = bytes.gread::<WorldStatus>(offset)?;
-
+    debug!("{:?}", status.header.offsets);
     // need this context to associate various bits with other bits
     let world_ctx = status.properties.as_world_context();
 
     let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
-    debug!(
-      "Reading chests @ offset {}; expected offset {}",
-      offset, status.header.offsets.chests
+    assert!(
+      status.header.offsets.chests as usize == *offset,
+      "Chests offset mismatch"
     );
     let chests = bytes.gread::<ChestVec>(offset)?;
     let chests_info = chests.chests_info();
     ChestVec::move_to_tile(chests, &mut tiles);
+    assert!(
+      status.header.offsets.signs as usize == *offset,
+      "Signs offset mismatch"
+    );
     let signs = bytes.gread::<SignVec>(offset)?;
     let signs_info = signs.signs_info();
     SignVec::move_to_tile(signs, &mut tiles);
+    assert!(
+      status.header.offsets.npcs as usize == *offset,
+      "NPCs offset mismatch"
+    );
     let npcs = bytes.gread::<NPCVec>(offset)?;
     let mobs = bytes.gread::<MobVec>(offset)?;
+    assert!(
+      status.header.offsets.tile_entities as usize == *offset,
+      "TileEntities offset mismatch"
+    );
     let tile_entities = bytes.gread::<TileEntityVec>(offset)?;
     let tile_entities_info = tile_entities.tile_entities_info();
     TileEntityVec::move_to_tile(tile_entities, &mut tiles);
+    assert!(
+      status.header.offsets.pressure_plates as usize == *offset,
+      "PressurePlates offset mismatch"
+    );
+    let pressure_plates = bytes.gread::<PressurePlateVec>(offset)?;
+    let pressure_plates_info = pressure_plates.pressure_plates_info();
+    PressurePlateVec::move_to_tile(pressure_plates, &mut tiles);
+    assert!(
+      status.header.offsets.town_manager as usize == *offset,
+      "RoomVec offset mismatch; expected {:?}, got {:?}",
+      status.header.offsets.town_manager,
+      offset
+    );
     let rooms = bytes.gread::<RoomVec>(offset)?;
-    // footer is essentially useless, but needed on output and performs
-    // assertions
-    let mut offset = status.header.offsets.footer as usize;
-    let footer = bytes.gread_with::<Footer>(&mut offset, world_ctx)?;
+    // likely junk data
+    let town_manager = bytes.gread_with::<TownManager>(
+      offset,
+      status.header.offsets.footer as usize - *offset,
+    )?;
+    assert!(
+      status.header.offsets.footer as usize == *offset,
+      "Footer offset mismatch"
+    );
+    let footer = bytes.gread_with::<Footer>(offset, world_ctx)?;
+    debug!("Read {:?} bytes", *offset);
     Ok(World {
       status,
       tiles,
       chests_info,
       signs_info,
+      pressure_plates_info,
       tile_entities_info,
       npcs,
       mobs,
       rooms,
+      town_manager,
       footer,
     })
   }
@@ -183,22 +264,65 @@ impl World {
   pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
     let offset = &mut 0;
     let size = World::size_with(self);
+    debug!("Total size: {:?}", size);
     let mut v: Vec<u8> = Vec::with_capacity(size);
     unsafe {
       v.set_len(size);
     }
     v.gwrite(&self.status, offset)?;
+    assert!(
+      self.status.header.offsets.tiles as usize == *offset,
+      "Tiles offset mismatch; expected {:?}, got {:?}",
+      self.status.header.offsets.tiles,
+      offset
+    );
     v.gwrite(&self.tiles, offset)?;
+    assert!(
+      self.status.header.offsets.chests as usize == *offset,
+      "Chests offset mismatch; expected {:?}, got {:?}",
+      self.status.header.offsets.chests,
+      offset
+    );
     v.gwrite_with(&self.chests_info, offset, &self.tiles)?;
+    assert!(
+      self.status.header.offsets.signs as usize == *offset,
+      "Signs offset mismatch; expected {:?}, got {:?}",
+      self.status.header.offsets.signs,
+      offset
+    );
+
     v.gwrite_with(&self.signs_info, offset, &self.tiles)?;
+    assert!(
+      self.status.header.offsets.npcs as usize == *offset,
+      "NPCs offset mismatch"
+    );
+
     v.gwrite(&self.npcs, offset)?;
     v.gwrite(&self.mobs, offset)?;
+    assert!(
+      self.status.header.offsets.tile_entities as usize == *offset,
+      "TileEntities offset mismatch"
+    );
+
     v.gwrite_with(&self.tile_entities_info, offset, &self.tiles)?;
+    assert!(
+      self.status.header.offsets.pressure_plates as usize == *offset,
+      "PressurePlates offset mismatch"
+    );
+    v.gwrite_with(&self.pressure_plates_info, offset, &self.tiles)?;
+    assert!(
+      self.status.header.offsets.town_manager as usize == *offset,
+      "RoomVec offset mismatch"
+    );
     v.gwrite(&self.rooms, offset)?;
-    let mut offset = self.status.header.offsets.footer as usize;
+    // v.gwrite(&self.town_manager, offset)?;
+    assert!(
+      self.status.header.offsets.footer as usize == *offset,
+      "Footer offset mismatch"
+    );
     v.gwrite_with(
       &self.footer,
-      &mut offset,
+      offset,
       self.status.properties.as_world_context(),
     )?;
     debug!("Size in bytes - actual: {}, expected: {}", offset, size);

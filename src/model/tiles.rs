@@ -197,7 +197,7 @@ impl TryIntoCtx<Endian> for &RunLength {
         buf.gwrite_with(value - 1, offset, LE)?;
       }
       RLEType::SingleByte => {
-        buf.gwrite(value as u8 - 1, offset)?;
+        buf.gwrite((value - 1) as u8, offset)?;
       }
       _ => {}
     };
@@ -773,6 +773,10 @@ impl TryIntoCtx<Endian> for &TileMatrix {
     for i in 0..self.as_ref().len() {
       buf.gwrite(&self[i], offset)?;
     }
+    assert!(
+      *offset == TileMatrix::size_with(self),
+      "TileMatrix size mismatch"
+    );
     Ok(*offset)
   }
 }
