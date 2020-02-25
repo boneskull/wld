@@ -159,7 +159,7 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
       false => 0,
     };
     buf.gwrite_with(is_favorite, offset, LE)?;
-    buf.gwrite_with(9u16, offset, LE)?; // offset count
+    buf.gwrite_with(10u16, offset, LE)?; // offset count
     buf.gwrite_with(offsets, offset, LE)?;
     assert!(*offset == Header::size_with(&LE), "Header size mismatch");
     Ok(*offset)
