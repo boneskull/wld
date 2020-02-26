@@ -65,13 +65,16 @@ Properties {
             0b11000111,
             0b11111100,
         ],
+        470,
     ),
     name: TString(
         "Foon",
+        1,
     ),
     generator: GeneratorInfo {
         seed: TString(
             "1451234789",
+            1,
         ),
         version: 833223655425,
     },

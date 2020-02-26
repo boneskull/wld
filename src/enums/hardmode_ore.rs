@@ -12,16 +12,11 @@ use scroll::{
   LE,
 };
 
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
-pub enum HardmodeOre {
-  UnknownOre = -1,
-  CobaltOre = 107,
-  MythrilOre = 108,
-  AdamantiteOre = 111,
-  PalladiumOre = 221,
-  OrichalcumOre = 222,
-  TitaniumOre = 223,
+pub struct HardmodeOre {
+  pub raw_value: i32,
+  pub ore_type: HardmodeOreType,
 }
 
 impl SizeWith<Endian> for HardmodeOre {
@@ -38,12 +33,18 @@ impl<'a> TryFromCtx<'a, Endian> for HardmodeOre {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let value = buf.gread_with::<i32>(offset, LE)?;
-    let ore = match Self::from_i32(value) {
+    let raw_value = buf.gread_with::<i32>(offset, LE)?;
+    let ore_type = match HardmodeOreType::from_i32(raw_value) {
       Some(o) => o,
-      _ => Self::UnknownOre,
+      _ => HardmodeOreType::UnknownOre,
     };
-    Ok((ore, *offset))
+    Ok((
+      Self {
+        ore_type,
+        raw_value,
+      },
+      *offset,
+    ))
   }
 }
 
@@ -56,11 +57,23 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    buf.gwrite_with(*self as i32, offset, LE)?;
+    buf.gwrite_with(&self.raw_value, offset, LE)?;
     assert!(
       *offset == HardmodeOre::size_with(&LE),
       "HardmodeOre size mismatch"
     );
     Ok(*offset)
   }
+}
+
+#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
+#[repr(C)]
+pub enum HardmodeOreType {
+  UnknownOre,
+  CobaltOre = 107,
+  MythrilOre = 108,
+  AdamantiteOre = 111,
+  PalladiumOre = 221,
+  OrichalcumOre = 222,
+  TitaniumOre = 223,
 }

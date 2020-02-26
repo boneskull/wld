@@ -21,9 +21,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -43,9 +44,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -65,9 +67,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -87,9 +90,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -109,9 +113,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -131,9 +136,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -153,9 +159,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -175,9 +182,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -197,9 +205,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -219,9 +228,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -241,9 +251,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -263,9 +274,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -285,9 +297,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -307,9 +320,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -329,9 +343,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -351,9 +366,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -373,9 +389,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -395,9 +412,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -417,9 +435,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -439,9 +458,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -461,9 +481,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -483,9 +504,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -505,9 +527,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -527,9 +550,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -549,9 +573,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -571,9 +596,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -593,9 +619,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -615,9 +642,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -637,9 +665,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -659,9 +688,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -681,9 +711,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -703,9 +734,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -725,9 +757,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -747,9 +780,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -769,9 +803,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -791,9 +826,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -813,9 +849,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -835,9 +872,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -857,9 +895,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -879,9 +918,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -901,9 +941,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -923,9 +964,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -945,9 +987,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -967,9 +1010,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -989,9 +1033,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -1011,9 +1056,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -1033,9 +1079,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -1055,9 +1102,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -1077,9 +1125,10 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
     Tile {
         tile_header: TileHeader {
@@ -1099,8 +1148,9 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         sign: None,
         tile_entity: None,
         pressure_plate: None,
-        run_length: RunLength(
-            98,
-        ),
+        run_length: RunLength {
+            length: 98,
+            rle_type: SingleByte,
+        },
     },
 ]

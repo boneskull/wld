@@ -988,7 +988,7 @@ mod test_tiles {
       run_length: RunLength::new(2, RLEType::SingleByte),
     };
 
-    assert_eq!(7, Tile::size_with(&tile));
+    assert_eq!(5, Tile::size_with(&tile));
   }
 
   #[test]
@@ -1022,6 +1022,6 @@ mod test_tiles {
     };
     let tv = TileVec(vec![tile.clone(), tile.clone()]);
 
-    assert_eq!(7, TileVec::size_with(&tv));
+    assert_eq!(5, TileVec::size_with(&tv));
   }
 }

@@ -14,7 +14,10 @@ pub use block_shape::BlockShape;
 pub use block_type::BlockType;
 pub use entity_type::EntityType;
 pub use evil_type::EvilType;
-pub use hardmode_ore::HardmodeOre;
+pub use hardmode_ore::{
+  HardmodeOre,
+  HardmodeOreType,
+};
 pub use invasion_type::InvasionType;
 pub use item_type::ItemType;
 pub use liquid_type::LiquidType;

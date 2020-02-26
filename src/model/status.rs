@@ -423,7 +423,7 @@ mod test_status {
       angler_saved: TBool::True,
       target: AnglerQuestFish::Bonefish,
     };
-    assert_eq!(27, AnglerQuestStatus::size_with(&aqs));
+    assert_eq!(14, AnglerQuestStatus::size_with(&aqs));
   }
 
   #[test]

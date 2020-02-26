@@ -12,6 +12,7 @@ NPCVec(
             },
             name: TString(
                 "",
+                1,
             ),
             home_position: Point {
                 x: 3426,
@@ -27,6 +28,7 @@ NPCVec(
             },
             name: TString(
                 "Asher",
+                1,
             ),
             home_position: Point {
                 x: 1929,
@@ -42,6 +44,7 @@ NPCVec(
             },
             name: TString(
                 "Louis",
+                1,
             ),
             home_position: Point {
                 x: 2102,
@@ -57,6 +60,7 @@ NPCVec(
             },
             name: TString(
                 "Emma",
+                1,
             ),
             home_position: Point {
                 x: 2127,
@@ -72,6 +76,7 @@ NPCVec(
             },
             name: TString(
                 "Bobby",
+                1,
             ),
             home_position: Point {
                 x: 606,
@@ -87,6 +92,7 @@ NPCVec(
             },
             name: TString(
                 "Urist",
+                1,
             ),
             home_position: Point {
                 x: 611,
@@ -102,6 +108,7 @@ NPCVec(
             },
             name: TString(
                 "Chryseis",
+                1,
             ),
             home_position: Point {
                 x: 616,
@@ -117,6 +124,7 @@ NPCVec(
             },
             name: TString(
                 "Darius",
+                1,
             ),
             home_position: Point {
                 x: 602,
@@ -132,6 +140,7 @@ NPCVec(
             },
             name: TString(
                 "Jerry",
+                1,
             ),
             home_position: Point {
                 x: 2159,
@@ -147,6 +156,7 @@ NPCVec(
             },
             name: TString(
                 "Hannibal",
+                1,
             ),
             home_position: Point {
                 x: 613,
@@ -162,6 +172,7 @@ NPCVec(
             },
             name: TString(
                 "Grodax",
+                1,
             ),
             home_position: Point {
                 x: 607,

@@ -192,7 +192,13 @@ impl World {
     debug!("{:?}", status.header.offsets);
     // need this context to associate various bits with other bits
     let world_ctx = status.properties.as_world_context();
-
+    debug!("{:?}", status.properties);
+    assert!(
+      status.header.offsets.tiles as usize == *offset,
+      "Tiles offset mismatch; expected {:?}, got {:?}",
+      status.header.offsets.tiles,
+      offset
+    );
     let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
     assert!(
       status.header.offsets.chests as usize == *offset,

@@ -4029,9 +4029,12 @@ impl TryIntoCtx<Endian> for ItemType {
     let offset = &mut 0;
     let value = self as i32;
     buf.gwrite_with(value, offset, LE)?;
+    let expected_size = ItemType::size_with(&LE);
     assert!(
-      *offset == ItemType::size_with(&LE),
-      "ItemType size mismatch"
+      *offset == expected_size,
+      "ItemType size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
     );
     Ok(*offset)
   }

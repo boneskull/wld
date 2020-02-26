@@ -235,6 +235,6 @@ mod test_header {
 
   #[test]
   fn test_header_offsets_size() {
-    assert_eq!(36, Offsets::size_with(&LE));
+    assert_eq!(40, Offsets::size_with(&LE));
   }
 }

@@ -43,8 +43,9 @@ pub struct TileEntity {
 
 impl SizeWith<TileEntity> for TileEntity {
   fn size_with(ctx: &TileEntity) -> usize {
+    u8::size_with(&LE) +
     i32::size_with(&LE)
-      + Point::size_with(&LE)
+      + (i16::size_with(&LE) * 2)// position is i16, not standard i32
       + ctx.target_dummy.map_or(0, |_| i16::size_with(&LE))
       + ctx
         .item_frame
@@ -113,21 +114,20 @@ impl TryIntoCtx<Endian> for &TileEntity {
     buf.gwrite_with(id, offset, LE)?;
     buf.gwrite_with(position.x as i16, offset, LE)?;
     buf.gwrite_with(position.y as i16, offset, LE)?;
-    match tile_entity_type {
-      0 => {
-        buf.gwrite_with(target_dummy.unwrap(), offset, LE)?;
-      }
-      1 => {
-        buf.gwrite(item_frame.unwrap(), offset)?;
-      }
-      2 => {
-        buf.gwrite(logic_sensor.unwrap(), offset)?;
-      }
-      _ => {}
+    if let Some(dummy) = target_dummy {
+      buf.gwrite_with(dummy, offset, LE)?;
+    } else if let Some(frame) = item_frame {
+      buf.gwrite(*frame, offset)?;
+    } else if let Some(sensor) = logic_sensor {
+      buf.gwrite(sensor, offset)?;
     }
+
+    let expected_size = TileEntity::size_with(&self);
     assert!(
-      *offset == TileEntity::size_with(&self),
-      "TileEntity size mismatch"
+      *offset == expected_size,
+      "TileEntity size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
     );
 
     Ok(*offset)
@@ -398,7 +398,7 @@ mod test_tile_entity {
   use crate::enums::ItemType;
 
   #[test]
-  fn test_tile_entity_rw() {
+  fn test_tile_entity_with_target_dummy_rw() {
     let te1 = TileEntity {
       id: 123,
       position: Point { x: 0, y: 0 },
@@ -409,7 +409,10 @@ mod test_tile_entity {
     let mut buf = [0; 11];
     assert_eq!(11, buf.pwrite(&te1, 0).unwrap());
     assert_eq!(te1, buf.pread::<TileEntity>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_entity_with_logic_sensor_rw() {
     let te2 = TileEntity {
       id: 123,
       position: Point { x: 0, y: 0 },
@@ -423,7 +426,10 @@ mod test_tile_entity {
     let mut buf = [0; 11];
     assert_eq!(11, buf.pwrite(&te2, 0).unwrap());
     assert_eq!(te2, buf.pread::<TileEntity>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_entity_with_item_frame_rw() {
     let te3 = TileEntity {
       id: 123,
       position: Point { x: 0, y: 0 },

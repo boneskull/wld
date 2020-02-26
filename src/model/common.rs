@@ -14,9 +14,9 @@ use scroll::{
   Uleb128,
   LE,
 };
-use std::convert::{
-  TryFrom,
-  TryInto,
+use std::{
+  convert::TryFrom,
+  ops::Index,
 };
 
 #[derive(
@@ -180,18 +180,36 @@ impl<'a> TryIntoCtx<Endian> for &'a TBool {
   }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef)]
-pub struct VariableTBitVec(BitVec<Lsb0, u8>);
+#[derive(Clone, Debug, Default, PartialEq, Eq, From)]
+pub struct VariableTBitVec(BitVec<Lsb0, u8>, i16);
+
+impl VariableTBitVec {
+  pub fn bitvec(&self) -> &BitVec<Lsb0, u8> {
+    &self.0
+  }
+
+  pub fn size(&self) -> i16 {
+    self.1
+  }
+}
+
+impl Index<usize> for VariableTBitVec {
+  type Output = bool;
+
+  fn index(&self, index: usize) -> &Self::Output {
+    &self.bitvec()[index]
+  }
+}
 
 impl From<Vec<bool>> for VariableTBitVec {
   fn from(v: Vec<bool>) -> Self {
-    Self(BitVec::<Lsb0, u8>::from(&v[..]))
+    Self(BitVec::<Lsb0, u8>::from(&v[..]), v.len() as i16)
   }
 }
 
 impl SizeWith<VariableTBitVec> for VariableTBitVec {
   fn size_with(ctx: &VariableTBitVec) -> usize {
-    i16::size_with(&LE) + ctx.as_ref().as_slice().len()
+    i16::size_with(&LE) + ctx.bitvec().as_slice().len()
   }
 }
 
@@ -208,7 +226,7 @@ impl<'a> TryFromCtx<'a, Endian> for VariableTBitVec {
     let bits =
       BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
     *offset += byte_len;
-    Ok((Self(bits), *offset))
+    Ok((Self(bits, len), *offset))
   }
 }
 
@@ -218,14 +236,14 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
   fn try_into_ctx(
     self,
     buf: &mut [u8],
-    ctx: Endian,
+    _: Endian,
   ) -> Result<usize, Self::Error> {
-    let bits = self.as_ref();
-    let mut size = 0;
-    let tfi_size: i16 = bits.len().try_into().unwrap();
-    size += tfi_size.try_into_ctx(&mut buf[size..], ctx)?;
-    size += bits.as_slice().try_into_ctx(&mut buf[size..], ())?;
-    Ok(size)
+    let offset = &mut 0;
+    let bits = self.bitvec();
+    let size = self.size();
+    buf.gwrite(size, offset)?;
+    buf.gwrite(bits.as_slice(), offset)?;
+    Ok(*offset)
   }
 }
 

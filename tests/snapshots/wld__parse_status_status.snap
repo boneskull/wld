@@ -47,9 +47,18 @@ Status {
         time_left: 0,
         max_rain: NaN,
     },
-    hardmode_ore_1: UnknownOre,
-    hardmode_ore_2: UnknownOre,
-    hardmode_ore_3: UnknownOre,
+    hardmode_ore_1: HardmodeOre {
+        raw_value: -1,
+        ore_type: UnknownOre,
+    },
+    hardmode_ore_2: HardmodeOre {
+        raw_value: -1,
+        ore_type: UnknownOre,
+    },
+    hardmode_ore_3: HardmodeOre {
+        raw_value: 16778239,
+        ore_type: UnknownOre,
+    },
     backgrounds: Backgrounds {
         forest: 4,
         corruption: 1,
@@ -66,11 +75,7 @@ Status {
         wind_speed: 0.000000000000000000000000000000000000000000265,
     },
     angler_quest_status: AnglerQuestStatus {
-        completed_players: [
-            TString(
-                "",
-            ),
-        ],
+        completed_players: [],
         angler_saved: True,
         target: EaterOfPlankton,
     },

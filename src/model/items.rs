@@ -113,9 +113,13 @@ impl TryIntoCtx<Endian> for ItemStack {
         }
       }
     }
+
+    let expected_size = ItemStack::size_with(&self);
     assert!(
-      *offset == ItemStack::size_with(&self),
-      "ItemStack size mismatch"
+      *offset == expected_size,
+      "ItemStack size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
     );
     Ok(*offset)
   }
