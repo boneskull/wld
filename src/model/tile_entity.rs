@@ -213,7 +213,8 @@ impl<'a> TryFromCtx<'a, Endian> for TileEntityVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let tile_entity_info = buf.gread_with::<TileEntitiesInfo>(offset, LE)?;
-    let mut tile_entities: Vec<TileEntity> = vec![];
+    let mut tile_entities: Vec<TileEntity> =
+      Vec::with_capacity(tile_entity_info.count as usize);
     for _ in 0..tile_entity_info.count {
       let tile_entity = buf.gread::<TileEntity>(offset)?;
       tile_entities.push(tile_entity);
@@ -359,7 +360,7 @@ impl<'a> TryFromCtx<'a, Endian> for RoomVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let room_count = buf.gread_with::<i32>(offset, LE)?;
-    let mut rooms: Vec<Room> = vec![];
+    let mut rooms: Vec<Room> = Vec::with_capacity(room_count as usize);
     for _ in 0..room_count {
       let room = buf.gread::<Room>(offset)?;
       rooms.push(room);

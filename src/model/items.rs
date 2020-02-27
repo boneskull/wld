@@ -25,7 +25,10 @@ use scroll::{
   LE,
 };
 use std::{
-  fmt::Debug,
+  fmt::{
+    Debug,
+    Formatter,
+  },
   iter::FromIterator,
 };
 
@@ -125,7 +128,7 @@ impl TryIntoCtx<Endian> for ItemStack {
   }
 }
 
-#[derive(Clone, PartialEq, Eq, Pwrite)]
+#[derive(Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct Chest {
   pub position: Point,
@@ -133,6 +136,53 @@ pub struct Chest {
   pub contents: ItemStackVec,
 }
 
+impl<'a> TryFromCtx<'a, i16> for Chest {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    max_items: i16,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    let position = buf.gread_with::<Point>(offset, LE)?;
+    let name = buf.gread::<TString>(offset)?;
+    let contents = buf.gread_with::<ItemStackVec>(offset, max_items)?;
+    let chest = Self {
+      position,
+      name,
+      contents,
+    };
+    Ok((chest, *offset))
+  }
+}
+
+impl<'a> TryIntoCtx<Endian> for &'a Chest {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    let Chest {
+      position,
+      name,
+      contents,
+    } = self;
+    buf.gwrite_with(position, offset, LE)?;
+    buf.gwrite(name, offset)?;
+    buf.gwrite(contents, offset)?;
+    let expected_size = Chest::size_with(&self);
+    assert!(
+      *offset == expected_size,
+      "Chest size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+    Ok(*offset)
+  }
+}
 impl SizeWith<Chest> for Chest {
   fn size_with(ctx: &Chest) -> usize {
     let size = Point::size_with(&LE)
@@ -151,7 +201,7 @@ impl SizeWith<Chest> for Chest {
 }
 
 impl Debug for Chest {
-  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+  fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
     if self.contents.total_quantity() > 0 {
       write!(
         f,
@@ -165,31 +215,6 @@ impl Debug for Chest {
         self.position, self.name
       )
     }
-  }
-}
-
-impl<'a> TryFromCtx<'a, u16> for Chest {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    max_items: u16,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let position = buf.gread_with::<Point>(offset, LE)?;
-    let name = buf.gread::<TString>(offset)?;
-    let contents = buf.gread_with::<ItemStackVec>(offset, max_items)?;
-    let chest = Self {
-      position,
-      name,
-      contents,
-    };
-    trace!(
-      "Found Chest with size {:?}: {:?}",
-      Chest::size_with(&chest),
-      chest
-    );
-    Ok((chest, *offset))
   }
 }
 
@@ -207,6 +232,24 @@ impl ItemStackVec {
   }
 }
 
+impl<'a> TryFromCtx<'a, i16> for ItemStackVec {
+  type Error = ScrollError;
+
+  fn try_from_ctx(
+    buf: &'a [u8],
+    size: i16,
+  ) -> Result<(Self, usize), Self::Error> {
+    let offset = &mut 0;
+    // XXX this should be a loop
+    let stack: Vec<ItemStack> = Vec::from_iter(
+      (0..size)
+        .into_iter()
+        .map(|_| buf.gread::<ItemStack>(offset).unwrap()),
+    );
+    Ok((Self(stack), *offset))
+  }
+}
+
 impl SizeWith<ItemStackVec> for ItemStackVec {
   fn size_with(ctx: &ItemStackVec) -> usize {
     let size = ctx
@@ -216,6 +259,30 @@ impl SizeWith<ItemStackVec> for ItemStackVec {
       .fold(0, |acc, len| acc + len);
     trace!("ItemStackVec size: {}", size);
     size
+  }
+}
+
+impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
+  type Error = ScrollError;
+
+  fn try_into_ctx(
+    self,
+    buf: &mut [u8],
+    _: Endian,
+  ) -> Result<usize, Self::Error> {
+    let offset = &mut 0;
+    self.as_ref().iter().for_each(|stack| {
+      buf.gwrite(*stack, offset).unwrap();
+    });
+
+    let expected_size = ItemStackVec::size_with(&self);
+    assert!(
+      *offset == expected_size,
+      "ItemStackVec size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+    Ok(*offset)
   }
 }
 
@@ -235,55 +302,16 @@ impl Debug for ItemStackVec {
   }
 }
 
-impl<'a> TryFromCtx<'a, u16> for ItemStackVec {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    size: u16,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    // XXX this should be a loop
-    let stack: Vec<ItemStack> = Vec::from_iter(
-      (0..size)
-        .into_iter()
-        .map(|_| buf.gread::<ItemStack>(offset).unwrap()),
-    );
-    Ok((Self(stack), *offset))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    self.as_ref().iter().for_each(|stack| {
-      buf.gwrite(*stack, offset).unwrap();
-    });
-
-    assert!(
-      *offset == ItemStackVec::size_with(&self),
-      "ItemStackVec size mismatch"
-    );
-    Ok(*offset)
-  }
-}
-
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, Pread)]
 #[repr(C)]
 pub struct ChestsInfo {
-  pub count: u16,
-  pub max_items: u16,
+  pub count: i16,
+  pub max_items: i16,
 }
 
 impl SizeWith<TileMatrix> for ChestsInfo {
   fn size_with(ctx: &TileMatrix) -> usize {
-    let size = (u16::size_with(&LE) * 2)
+    let size = (i16::size_with(&LE) * 2)
       + ctx
         .as_ref()
         .iter()
@@ -328,9 +356,12 @@ impl TryIntoCtx<&TileMatrix> for &ChestsInfo {
         j += tile.run_length.length as usize;
       }
     }
+    let expected_size = ChestsInfo::size_with(ctx);
     assert!(
-      *offset == ChestsInfo::size_with(ctx),
-      "ChestsInfo size mismatch"
+      *offset == expected_size,
+      "ChestsInfo size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
     );
     Ok(*offset)
   }
@@ -512,6 +543,6 @@ mod test_items {
 
     let mut buf = [0; 14];
     assert_eq!(14, buf.pwrite(&vec, 0).unwrap());
-    assert_eq!(vec, buf.pread_with::<ItemStackVec>(0, 2u16).unwrap());
+    assert_eq!(vec, buf.pread_with::<ItemStackVec>(0, 2i16).unwrap());
   }
 }
