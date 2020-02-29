@@ -1,5 +1,6 @@
 use insta::assert_debug_snapshot;
 use lazy_static::lazy_static;
+use scroll::ctx::SizeWith;
 use std::fs::read;
 use wld::{
   model::world::World,
@@ -56,8 +57,9 @@ fn test_parse_footer() {
 
 #[test]
 fn test_write() {
+  // wld::init_logger();
   let res = PARSED_WORLD.write();
-  assert!(res.is_ok());
+  assert_eq!(res.unwrap().len(), World::size_with(&PARSED_WORLD));
 }
 
 // #[test]
