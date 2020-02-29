@@ -6,14 +6,14 @@ RoomVec(
     [
         Room {
             entity_type: Guide,
-            position: Point {
+            position: Position {
                 x: 1932,
                 y: 388,
             },
         },
         Room {
             entity_type: Dd2bartender,
-            position: Point {
+            position: Position {
                 x: 2159,
                 y: 230,
             },

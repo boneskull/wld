@@ -69,6 +69,14 @@ impl TryIntoCtx<Endian> for &Liquid {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     buf.gwrite(self.volume, offset)?;
+    let expected_size = Liquid::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "Liquid offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -201,6 +209,14 @@ impl TryIntoCtx<Endian> for &RunLength {
       }
       _ => {}
     };
+    let expected_size = RunLength::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "RunLength offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -292,6 +308,14 @@ impl TryIntoCtx<Endian> for &TileHeader {
     flags.as_mut().set(5, has_extended_block_id);
     rle_type.assign_bits(&mut flags);
     buf.gwrite(&flags, offset)?;
+    let expected_size = TileHeader::size_with(&LE);
+    assert!(
+      expected_size == *offset,
+      "TileHeader offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -450,11 +474,25 @@ pub struct Tile {
   pub wall: Option<Wall>,
   pub liquid: Option<Liquid>,
   pub wiring: Option<Wiring>,
-  pub chest: Option<Chest>,
-  pub sign: Option<Sign>,
-  pub tile_entity: Option<TileEntity>,
-  pub pressure_plate: Option<PressurePlate>,
   pub run_length: RunLength,
+  pub position: Position,
+}
+
+impl Tile {
+  pub fn chest<'a>(&self, chests: &'a Chests) -> Option<&'a Chest> {
+    chests.find_chest_at_position(&self.position)
+  }
+
+  pub fn sign<'a>(&self, signs: &'a Signs) -> Option<&'a Sign> {
+    signs.find_sign_at_position(&self.position)
+  }
+
+  pub fn tile_entity<'a>(
+    &self,
+    tile_entities: &'a TileEntities,
+  ) -> Option<&'a TileEntity> {
+    tile_entities.find_tile_entity_at_position(&self.position)
+  }
 }
 
 impl SizeWith<Tile> for Tile {
@@ -479,12 +517,12 @@ impl SizeWith<Tile> for Tile {
   }
 }
 
-impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
+impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
   type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: WorldCtx,
+    ctx: TileCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let mut is_block_inactive = false; // is this correct?
@@ -515,7 +553,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
           has_extended_block_id: tile_header.has_extended_block_id,
           is_block_inactive,
           is_block_painted,
-          tile_frame_importances: ctx.tile_frame_importances,
+          tile_frame_importances: ctx.world_ctx.tile_frame_importances,
           shape,
         },
       )?);
@@ -539,11 +577,8 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Tile {
         wall,
         liquid,
         wiring,
-        chest: None,
-        sign: None,
         run_length,
-        tile_entity: None,
-        pressure_plate: None,
+        position: ctx.position,
       },
       *offset,
     ))
@@ -565,11 +600,8 @@ impl TryIntoCtx<Endian> for &Tile {
       wall,
       liquid,
       wiring,
-      chest: _,
-      sign: _,
       run_length,
-      tile_entity: _,
-      pressure_plate: _,
+      position: _,
     } = self;
 
     match buf.gwrite(tile_header, offset) {
@@ -658,6 +690,13 @@ impl TryIntoCtx<Endian> for &Tile {
       }
       _ => {}
     }
+    let expected_size = Tile::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "Tile offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
 
     Ok(*offset)
   }
@@ -670,6 +709,12 @@ pub struct WorldCtx<'a> {
   pub tile_frame_importances: &'a VariableTBitVec,
   pub id: &'a i32,
   pub name: &'a TString,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct TileCtx<'a> {
+  world_ctx: &'a WorldCtx<'a>,
+  position: Position,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, IndexMut, Index, AsRef)]
@@ -691,21 +736,35 @@ impl SizeWith<TileVec> for TileVec {
   }
 }
 
-impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileVec {
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+struct TileVecCtx<'a> {
+  world_ctx: &'a WorldCtx<'a>,
+  x: i32,
+}
+
+impl<'a> TryFromCtx<'a, TileVecCtx<'a>> for TileVec {
   type Error = ScrollError;
 
   fn try_from_ctx(
     buf: &'a [u8],
-    ctx: WorldCtx,
+    ctx: TileVecCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let size = *ctx.world_height as usize;
-    let mut tiles: Vec<Tile> = Vec::with_capacity(size);
-    while tiles.len() < size {
-      let tile = buf.gread_with::<Tile>(offset, ctx)?;
+    let size = *ctx.world_ctx.world_height;
+    let mut tiles: Vec<Tile> = Vec::with_capacity(size as usize);
+    let mut i: i32 = 0;
+    while i < size {
+      let tile = buf.gread_with::<Tile>(
+        offset,
+        TileCtx {
+          world_ctx: ctx.world_ctx,
+          position: Position { x: ctx.x, y: i },
+        },
+      )?;
       for _ in 0..tile.run_length.length {
         tiles.push(tile.clone());
       }
+      i += tile.run_length.length as i32;
     }
     Ok((TileVec(tiles), *offset))
   }
@@ -729,6 +788,14 @@ impl TryIntoCtx<Endian> for &TileVec {
       // because of it.
       i += tile.run_length.length as usize;
     }
+    let expected_size = TileVec::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "TileVec offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -738,7 +805,7 @@ impl TryIntoCtx<Endian> for &TileVec {
 pub struct TileMatrix(Vec<TileVec>);
 
 impl TileMatrix {
-  pub fn tile_at_point(&mut self, point: &Point) -> &mut Tile {
+  pub fn tile_at_position(&mut self, point: &Position) -> &mut Tile {
     &mut self.as_mut()[point.x as usize][point.y as usize]
   }
 }
@@ -752,11 +819,18 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let row_count = *ctx.world_width as usize;
-    let mut matrix: Vec<TileVec> = Vec::with_capacity(row_count);
-    while matrix.len() < row_count {
-      let column = buf.gread_with::<TileVec>(offset, ctx)?;
-      matrix.push(column);
-    }
+    let matrix = (0..row_count)
+      .into_iter()
+      .map(|x| {
+        buf.gread_with::<TileVec>(
+          offset,
+          TileVecCtx {
+            world_ctx: &ctx,
+            x: x as i32,
+          },
+        )
+      })
+      .collect::<Result<Vec<TileVec>, Self::Error>>()?;
     Ok((TileMatrix(matrix), *offset))
   }
 }
@@ -774,7 +848,7 @@ impl TryIntoCtx<Endian> for &TileMatrix {
       buf.gwrite(&self[i], offset)?;
     }
     assert!(
-      *offset == TileMatrix::size_with(self),
+      *offset == TileMatrix::size_with(&self),
       "TileMatrix size mismatch"
     );
     Ok(*offset)
@@ -936,13 +1010,10 @@ mod test_tiles {
       wall: None,
       liquid: None,
       wiring: None,
-      chest: None,
-      sign: None,
-      tile_entity: None,
-      pressure_plate: None,
       run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
     };
-    let ctx = WorldCtx {
+    let world_ctx = WorldCtx {
       world_width: &4200,
       world_height: &1200,
       tile_frame_importances: &VariableTBitVec::from(vec![
@@ -950,6 +1021,10 @@ mod test_tiles {
       ]),
       id: &123,
       name: &TString::from("Fat City"),
+    };
+    let ctx = TileCtx {
+      world_ctx: &world_ctx,
+      position: Position { x: 0, y: 0 },
     };
 
     let mut buf = [0; 5];
@@ -981,11 +1056,8 @@ mod test_tiles {
       wall: None,
       liquid: None,
       wiring: None,
-      chest: None,
-      sign: None,
-      tile_entity: None,
-      pressure_plate: None,
       run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
     };
 
     assert_eq!(5, Tile::size_with(&tile));
@@ -1014,11 +1086,8 @@ mod test_tiles {
       wall: None,
       liquid: None,
       wiring: None,
-      chest: None,
-      sign: None,
-      tile_entity: None,
-      pressure_plate: None,
       run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
     };
     let tv = TileVec(vec![tile.clone(), tile.clone()]);
 

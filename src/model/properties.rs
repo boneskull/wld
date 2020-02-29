@@ -150,6 +150,14 @@ impl<'a> TryIntoCtx<Endian> for &'a TUuid {
     let uuid = self.as_ref();
     let offset = &mut 0;
     buf.gwrite_with(uuid.to_u128_le(), offset, LE)?;
+    let expected_size = TUuid::size_with(&LE);
+    assert!(
+      expected_size == *offset,
+      "TUuid offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -174,7 +182,7 @@ pub struct Properties {
   pub is_expert: TBool,
   pub created_on: u64, // TODO
   pub style: WorldStyle,
-  pub spawn_point: Point,
+  pub spawn_point: Position,
   pub underground_level: f64,
   pub cavern_level: f64,
   pub current_time: f64,
@@ -182,7 +190,7 @@ pub struct Properties {
   pub moon_phase: u32,
   pub is_blood_moon: TBool,
   pub is_eclipse: TBool,
-  pub dungeon_point: Point,
+  pub dungeon_point: Position,
   pub evil_type: EvilType,
 }
 
@@ -209,7 +217,7 @@ impl SizeWith<Properties> for Properties {
       + (TBool::size_with(&LE) * 4)
       + u64::size_with(&LE)
       + WorldStyle::size_with(&LE)
-      + (Point::size_with(&LE) * 2)
+      + (Position::size_with(&LE) * 2)
       + (f64::size_with(&LE) * 3)
       + u32::size_with(&LE)
       + EvilType::size_with(&LE);
@@ -301,7 +309,7 @@ mod test_properties {
         underground_jungle: 0,
         hell: 0,
       },
-      spawn_point: Point::new(2098, 229),
+      spawn_point: Position::new(2098, 229),
       underground_level: 300.0,
       cavern_level: 528.0,
       current_time: 0.0,
@@ -309,7 +317,7 @@ mod test_properties {
       moon_phase: 0u32,
       is_blood_moon: False,
       is_eclipse: True,
-      dungeon_point: Point::new(3426, 211),
+      dungeon_point: Position::new(3426, 211),
       evil_type: EvilType::Corruption,
     };
     let mut bytes = [0; 255];

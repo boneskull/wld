@@ -43,7 +43,7 @@ pub struct Rect {
   SizeWith,
 )]
 #[repr(C)]
-pub struct Point {
+pub struct Position {
   pub x: i32,
   pub y: i32,
 }
@@ -174,9 +174,17 @@ impl<'a> TryIntoCtx<Endian> for &'a TBool {
     buf: &mut [u8],
     _: Endian,
   ) -> Result<usize, Self::Error> {
-    let mut size = 0;
-    buf.gwrite(if *self == TBool::True { 1u8 } else { 0u8 }, &mut size)?;
-    Ok(size)
+    let offset = &mut 0;
+    buf.gwrite(if *self == TBool::True { 1u8 } else { 0u8 }, offset)?;
+    let expected_size = TBool::size_with(&LE);
+    assert!(
+      expected_size == *offset,
+      "TBool offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
+    Ok(*offset)
   }
 }
 
@@ -243,6 +251,14 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
     let size = self.size();
     buf.gwrite(size, offset)?;
     buf.gwrite(bits.as_slice(), offset)?;
+    let expected_size = VariableTBitVec::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "VariableTBitVec offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }
@@ -285,10 +301,16 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
     buf: &mut [u8],
     _: Endian,
   ) -> Result<usize, Self::Error> {
-    let bits = self.as_ref();
-    let mut size = 0;
-    size += bits.as_slice().try_into_ctx(&mut buf[size..], ())?;
-    Ok(size)
+    let offset = &mut 0;
+    buf.gwrite(self.as_ref().as_slice(), offset)?;
+    let expected_size = TBitVec::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "TBitVec offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+    Ok(*offset)
   }
 }
 

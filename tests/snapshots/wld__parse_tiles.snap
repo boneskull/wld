@@ -17,13 +17,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -40,13 +40,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -63,13 +63,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -86,13 +86,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -109,13 +109,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -132,13 +132,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -155,13 +155,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -178,13 +178,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -201,13 +201,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -224,13 +224,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -247,13 +247,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -270,13 +270,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -293,13 +293,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -316,13 +316,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -339,13 +339,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -362,13 +362,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -385,13 +385,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -408,13 +408,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -431,13 +431,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -454,13 +454,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -477,13 +477,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -500,13 +500,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -523,13 +523,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -546,13 +546,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -569,13 +569,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -592,13 +592,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -615,13 +615,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -638,13 +638,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -661,13 +661,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -684,13 +684,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -707,13 +707,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -730,13 +730,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -753,13 +753,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -776,13 +776,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -799,13 +799,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -822,13 +822,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -845,13 +845,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -868,13 +868,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -891,13 +891,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -914,13 +914,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -937,13 +937,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -960,13 +960,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -983,13 +983,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1006,13 +1006,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1029,13 +1029,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1052,13 +1052,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1075,13 +1075,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1098,13 +1098,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1121,13 +1121,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
     Tile {
@@ -1144,13 +1144,13 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
         wall: None,
         liquid: None,
         wiring: None,
-        chest: None,
-        sign: None,
-        tile_entity: None,
-        pressure_plate: None,
         run_length: RunLength {
             length: 98,
             rle_type: SingleByte,
+        },
+        position: Position {
+            x: 0,
+            y: 0,
         },
     },
 ]

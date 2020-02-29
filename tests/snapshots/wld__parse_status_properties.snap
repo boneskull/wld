@@ -116,7 +116,7 @@ Properties {
         underground_jungle: 0,
         hell: 0,
     },
-    spawn_point: Point {
+    spawn_point: Position {
         x: 2098,
         y: 229,
     },
@@ -127,7 +127,7 @@ Properties {
     moon_phase: 1,
     is_blood_moon: False,
     is_eclipse: False,
-    dungeon_point: Point {
+    dungeon_point: Position {
         x: 3426,
         y: 211,
     },

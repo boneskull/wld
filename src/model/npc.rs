@@ -17,9 +17,10 @@ use scroll::{
 #[repr(C)]
 pub struct NPC {
   pub entity_type: EntityType,
-  pub position: Point,
+  pub position_x: f32,
+  pub position_y: f32,
   pub name: TString,
-  pub home_position: Point,
+  pub home_position: Option<Position>,
   pub is_homeless: TBool,
 }
 
@@ -27,8 +28,12 @@ impl SizeWith<NPC> for NPC {
   fn size_with(ctx: &NPC) -> usize {
     EntityType::size_with(&LE)
       + TString::size_with(&ctx.name)
-      + (Point::size_with(&LE) * 2)
       + TBool::size_with(&LE)
+      + (f32::size_with(&LE) * 2)
+      + match ctx.home_position {
+        Some(_) => Position::size_with(&LE),
+        None => 0,
+      }
   }
 }
 
@@ -42,16 +47,19 @@ impl<'a> TryFromCtx<'a, Endian> for NPC {
     let offset = &mut 0;
     let entity_type = buf.gread::<EntityType>(offset)?;
     let name = buf.gread::<TString>(offset)?;
-    let position = Point {
-      x: buf.gread_with::<f32>(offset, LE)? as i32,
-      y: buf.gread_with::<f32>(offset, LE)? as i32,
-    };
+
+    let position_x = buf.gread_with::<f32>(offset, LE)?;
+    let position_y = buf.gread_with::<f32>(offset, LE)?;
     let is_homeless = buf.gread_with::<TBool>(offset, LE)?;
-    let home_position = buf.gread_with::<Point>(offset, LE)?;
+    let mut home_position = None;
+    if is_homeless == TBool::False {
+      home_position = Some(buf.gread_with::<Position>(offset, LE)?);
+    }
     Ok((
       Self {
         entity_type,
-        position,
+        position_x,
+        position_y,
         name,
         home_position,
         is_homeless,
@@ -73,17 +81,19 @@ impl TryIntoCtx<Endian> for &NPC {
     let NPC {
       entity_type,
       name,
-      position,
+      position_x,
+      position_y,
       home_position,
       is_homeless,
     } = self;
     buf.gwrite(entity_type, offset)?;
     buf.gwrite(name, offset)?;
-    let Point { x, y } = position;
-    buf.gwrite_with(*x as f32, offset, LE)?;
-    buf.gwrite_with(*y as f32, offset, LE)?;
+    buf.gwrite_with(position_x, offset, LE)?;
+    buf.gwrite_with(position_y, offset, LE)?;
     buf.gwrite(is_homeless, offset)?;
-    buf.gwrite(home_position, offset)?;
+    if let Some(hp) = home_position {
+      buf.gwrite(hp, offset)?;
+    }
 
     assert!(*offset == NPC::size_with(&self), "NPC size mismatch");
     Ok(*offset)
@@ -155,11 +165,12 @@ impl TryIntoCtx<Endian> for &NPCVec {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
+#[derive(Clone, Debug, PartialEq, SizeWith, Pread, Pwrite)]
 #[repr(C)]
 pub struct Mob {
   pub entity_type: EntityType,
-  pub position: Point,
+  pub position_x: f32,
+  pub position_y: f32,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
@@ -229,9 +240,10 @@ mod test_npc {
   fn test_npc_rw() {
     let npc = NPC {
       entity_type: EntityType::TruffleWorm,
-      position: Point { x: 0, y: 0 },
+      position_x: 0.0,
+      position_y: 0.0,
       name: TString::from("Marvin K. Mooney"),
-      home_position: Point { x: -100, y: -100 },
+      home_position: Some(Position { x: -100, y: -100 }),
       is_homeless: TBool::False,
     };
 
@@ -244,7 +256,8 @@ mod test_npc {
   fn test_mob_rw() {
     let mob = Mob {
       entity_type: EntityType::TruffleWorm,
-      position: Point { x: 0, y: 0 },
+      position_x: 0.0,
+      position_y: 0.0,
     };
 
     let mut buf = [0; 12];
@@ -257,16 +270,18 @@ mod test_npc {
     let npc_vec = NPCVec(vec![
       NPC {
         entity_type: EntityType::TruffleWorm,
-        position: Point { x: 0, y: 0 },
+        position_x: 0.0,
+        position_y: 0.0,
         name: "Marvin K. Mooney".into(),
-        home_position: Point { x: -100, y: -100 },
+        home_position: Some(Position { x: -100, y: -100 }),
         is_homeless: TBool::False,
       },
       NPC {
         entity_type: EntityType::Duck,
-        position: Point { x: 0, y: 0 },
+        position_x: 0.0,
+        position_y: 0.0,
         name: "Dave".into(),
-        home_position: Point { x: -100, y: -100 },
+        home_position: Some(Position { x: -100, y: -100 }),
         is_homeless: TBool::False,
       },
     ]);
@@ -281,11 +296,13 @@ mod test_npc {
     let mob_vec = MobVec(vec![
       Mob {
         entity_type: EntityType::TruffleWorm,
-        position: Point { x: 0, y: 0 },
+        position_x: 0.0,
+        position_y: 0.0,
       },
       Mob {
         entity_type: EntityType::Duck,
-        position: Point { x: 0, y: 0 },
+        position_x: 0.0,
+        position_y: 0.0,
       },
     ]);
 

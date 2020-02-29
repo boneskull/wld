@@ -72,6 +72,14 @@ impl TryIntoCtx<Endian> for &Wall {
       }
       _ => {}
     }
+    let expected_size = Wall::size_with(&self);
+    assert!(
+      expected_size == *offset,
+      "Wall offset mismatch on write; expected {:?}, got {:?}",
+      expected_size,
+      offset
+    );
+
     Ok(*offset)
   }
 }

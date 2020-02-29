@@ -38,12 +38,12 @@ use scroll::{
 pub struct World {
   pub status: WorldStatus,
   pub tiles: TileMatrix,
-  pub chests_info: ChestsInfo,
-  pub signs_info: SignsInfo,
-  pub tile_entities_info: TileEntitiesInfo,
-  pub pressure_plates_info: PressurePlatesInfo,
+  pub chests: Chests,
+  pub signs: Signs,
   pub npcs: NPCVec,
   pub mobs: MobVec,
+  pub tile_entities: TileEntities,
+  pub pressure_plates: PressurePlates,
   pub rooms: RoomVec,
   pub town_manager: TownManager,
   pub footer: Footer,
@@ -53,12 +53,12 @@ impl SizeWith<World> for World {
   fn size_with(ctx: &World) -> usize {
     WorldStatus::size_with(&ctx.status)
       + TileMatrix::size_with(&ctx.tiles)
-      + ChestsInfo::size_with(&ctx.tiles)
-      + SignsInfo::size_with(&ctx.tiles)
-      + TileEntitiesInfo::size_with(&ctx.tiles)
+      + Chests::size_with(&ctx.chests)
+      + Signs::size_with(&ctx.signs)
+      + TileEntities::size_with(&ctx.tile_entities)
       + NPCVec::size_with(&ctx.npcs)
       + MobVec::size_with(&ctx.mobs)
-      + PressurePlatesInfo::size_with(&ctx.tiles)
+      + PressurePlates::size_with(&ctx.pressure_plates)
       + RoomVec::size_with(&ctx.rooms)
       + TownManager::size_with(&ctx.town_manager)
       + Footer::size_with(&ctx.status.properties.as_world_context())
@@ -199,21 +199,17 @@ impl World {
       status.header.offsets.tiles,
       offset
     );
-    let mut tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
+    let tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
     assert!(
       status.header.offsets.chests as usize == *offset,
       "Chests offset mismatch"
     );
-    let chests = bytes.gread::<ChestVec>(offset)?;
-    let chests_info = chests.chests_info();
-    ChestVec::move_to_tile(chests, &mut tiles);
+    let chests = bytes.gread::<Chests>(offset)?;
     assert!(
       status.header.offsets.signs as usize == *offset,
       "Signs offset mismatch"
     );
-    let signs = bytes.gread::<SignVec>(offset)?;
-    let signs_info = signs.signs_info();
-    SignVec::move_to_tile(signs, &mut tiles);
+    let signs = bytes.gread::<Signs>(offset)?;
     assert!(
       status.header.offsets.npcs as usize == *offset,
       "NPCs offset mismatch"
@@ -224,16 +220,12 @@ impl World {
       status.header.offsets.tile_entities as usize == *offset,
       "TileEntities offset mismatch"
     );
-    let tile_entities = bytes.gread::<TileEntityVec>(offset)?;
-    let tile_entities_info = tile_entities.tile_entities_info();
-    TileEntityVec::move_to_tile(tile_entities, &mut tiles);
+    let tile_entities = bytes.gread::<TileEntities>(offset)?;
     assert!(
       status.header.offsets.pressure_plates as usize == *offset,
       "PressurePlates offset mismatch"
     );
-    let pressure_plates = bytes.gread::<PressurePlateVec>(offset)?;
-    let pressure_plates_info = pressure_plates.pressure_plates_info();
-    PressurePlateVec::move_to_tile(pressure_plates, &mut tiles);
+    let pressure_plates = bytes.gread::<PressurePlates>(offset)?;
     assert!(
       status.header.offsets.town_manager as usize == *offset,
       "RoomVec offset mismatch; expected {:?}, got {:?}",
@@ -255,10 +247,10 @@ impl World {
     Ok(World {
       status,
       tiles,
-      chests_info,
-      signs_info,
-      pressure_plates_info,
-      tile_entities_info,
+      chests,
+      signs,
+      tile_entities,
+      pressure_plates,
       npcs,
       mobs,
       rooms,
@@ -289,15 +281,14 @@ impl World {
       self.status.header.offsets.chests,
       offset
     );
-    v.gwrite_with(&self.chests_info, offset, &self.tiles)?;
+    v.gwrite(&self.chests, offset)?;
     assert!(
       self.status.header.offsets.signs as usize == *offset,
       "Signs offset mismatch; expected {:?}, got {:?}",
       self.status.header.offsets.signs,
       offset
     );
-
-    v.gwrite_with(&self.signs_info, offset, &self.tiles)?;
+    v.gwrite(&self.signs, offset)?;
     assert!(
       self.status.header.offsets.npcs as usize == *offset,
       "NPCs offset mismatch"
@@ -309,13 +300,12 @@ impl World {
       self.status.header.offsets.tile_entities as usize == *offset,
       "TileEntities offset mismatch"
     );
-
-    v.gwrite_with(&self.tile_entities_info, offset, &self.tiles)?;
+    v.gwrite(&self.tile_entities, offset)?;
     assert!(
       self.status.header.offsets.pressure_plates as usize == *offset,
       "PressurePlates offset mismatch"
     );
-    v.gwrite_with(&self.pressure_plates_info, offset, &self.tiles)?;
+    v.gwrite(&self.pressure_plates, offset)?;
     assert!(
       self.status.header.offsets.town_manager as usize == *offset,
       "RoomVec offset mismatch"

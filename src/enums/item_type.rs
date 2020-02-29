@@ -4018,7 +4018,7 @@ impl<'a> TryFromCtx<'a, Endian> for ItemType {
   }
 }
 
-impl TryIntoCtx<Endian> for ItemType {
+impl TryIntoCtx<Endian> for &ItemType {
   type Error = ScrollError;
 
   fn try_into_ctx(
@@ -4027,7 +4027,7 @@ impl TryIntoCtx<Endian> for ItemType {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let value = self as i32;
+    let value = *self as i32;
     buf.gwrite_with(value, offset, LE)?;
     let expected_size = ItemType::size_with(&LE);
     assert!(
@@ -4053,7 +4053,7 @@ mod test_item_type {
   fn test_item_type_rw() {
     let duck = ItemType::Duck;
     let mut buf = [0; 4];
-    assert_eq!(4, buf.pwrite(duck, 0).unwrap());
+    assert_eq!(4, buf.pwrite(&duck, 0).unwrap());
     assert_eq!(duck, buf.pread::<ItemType>(0).unwrap());
   }
 }

@@ -23,7 +23,7 @@ pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
   // actually a u16,u16
-  pub frame_data: Option<Point>,
+  pub frame_data: Option<Position>,
   pub block_paint: Option<u8>,
   pub is_block_inactive: bool,
   pub has_extended_block_id: bool,
@@ -57,7 +57,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
     ctx: BlockCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let mut frame_data: Option<Point> = None;
+    let mut frame_data: Option<Position> = None;
     let mut block_paint: Option<u8> = None;
 
     let block_id = if ctx.has_extended_block_id {
@@ -69,7 +69,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
     if ctx.tile_frame_importances[block_type as usize] {
       let x = buf.gread_with::<u16>(offset, LE)?;
       let y = buf.gread_with::<u16>(offset, LE)?;
-      frame_data = Some(Point {
+      frame_data = Some(Position {
         x: x as i32,
         y: y as i32,
       });
@@ -151,7 +151,7 @@ mod test_blocks {
     let block = Block {
       block_type: BlockType::Dirt,
       shape: BlockShape::Normal,
-      frame_data: Some(Point { x: 100, y: 100 }),
+      frame_data: Some(Position { x: 100, y: 100 }),
       block_paint: Some(1),
       is_block_inactive: true,
       has_extended_block_id: false,
