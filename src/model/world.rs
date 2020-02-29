@@ -7,9 +7,13 @@ use crate::{
       TBool,
       TString,
     },
+    house::HouseVec,
     items::*,
+    mob::MobVec,
     npc::*,
+    pressure_plate::PressurePlates,
     properties::Properties,
+    sign::Signs,
     status::Status,
     tile_entity::*,
     tiles::*,
@@ -44,7 +48,7 @@ pub struct World {
   pub mobs: MobVec,
   pub tile_entities: TileEntities,
   pub pressure_plates: PressurePlates,
-  pub rooms: RoomVec,
+  pub houses: HouseVec,
   pub town_manager: TownManager,
   pub footer: Footer,
 }
@@ -59,7 +63,7 @@ impl SizeWith<World> for World {
       + NPCVec::size_with(&ctx.npcs)
       + MobVec::size_with(&ctx.mobs)
       + PressurePlates::size_with(&ctx.pressure_plates)
-      + RoomVec::size_with(&ctx.rooms)
+      + HouseVec::size_with(&ctx.houses)
       + TownManager::size_with(&ctx.town_manager)
       + Footer::size_with(&ctx.status.properties.as_world_context())
   }
@@ -232,7 +236,7 @@ impl World {
       status.header.offsets.town_manager,
       offset
     );
-    let rooms = bytes.gread::<RoomVec>(offset)?;
+    let houses = bytes.gread::<HouseVec>(offset)?;
     // likely junk data
     let town_manager = bytes.gread_with::<TownManager>(
       offset,
@@ -253,7 +257,7 @@ impl World {
       pressure_plates,
       npcs,
       mobs,
-      rooms,
+      houses,
       town_manager,
       footer,
     })
@@ -310,7 +314,7 @@ impl World {
       self.status.header.offsets.town_manager as usize == *offset,
       "RoomVec offset mismatch"
     );
-    v.gwrite(&self.rooms, offset)?;
+    v.gwrite(&self.houses, offset)?;
     // v.gwrite(&self.town_manager, offset)?;
     assert!(
       self.status.header.offsets.footer as usize == *offset,

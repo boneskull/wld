@@ -1,7 +1,12 @@
-use super::common::*;
-use crate::enums::{
-  BlockShape,
-  BlockType,
+use crate::{
+  enums::{
+    BlockShape,
+    BlockType,
+  },
+  model::{
+    Position,
+    VariableTBitVec,
+  },
 };
 use num_traits::FromPrimitive;
 use scroll::{

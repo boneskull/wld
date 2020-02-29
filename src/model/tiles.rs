@@ -10,6 +10,8 @@ use crate::{
     items::*,
     tile_entity::*,
     walls::*,
+    Sign,
+    Signs,
   },
 };
 use scroll::{

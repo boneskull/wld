@@ -8,7 +8,7 @@ extern crate lazy_static;
 extern crate scroll_derive;
 #[macro_use]
 extern crate log;
-use crate::model::world::World;
+use crate::model::World;
 use log::LevelFilter;
 use mowl;
 use std::{

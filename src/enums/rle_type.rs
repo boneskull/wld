@@ -1,4 +1,4 @@
-use crate::model::common::TBitVec;
+use crate::model::TBitVec;
 use num_traits::FromPrimitive;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]

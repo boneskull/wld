@@ -2,7 +2,6 @@ use super::{
   common::*,
   items::ItemStack,
 };
-use crate::enums::EntityType;
 use scroll::{
   ctx::{
     SizeWith,
@@ -256,133 +255,6 @@ impl TryIntoCtx<Endian> for &TileEntities {
   }
 }
 
-pub type PressurePlate = Position;
-
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-#[repr(C)]
-pub struct PressurePlates {
-  count: i32,
-  pub pressure_plates: Vec<PressurePlate>,
-}
-
-impl<'a> TryFromCtx<'a, Endian> for PressurePlates {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let count = buf.gread_with::<i32>(offset, LE)?;
-    Ok((
-      Self {
-        count,
-        pressure_plates: (0..count)
-          .into_iter()
-          .map(|_| buf.gread::<PressurePlate>(offset))
-          .collect::<Result<Vec<_>, Self::Error>>()?,
-      },
-      *offset,
-    ))
-  }
-}
-
-impl TryIntoCtx<Endian> for &PressurePlates {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    let PressurePlates {
-      count,
-      pressure_plates,
-    } = self;
-    buf.gwrite_with(count, offset, LE)?;
-    pressure_plates
-      .iter()
-      .map(|sign| buf.gwrite(sign, offset))
-      .collect::<Result<Vec<_>, Self::Error>>()?;
-    let expected_size = PressurePlates::size_with(&self);
-    assert!(
-      expected_size == *offset,
-      "PressurePlates offset mismatch on write; expected {:?}, got {:?}",
-      expected_size,
-      offset
-    );
-    Ok(*offset)
-  }
-}
-
-impl SizeWith<PressurePlates> for PressurePlates {
-  fn size_with(ctx: &PressurePlates) -> usize {
-    i32::size_with(&LE) + (ctx.pressure_plates.len() * Position::size_with(&LE))
-  }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
-#[repr(C)]
-pub struct Room {
-  pub entity_type: EntityType,
-  pub position: Position,
-}
-
-#[derive(Clone, Debug, Default, PartialEq, Eq, IntoIterator, AsRef)]
-pub struct RoomVec(Vec<Room>);
-
-impl SizeWith<RoomVec> for RoomVec {
-  fn size_with(ctx: &RoomVec) -> usize {
-    let size =
-      i32::size_with(&LE) + (ctx.as_ref().len() * Room::size_with(&LE));
-    debug!("RoomVec size: {}", size);
-    size
-  }
-}
-
-impl<'a> TryFromCtx<'a, Endian> for RoomVec {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let room_count = buf.gread_with::<i32>(offset, LE)?;
-    let mut rooms: Vec<Room> = Vec::with_capacity(room_count as usize);
-    for _ in 0..room_count {
-      let room = buf.gread::<Room>(offset)?;
-      rooms.push(room);
-    }
-    Ok((Self(rooms), *offset))
-  }
-}
-
-impl TryIntoCtx<Endian> for &RoomVec {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    let vec = self.as_ref();
-    let len = vec.len();
-    buf.gwrite_with(len as i32, offset, LE)?;
-    for i in 0..len {
-      buf.gwrite(vec[i], offset)?;
-    }
-    assert!(
-      *offset == RoomVec::size_with(&self),
-      "RoomVec size mismatch"
-    );
-
-    Ok(*offset)
-  }
-}
-
 #[cfg(test)]
 mod test_tile_entity {
   use super::*;
@@ -432,30 +304,5 @@ mod test_tile_entity {
     let mut buf = [0; 16];
     assert_eq!(16, buf.pwrite(&te3, 0).unwrap());
     assert_eq!(te3, buf.pread::<TileEntity>(0).unwrap());
-  }
-
-  #[test]
-  fn test_pressure_plate_rw() {
-    let pp = PressurePlate { x: 0, y: 0 };
-    let mut buf = [0; 8];
-    assert_eq!(8, buf.pwrite(pp, 0).unwrap());
-    assert_eq!(&pp, &buf.pread::<PressurePlate>(0).unwrap());
-  }
-
-  #[test]
-  fn test_room_vec_rw() {
-    let rv = RoomVec(vec![
-      Room {
-        entity_type: EntityType::Derpling,
-        position: Position { x: 0, y: 0 },
-      },
-      Room {
-        entity_type: EntityType::Herpling,
-        position: Position { x: 2, y: 2 },
-      },
-    ]);
-    let mut buf = [0; 28];
-    assert_eq!(28, buf.pwrite(&rv, 0).unwrap());
-    assert_eq!(rv, buf.pread::<RoomVec>(0).unwrap());
   }
 }

@@ -1,17 +1,17 @@
 ---
 source: tests/wld.rs
-expression: PARSED_WORLD.rooms
+expression: PARSED_WORLD.houses
 ---
-RoomVec(
+HouseVec(
     [
-        Room {
+        House {
             entity_type: Guide,
             position: Position {
                 x: 1932,
                 y: 388,
             },
         },
-        Room {
+        House {
             entity_type: Dd2bartender,
             position: Position {
                 x: 2159,

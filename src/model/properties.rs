@@ -1,7 +1,13 @@
-use super::tiles::*;
 use crate::{
   enums::EvilType,
-  model::common::*,
+  model::{
+    Position,
+    Rect,
+    TBool,
+    TString,
+    VariableTBitVec,
+    WorldCtx,
+  },
 };
 use scroll::{
   ctx::{

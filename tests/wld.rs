@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use scroll::ctx::SizeWith;
 use std::fs::read;
 use wld::{
-  model::world::World,
+  model::World,
   parse_world,
 };
 
@@ -46,8 +46,8 @@ fn test_parse_mobs() {
 }
 
 #[test]
-fn test_parse_rooms() {
-  assert_debug_snapshot!(PARSED_WORLD.rooms);
+fn test_parse_houses() {
+  assert_debug_snapshot!(PARSED_WORLD.houses);
 }
 
 #[test]
