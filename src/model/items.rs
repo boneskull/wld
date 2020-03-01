@@ -49,11 +49,9 @@ impl Debug for ItemStack {
 
 impl SizeWith<ItemStack> for ItemStack {
   fn size_with(ctx: &ItemStack) -> usize {
-    let size = i16::size_with(&LE)
+    i16::size_with(&LE)
       + ctx.item_type.map_or(0, |_| ItemType::size_with(&LE))
-      + ctx.modifier.map_or(0, |_| u8::size_with(&LE));
-    trace!("ItemStack size: {}", size);
-    size
+      + ctx.modifier.map_or(0, |_| u8::size_with(&LE))
   }
 }
 
@@ -178,18 +176,9 @@ impl<'a> TryIntoCtx<Endian> for &'a Chest {
 }
 impl SizeWith<Chest> for Chest {
   fn size_with(ctx: &Chest) -> usize {
-    let size = Position::size_with(&LE)
+    Position::size_with(&LE)
       + TString::size_with(&ctx.name)
-      + ItemStackVec::size_with(&ctx.contents);
-
-    trace!(
-      "Chest size (position: {:?} + name: {:?} + contents: {:?} = {:?})",
-      Position::size_with(&LE),
-      TString::size_with(&ctx.name),
-      ItemStackVec::size_with(&ctx.contents),
-      size
-    );
-    size
+      + ItemStackVec::size_with(&ctx.contents)
   }
 }
 
@@ -245,13 +234,11 @@ impl<'a> TryFromCtx<'a, i16> for ItemStackVec {
 
 impl SizeWith<ItemStackVec> for ItemStackVec {
   fn size_with(ctx: &ItemStackVec) -> usize {
-    let size = ctx
+    ctx
       .as_ref()
       .iter()
       .map(|is| ItemStack::size_with(&is))
-      .fold(0, |acc, len| acc + len);
-    trace!("ItemStackVec size: {}", size);
-    size
+      .fold(0, |acc, len| acc + len)
   }
 }
 

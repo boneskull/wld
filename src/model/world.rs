@@ -278,7 +278,7 @@ impl World {
       self.status.header.offsets.tiles,
       offset
     );
-    v.gwrite(&self.tiles, offset)?;
+    v.gwrite_with(&self.tiles, offset, *offset)?;
     assert!(
       self.status.header.offsets.chests as usize == *offset,
       "Chests offset mismatch; expected {:?}, got {:?}",
