@@ -1,3 +1,5 @@
+#![allow(clippy::pedantic::struct_excessive_bools)]
+
 use crate::{
   enums::{
     BlockShape,
@@ -5,13 +7,19 @@ use crate::{
     RLEType,
   },
   model::{
-    block::*,
-    common::*,
-    items::*,
-    tile_entity::*,
-    walls::*,
+    Block,
+    BlockCtx,
+    Chest,
+    Chests,
+    Position,
     Sign,
     Signs,
+    TBitVec,
+    TString,
+    TileEntities,
+    TileEntity,
+    VariableTBitVec,
+    Wall,
   },
 };
 use scroll::{
@@ -26,6 +34,7 @@ use scroll::{
   Pwrite,
   LE,
 };
+use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
@@ -35,7 +44,7 @@ pub struct Liquid {
 }
 
 impl SizeWith<Liquid> for Liquid {
-  fn size_with(ctx: &Liquid) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     match ctx.liquid_type {
       LiquidType::NoLiquid => 0,
       _ => u8::size_with(&LE),
@@ -71,7 +80,7 @@ impl TryIntoCtx<Endian> for &Liquid {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     buf.gwrite(self.volume, offset)?;
-    let expected_size = Liquid::size_with(&self);
+    let expected_size = Liquid::size_with(self);
     assert!(
       expected_size == *offset,
       "Liquid offset mismatch on write; expected {:?}, got {:?}",
@@ -141,7 +150,7 @@ impl From<&TBitVec> for Wiring {
 
 impl Wiring {
   /// Flips bits in a [`TBitVec`] for red, green, and blue wires.
-  pub fn assign_bits(&self, attrs: &mut TBitVec) {
+  pub fn assign_bits(self, attrs: &mut TBitVec) {
     if self.red {
       attrs.set(1, true);
     }
@@ -154,7 +163,7 @@ impl Wiring {
   }
 
   // Flips bits in a [`TBitVec`] for yellow wires and actuators.
-  pub fn assign_extended_bits(&self, ext_attrs: &mut TBitVec) {
+  pub fn assign_extended_bits(self, ext_attrs: &mut TBitVec) {
     if self.yellow {
       ext_attrs.set(5, true);
     }
@@ -164,7 +173,8 @@ impl Wiring {
   }
 
   /// Returns `true` if _any_ wire or actuator is present.
-  pub fn has_wires(&self) -> bool {
+  #[must_use]
+  pub fn has_wires(self) -> bool {
     self.red || self.blue || self.green || self.yellow || self.actuator
   }
 
@@ -172,7 +182,7 @@ impl Wiring {
   /// disable them.  Used to merge a `Wiring` instance from
   /// [`ExtendedTileAttributes`] into a `Wiring` instance from
   /// [`TileAttributes`].
-  pub fn extend(&mut self, other: &Wiring) {
+  pub fn extend(&mut self, other: Self) {
     if other.red {
       self.red = other.red;
     }
@@ -199,7 +209,7 @@ pub struct RunLength {
 }
 
 impl SizeWith<RunLength> for RunLength {
-  fn size_with(ctx: &RunLength) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     match ctx.rle_type {
       RLEType::DoubleByte => u16::size_with(&LE),
       RLEType::SingleByte => u8::size_with(&LE),
@@ -218,7 +228,7 @@ impl<'a> TryFromCtx<'a, RLEType> for RunLength {
     let offset = &mut 0;
     let run_length = match rle_type {
       RLEType::DoubleByte => buf.gread_with::<u16>(offset, LE)? + 1,
-      RLEType::SingleByte => buf.gread::<u8>(offset)? as u16 + 1,
+      RLEType::SingleByte => u16::from(buf.gread::<u8>(offset)?) + 1,
       _ => 1,
     };
     Ok((Self::new(run_length, rle_type), *offset))
@@ -244,7 +254,7 @@ impl TryIntoCtx<Endian> for &RunLength {
       }
       _ => {}
     };
-    let expected_size = RunLength::size_with(&self);
+    let expected_size = RunLength::size_with(self);
     assert!(
       expected_size == *offset,
       "RunLength offset mismatch on write; expected {:?}, got {:?}",
@@ -287,7 +297,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileHeader {
     let has_wall = bits[2];
     let liquid_type = LiquidType::from(&bits);
     let has_extended_block_id = bits[5];
-    let rle_type = RLEType::from(&bits);
+    let rle_type = RLEType::try_from(&bits).map_err(Self::Error::Custom)?;
     Ok((
       Self {
         has_block,
@@ -342,7 +352,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
     let offset = &mut 0;
     let bits = buf.gread::<TBitVec>(offset)?;
     let has_extended_attributes = bits[0];
-    let shape = BlockShape::from(&bits);
+    let shape = BlockShape::try_from(&bits)?;
     let wiring = Wiring::from(&bits);
     Ok((
       Self {
@@ -444,39 +454,40 @@ pub struct Tile {
 }
 
 impl Tile {
+  #[must_use]
   pub fn chest<'a>(&self, chests: &'a Chests) -> Option<&'a Chest> {
-    chests.find_chest_at_position(&self.position)
+    chests.find_chest_at_position(self.position)
   }
 
+  #[must_use]
   pub fn sign<'a>(&self, signs: &'a Signs) -> Option<&'a Sign> {
-    signs.find_sign_at_position(&self.position)
+    signs.find_sign_at_position(self.position)
   }
 
+  #[must_use]
   pub fn tile_entity<'a>(
     &self,
     tile_entities: &'a TileEntities,
   ) -> Option<&'a TileEntity> {
-    tile_entities.find_tile_entity_at_position(&self.position)
+    tile_entities.find_tile_entity_at_position(self.position)
   }
 }
 
 impl SizeWith<Tile> for Tile {
-  fn size_with(ctx: &Tile) -> usize {
-    let size = TileHeader::size_with(&LE)
-      + match ctx.attributes {
-        Some(_) => TileAttributes::size_with(&LE),
-        _ => 0,
-      }
-      + match ctx.ext_attributes {
-        Some(_) => ExtendedTileAttributes::size_with(&LE),
-        _ => 0,
-      }
+  fn size_with(ctx: &Self) -> usize {
+    TileHeader::size_with(&LE)
+      + ctx
+        .attributes
+        .as_ref()
+        .map_or(0, |_| TileAttributes::size_with(&LE))
+      + ctx
+        .ext_attributes
+        .as_ref()
+        .map_or(0, |_| ExtendedTileAttributes::size_with(&LE))
       + ctx.block.map_or(0, |block| Block::size_with(&block))
       + ctx.wall.map_or(0, |wall| Wall::size_with(&wall))
       + ctx.liquid.map_or(0, |liquid| Liquid::size_with(&liquid))
-      + RunLength::size_with(&ctx.run_length);
-    // trace!("Tile size: {}", size);
-    size
+      + RunLength::size_with(&ctx.run_length)
   }
 }
 
@@ -513,7 +524,7 @@ impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
         is_block_painted = ext_attrs.is_block_painted;
         is_wall_painted = ext_attrs.is_wall_painted;
         if let Some(w) = &mut wiring {
-          w.extend(&ext_attrs.wiring);
+          w.extend(ext_attrs.wiring);
         }
         ext_attributes = Some(ext_attrs);
       }
@@ -546,7 +557,7 @@ impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
     let run_length =
       buf.gread_with::<RunLength>(offset, tile_header.rle_type)?;
     Ok((
-      Tile {
+      Self {
         tile_header,
         attributes,
         ext_attributes,
@@ -606,7 +617,7 @@ impl TryIntoCtx<usize> for &Tile {
 
     buf.gwrite(run_length, offset)?;
 
-    let expected_size = Tile::size_with(&self);
+    let expected_size = Tile::size_with(self);
     assert!(
       expected_size == *offset,
       "Tile offset mismatch on write; expected {:?}, got {:?}",
@@ -640,7 +651,7 @@ pub struct TileCtx<'a> {
 pub struct TileVec(Vec<Tile>);
 
 impl SizeWith<TileVec> for TileVec {
-  fn size_with(ctx: &TileVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let len = ctx.as_ref().len();
     let mut i = 0;
     let mut size = 0;
@@ -682,9 +693,9 @@ impl<'a> TryFromCtx<'a, TileVecCtx<'a>> for TileVec {
       for _ in 0..tile.run_length.length {
         tiles.push(tile.clone());
       }
-      i += tile.run_length.length as i32;
+      i += i32::from(tile.run_length.length);
     }
-    Ok((TileVec(tiles), *offset))
+    Ok((Self(tiles), *offset))
   }
 }
 
@@ -706,9 +717,9 @@ impl TryIntoCtx<usize> for &TileVec {
       // this handles the RLE; the vector is bigger than the actual data
       // because of it.
       i += tile.run_length.length as usize;
-      buf_offset += Tile::size_with(&tile);
+      buf_offset += Tile::size_with(tile);
     }
-    let expected_size = TileVec::size_with(&self);
+    let expected_size = TileVec::size_with(self);
     assert!(
       expected_size == *offset,
       "TileVec offset mismatch on write; expected {:?}, got {:?}",
@@ -740,7 +751,6 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
     let offset = &mut 0;
     let row_count = *ctx.world_width as usize;
     let matrix = (0..row_count)
-      .into_iter()
       .map(|x| {
         buf.gread_with::<TileVec>(
           offset,
@@ -751,7 +761,7 @@ impl<'a> TryFromCtx<'a, WorldCtx<'a>> for TileMatrix {
         )
       })
       .collect::<Result<Vec<TileVec>, Self::Error>>()?;
-    Ok((TileMatrix(matrix), *offset))
+    Ok((Self(matrix), *offset))
   }
 }
 
@@ -770,7 +780,7 @@ impl TryIntoCtx<usize> for &TileMatrix {
       buf_offset += TileVec::size_with(&self[i]);
     }
     assert!(
-      *offset == TileMatrix::size_with(&self),
+      *offset == TileMatrix::size_with(self),
       "TileMatrix size mismatch"
     );
     Ok(*offset)
@@ -778,12 +788,8 @@ impl TryIntoCtx<usize> for &TileMatrix {
 }
 
 impl SizeWith<TileMatrix> for TileMatrix {
-  fn size_with(ctx: &TileMatrix) -> usize {
-    let size = ctx
-      .as_ref()
-      .iter()
-      .map(|tv| TileVec::size_with(&tv))
-      .fold(0, |acc, len| acc + len);
+  fn size_with(ctx: &Self) -> usize {
+    let size = ctx.as_ref().iter().map(|tv| TileVec::size_with(tv)).sum();
     debug!("TileMatrix size: {}", size);
     size
   }
@@ -791,7 +797,29 @@ impl SizeWith<TileMatrix> for TileMatrix {
 
 #[cfg(test)]
 mod test_tiles {
-  use super::*;
+  use super::{
+    Block,
+    BlockShape,
+    ExtendedTileAttributes,
+    Liquid,
+    LiquidType,
+    Position,
+    Pread,
+    Pwrite,
+    RLEType,
+    RunLength,
+    SizeWith,
+    TBitVec,
+    TString,
+    Tile,
+    TileAttributes,
+    TileCtx,
+    TileHeader,
+    TileVec,
+    VariableTBitVec,
+    Wiring,
+    WorldCtx,
+  };
   use crate::enums::BlockType;
 
   #[test]
@@ -810,7 +838,7 @@ mod test_tiles {
   }
 
   #[test]
-  fn test_tile_header_rw() {
+  fn test_tile_header_singlebyte_rw() {
     let th = TileHeader {
       has_block: true,
       has_attributes: false,
@@ -827,7 +855,10 @@ mod test_tiles {
       TBitVec::from(&buf[..])
     );
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_header_doublebyte_rw() {
     let th = TileHeader {
       has_block: true,
       has_attributes: true,
@@ -844,7 +875,10 @@ mod test_tiles {
       TBitVec::from(&buf[..])
     );
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_header_nocompression_rw() {
     let th = TileHeader {
       has_block: true,
       has_attributes: true,
@@ -861,7 +895,10 @@ mod test_tiles {
       TBitVec::from(&buf[..])
     );
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_header_honey_rw() {
     let th = TileHeader {
       has_block: false,
       has_attributes: false,
@@ -871,7 +908,7 @@ mod test_tiles {
       rle_type: RLEType::SingleByte,
     };
 
-    let mut buf = [0u8; 1];
+    let mut buf = [0_u8; 1];
     assert_eq!(1, buf.pwrite(&th, 0).unwrap());
     assert_eq!(
       TBitVec::from(vec![false, false, true, true, true, false, true, false]),
@@ -881,7 +918,7 @@ mod test_tiles {
   }
 
   #[test]
-  fn test_tile_attributes_rw() {
+  fn test_tile_attributes_with_ext_rw() {
     let attrs = TileAttributes {
       has_extended_attributes: true,
       shape: BlockShape::HalfTile,
@@ -891,7 +928,10 @@ mod test_tiles {
     let mut buf = [0; 1];
     assert_eq!(1, buf.pwrite(&attrs, 0).unwrap());
     assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
+  }
 
+  #[test]
+  fn test_tile_attributes_without_ext_rw() {
     let attrs = TileAttributes {
       has_extended_attributes: false,
       shape: BlockShape::TopRightSlope,
@@ -1035,7 +1075,7 @@ mod test_tiles {
       run_length: RunLength::new(2, RLEType::SingleByte),
       position: Position { x: 0, y: 0 },
     };
-    let tv = TileVec(vec![tile.clone(), tile.clone(), tile.clone()]);
+    let tv = TileVec(vec![tile.clone(), tile.clone(), tile]);
     // it's 8 because of the run_length of 2.
     assert_eq!(8, TileVec::size_with(&tv));
   }

@@ -3,10 +3,7 @@ use crate::{
     BlockShape,
     BlockType,
   },
-  model::{
-    Position,
-    VariableTBitVec,
-  },
+  model::VariableTBitVec,
 };
 use num_traits::FromPrimitive;
 use scroll::{
@@ -27,19 +24,19 @@ use scroll::{
 pub struct Block {
   pub block_type: BlockType,
   pub shape: BlockShape,
-  // actually a u16,u16
-  pub frame_data: Option<Position>,
+  pub frame_data: Option<(u16, u16)>,
   pub block_paint: Option<u8>,
   pub is_block_inactive: bool,
   pub has_extended_block_id: bool,
 }
 
 impl SizeWith<Block> for Block {
-  fn size_with(ctx: &Block) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     // note that shape is ignored
-    (match ctx.has_extended_block_id {
-      true => u16::size_with(&LE),
-      false => u8::size_with(&LE),
+    (if ctx.has_extended_block_id {
+      u16::size_with(&LE)
+    } else {
+      u8::size_with(&LE)
     }) + ctx.frame_data.map_or(0, |_| (u16::size_with(&LE) * 2))
       + ctx.block_paint.map_or(0, |_| u8::size_with(&LE))
   }
@@ -62,28 +59,25 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
     ctx: BlockCtx,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let mut frame_data: Option<Position> = None;
+    let mut frame_data: Option<(u16, u16)> = None;
     let mut block_paint: Option<u8> = None;
 
     let block_id = if ctx.has_extended_block_id {
       buf.gread_with::<u16>(offset, LE)?
     } else {
-      buf.gread::<u8>(offset)? as u16
+      u16::from(buf.gread::<u8>(offset)?)
     };
     let block_type = BlockType::from_u16(block_id).unwrap();
     if ctx.tile_frame_importances[block_id as usize] {
       let x = buf.gread_with::<u16>(offset, LE)?;
       let y = buf.gread_with::<u16>(offset, LE)?;
-      frame_data = Some(Position {
-        x: x as i32,
-        y: y as i32,
-      });
+      frame_data = Some((x, y));
     }
     if ctx.is_block_painted {
       block_paint = Some(buf.gread::<u8>(offset)?);
     }
     Ok((
-      Block {
+      Self {
         block_type,
         shape: ctx.shape,
         frame_data,
@@ -122,27 +116,29 @@ impl<'a> TryIntoCtx<Endian> for &Block {
         buf.gwrite(block_id as u8, offset)?;
       }
     }
-    match frame_data {
-      Some(fd) => {
-        buf.gwrite_with(fd.x as u16, offset, LE)?;
-        buf.gwrite_with(fd.y as u16, offset, LE)?;
-      }
-      _ => {}
+    if let Some(fd) = frame_data {
+      buf.gwrite_with(fd.0, offset, LE)?;
+      buf.gwrite_with(fd.1, offset, LE)?;
     };
-    match block_paint {
-      Some(bp) => {
-        buf.gwrite(bp, offset)?;
-      }
-      _ => {}
+    if let Some(bp) = block_paint {
+      buf.gwrite(bp, offset)?;
     };
-    assert!(*offset == Block::size_with(&self), "Block size mismatch");
+    assert!(*offset == Block::size_with(self), "Block size mismatch");
     Ok(*offset)
   }
 }
 
 #[cfg(test)]
 mod test_blocks {
-  use super::*;
+  use super::{
+    Block,
+    BlockCtx,
+    BlockShape,
+    BlockType,
+    Pread,
+    Pwrite,
+    VariableTBitVec,
+  };
   #[test]
   fn test_block_rw() {
     let ctx = BlockCtx {
@@ -156,7 +152,7 @@ mod test_blocks {
     let block = Block {
       block_type: BlockType::Dirt,
       shape: BlockShape::Normal,
-      frame_data: Some(Position { x: 100, y: 100 }),
+      frame_data: Some((100, 100)),
       block_paint: Some(1),
       is_block_inactive: true,
       has_extended_block_id: false,

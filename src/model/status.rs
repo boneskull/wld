@@ -4,7 +4,10 @@ use crate::{
     HardmodeOre,
     InvasionType,
   },
-  model::common::*,
+  model::common::{
+    TBool,
+    TString,
+  },
 };
 use scroll::{
   ctx::{
@@ -134,13 +137,13 @@ pub struct AnglerQuestStatus {
 }
 
 impl SizeWith<AnglerQuestStatus> for AnglerQuestStatus {
-  fn size_with(ctx: &AnglerQuestStatus) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     u8::size_with(&LE)
       + ctx
         .completed_players
         .iter()
         .map(|tstr| TString::size_with(tstr))
-        .fold(0, |acc, len| acc + len)
+        .sum::<usize>()
       + TBool::size_with(&LE)
       + AnglerQuestFish::size_with(&LE)
   }
@@ -189,13 +192,13 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
     let completed_players_count = completed_players.len();
     buf.gwrite(completed_players_count as u8, offset)?;
 
-    for i in 0..completed_players_count {
-      buf.gwrite(&completed_players[i], offset)?;
+    for completed_player in completed_players {
+      buf.gwrite(completed_player, offset)?;
     }
     buf.gwrite(angler_saved, offset)?;
     buf.gwrite(target, offset)?;
     assert!(
-      *offset == AnglerQuestStatus::size_with(&self),
+      *offset == AnglerQuestStatus::size_with(self),
       "Size mismatch for AnglerQuestStatus"
     );
     Ok(*offset)
@@ -207,7 +210,7 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
 pub struct MobKillVec(Vec<i32>);
 
 impl SizeWith<MobKillVec> for MobKillVec {
-  fn size_with(ctx: &MobKillVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i16::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
   }
 }
@@ -239,13 +242,12 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     let mob_kills = self.as_ref();
-    let mob_kills_count = mob_kills.len();
-    buf.gwrite_with(mob_kills_count as i16, offset, LE)?;
-    for i in 0..mob_kills_count {
-      buf.gwrite_with(&mob_kills[i], offset, LE)?;
+    buf.gwrite_with(mob_kills.len() as i16, offset, LE)?;
+    for mob_kill in mob_kills {
+      buf.gwrite_with(mob_kill, offset, LE)?;
     }
     assert!(
-      *offset == MobKillVec::size_with(&self),
+      *offset == MobKillVec::size_with(self),
       "Size mismatch for MobKillVec"
     );
     Ok(*offset)
@@ -257,7 +259,7 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
 pub struct PartyingNPCVec(Vec<i32>);
 
 impl SizeWith<PartyingNPCVec> for PartyingNPCVec {
-  fn size_with(ctx: &PartyingNPCVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i32::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
   }
 }
@@ -289,13 +291,12 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     let partying_npcs = self.as_ref();
-    let partying_npcs_count = partying_npcs.len();
-    buf.gwrite_with(partying_npcs_count as i32, offset, LE)?;
-    for i in 0..partying_npcs_count {
-      buf.gwrite_with(&partying_npcs[i], offset, LE)?;
+    buf.gwrite_with(partying_npcs.len() as i32, offset, LE)?;
+    for partying_npc in partying_npcs {
+      buf.gwrite_with(partying_npc, offset, LE)?;
     }
     assert!(
-      *offset == PartyingNPCVec::size_with(&self),
+      *offset == PartyingNPCVec::size_with(self),
       "Size mismatch for PartyingNPCVec"
     );
     Ok(*offset)
@@ -312,7 +313,7 @@ pub struct PartyStatus {
 }
 
 impl SizeWith<PartyStatus> for PartyStatus {
-  fn size_with(ctx: &PartyStatus) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     TBool::size_with(&LE)
       + TBool::size_with(&LE)
       + i32::size_with(&LE)
@@ -370,7 +371,7 @@ pub struct Status {
 }
 
 impl SizeWith<Status> for Status {
-  fn size_with(ctx: &Status) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size = BossesSlain::size_with(&LE)
       + SavedNPCs::size_with(&LE)
       + EventsCompleted::size_with(&LE)
@@ -397,7 +398,17 @@ impl SizeWith<Status> for Status {
 
 #[cfg(test)]
 mod test_status {
-  use super::*;
+  use super::{
+    AnglerQuestFish,
+    AnglerQuestStatus,
+    MobKillVec,
+    PartyingNPCVec,
+    Pread,
+    Pwrite,
+    SizeWith,
+    TBool,
+    TString,
+  };
 
   #[test]
   fn test_angler_quest_status_rw() {
@@ -428,7 +439,7 @@ mod test_status {
 
   #[test]
   fn test_mob_kill_vec_rw() {
-    let mkv = MobKillVec(vec![2i32, 4i32, 6i32, 8i32]);
+    let mkv = MobKillVec(vec![2_i32, 4_i32, 6_i32, 8_i32]);
 
     let mut buf = [0; 18];
     assert_eq!(18, buf.pwrite(&mkv, 0).unwrap());
@@ -437,7 +448,7 @@ mod test_status {
 
   #[test]
   fn test_partying_npc_vec_rw() {
-    let pnpcv = PartyingNPCVec(vec![2i32, 4i32, 6i32, 8i32]);
+    let pnpcv = PartyingNPCVec(vec![2_i32, 4_i32, 6_i32, 8_i32]);
 
     let mut buf = [0; 20];
     assert_eq!(20, buf.pwrite(&pnpcv, 0).unwrap());

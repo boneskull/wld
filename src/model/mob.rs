@@ -28,7 +28,7 @@ pub struct Mob {
 pub struct MobVec(Vec<Mob>);
 
 impl SizeWith<MobVec> for MobVec {
-  fn size_with(ctx: &MobVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size = TBool::size_with(&LE)
       + (ctx.as_ref().len() * (Mob::size_with(&LE) + TBool::size_with(&LE)));
     debug!("MobVec size: {}", size);
@@ -69,15 +69,15 @@ impl TryIntoCtx<Endian> for &MobVec {
     } else {
       buf.gwrite(&TBool::False, offset)?;
     }
-    for i in 0..len {
-      buf.gwrite(&vec[i], offset)?;
+    for (i, mob) in vec.iter().enumerate() {
+      buf.gwrite(mob, offset)?;
       if i == len - 1 {
         buf.gwrite(&TBool::False, offset)?;
       } else {
         buf.gwrite(&TBool::True, offset)?;
       }
     }
-    assert!(*offset == MobVec::size_with(&self), "MobVec size mismatch");
+    assert!(*offset == MobVec::size_with(self), "MobVec size mismatch");
 
     Ok(*offset)
   }
@@ -85,7 +85,13 @@ impl TryIntoCtx<Endian> for &MobVec {
 
 #[cfg(test)]
 mod test_mob {
-  use super::*;
+  use super::{
+    EntityType,
+    Mob,
+    MobVec,
+    Pread,
+    Pwrite,
+  };
 
   #[test]
   fn test_mob_rw() {

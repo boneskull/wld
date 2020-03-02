@@ -24,7 +24,7 @@ pub struct House {
 pub struct HouseVec(Vec<House>);
 
 impl SizeWith<HouseVec> for HouseVec {
-  fn size_with(ctx: &HouseVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size =
       i32::size_with(&LE) + (ctx.as_ref().len() * House::size_with(&LE));
     debug!("RoomVec size: {}", size);
@@ -59,14 +59,13 @@ impl TryIntoCtx<Endian> for &HouseVec {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let vec = self.as_ref();
-    let len = vec.len();
-    buf.gwrite_with(len as i32, offset, LE)?;
-    for i in 0..len {
-      buf.gwrite(vec[i], offset)?;
+    let houses = self.as_ref();
+    buf.gwrite_with(houses.len() as i32, offset, LE)?;
+    for house in houses {
+      buf.gwrite(house, offset)?;
     }
     assert!(
-      *offset == HouseVec::size_with(&self),
+      *offset == HouseVec::size_with(self),
       "RoomVec size mismatch"
     );
 
@@ -76,9 +75,16 @@ impl TryIntoCtx<Endian> for &HouseVec {
 
 #[cfg(test)]
 mod test_house {
-  use super::*;
+  use super::{
+    EntityType,
+    House,
+    HouseVec,
+    Position,
+    Pread,
+    Pwrite,
+  };
   #[test]
-  fn test_room_vec_rw() {
+  fn test_house_vec_rw() {
     let rv = HouseVec(vec![
       House {
         entity_type: EntityType::Derpling,

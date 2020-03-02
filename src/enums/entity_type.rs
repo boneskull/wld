@@ -701,7 +701,11 @@ impl SizeWith<Endian> for EntityType {
 
 #[cfg(test)]
 mod test_entity_type {
-  use super::*;
+  use super::{
+    EntityType,
+    Pread,
+    Pwrite,
+  };
 
   #[test]
   fn test_entity_type_rw() {

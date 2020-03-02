@@ -31,7 +31,7 @@ pub struct NPC {
 }
 
 impl SizeWith<NPC> for NPC {
-  fn size_with(ctx: &NPC) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     EntityType::size_with(&LE)
       + TString::size_with(&ctx.name)
       + TBool::size_with(&LE)
@@ -57,10 +57,11 @@ impl<'a> TryFromCtx<'a, Endian> for NPC {
     let position_x = buf.gread_with::<f32>(offset, LE)?;
     let position_y = buf.gread_with::<f32>(offset, LE)?;
     let is_homeless = buf.gread_with::<TBool>(offset, LE)?;
-    let mut home_position = None;
-    if is_homeless == TBool::False {
-      home_position = Some(buf.gread_with::<Position>(offset, LE)?);
-    }
+    let home_position = if is_homeless == TBool::False {
+      Some(buf.gread_with::<Position>(offset, LE)?)
+    } else {
+      None
+    };
     Ok((
       Self {
         entity_type,
@@ -101,7 +102,7 @@ impl TryIntoCtx<Endian> for &NPC {
       buf.gwrite(hp, offset)?;
     }
 
-    assert!(*offset == NPC::size_with(&self), "NPC size mismatch");
+    assert!(*offset == NPC::size_with(self), "NPC size mismatch");
     Ok(*offset)
   }
 }
@@ -111,13 +112,13 @@ impl TryIntoCtx<Endian> for &NPC {
 pub struct NPCVec(Vec<NPC>);
 
 impl SizeWith<NPCVec> for NPCVec {
-  fn size_with(ctx: &NPCVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size: usize = TBool::size_with(&LE)
       + ctx
         .as_ref()
         .iter()
-        .map(|npc| TBool::size_with(&LE) + NPC::size_with(&npc))
-        .fold(0, |acc, len| acc + len);
+        .map(|npc| TBool::size_with(&LE) + NPC::size_with(npc))
+        .sum::<usize>();
     debug!("NPCVec size: {}", size);
     size
   }
@@ -157,15 +158,15 @@ impl TryIntoCtx<Endian> for &NPCVec {
     } else {
       buf.gwrite(&TBool::False, offset)?;
     }
-    for i in 0..len {
-      buf.gwrite(&vec[i], offset)?;
+    for (i, npc) in vec.iter().enumerate() {
+      buf.gwrite(npc, offset)?;
       if i == len - 1 {
         buf.gwrite(&TBool::False, offset)?;
       } else {
         buf.gwrite(&TBool::True, offset)?;
       }
     }
-    assert!(*offset == NPCVec::size_with(&self), "NPCVec size mismatch");
+    assert!(*offset == NPCVec::size_with(self), "NPCVec size mismatch");
 
     Ok(*offset)
   }
@@ -173,7 +174,16 @@ impl TryIntoCtx<Endian> for &NPCVec {
 
 #[cfg(test)]
 mod test_npc {
-  use super::*;
+  use super::{
+    EntityType,
+    NPCVec,
+    Position,
+    Pread,
+    Pwrite,
+    TBool,
+    TString,
+    NPC,
+  };
 
   #[test]
   fn test_npc_vec_rw() {

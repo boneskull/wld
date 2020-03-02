@@ -1,11 +1,22 @@
-use wld;
+use std::{
+  boxed::Box,
+  error::Error,
+  fs::{
+    read,
+    write,
+  },
+};
+use wld::{
+  init_logger,
+  parse_world,
+};
 
-fn main() -> std::result::Result<(), std::boxed::Box<dyn std::error::Error>> {
-  wld::init_logger();
-  let world_file: std::vec::Vec<u8> =
-    std::fs::read("tests/fixtures/Foon.wld").expect("Unable to read file");
-  let world = wld::parse_world(&world_file)?;
+fn main() -> Result<(), Box<dyn Error>> {
+  init_logger(log::LevelFilter::Debug);
+  let world_file: Vec<u8> =
+    read("tests/fixtures/Foon.wld").expect("Unable to read file");
+  let world = parse_world(&world_file)?;
   let rebuilt_world = world.write()?;
-  std::fs::write("newworld.wld", rebuilt_world)?;
+  write("newworld.wld", rebuilt_world)?;
   Ok(())
 }

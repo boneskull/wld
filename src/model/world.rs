@@ -1,25 +1,42 @@
-use super::header::*;
 use crate::{
-  constants::*,
+  constants::{
+    BLOCKTYPE_COLOR_MAP,
+    BLUE_WIRE_COLOR,
+    CAVERN_COLOR,
+    GREEN_WIRE_COLOR,
+    HELL_COLOR,
+    HONEY_COLOR,
+    LAVA_COLOR,
+    PAINT_COLOR_MAP,
+    RED_WIRE_COLOR,
+    SKY_COLOR,
+    UNDERGROUND_COLOR,
+    WALLTYPE_COLOR_MAP,
+    WATER_COLOR,
+    YELLOW_WIRE_COLOR,
+  },
   enums::LiquidType,
   model::{
-    common::{
-      TBool,
-      TString,
-    },
-    house::HouseVec,
-    items::*,
-    mob::MobVec,
-    npc::*,
-    pressure_plate::PressurePlates,
-    properties::Properties,
-    sign::Signs,
-    status::Status,
-    tile_entity::*,
-    tiles::*,
+    Chests,
+    Header,
+    HouseVec,
+    MobVec,
+    NPCVec,
+    PressurePlates,
+    Properties,
+    Signs,
+    Status,
+    TBool,
+    TString,
+    TileEntities,
+    TileMatrix,
+    WorldCtx,
   },
 };
-use image::RgbaImage;
+use image::{
+  Rgba,
+  RgbaImage,
+};
 use imageproc::{
   drawing::draw_filled_rect_mut,
   rect::Rect,
@@ -54,7 +71,7 @@ pub struct World {
 }
 
 impl SizeWith<World> for World {
-  fn size_with(ctx: &World) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     WorldStatus::size_with(&ctx.status)
       + TileMatrix::size_with(&ctx.tiles)
       + Chests::size_with(&ctx.chests)
@@ -78,7 +95,7 @@ pub struct WorldStatus {
 }
 
 impl SizeWith<WorldStatus> for WorldStatus {
-  fn size_with(ctx: &WorldStatus) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size = Header::size_with(&LE)
       + Properties::size_with(&ctx.properties)
       + Status::size_with(&ctx.status);
@@ -138,7 +155,7 @@ impl<'a> TryIntoCtx<WorldCtx<'a>> for &Footer {
 impl<'a> SizeWith<WorldCtx<'a>> for Footer {
   fn size_with(ctx: &WorldCtx) -> usize {
     let size = TBool::size_with(&LE)
-      + TString::size_with(&ctx.name)
+      + TString::size_with(ctx.name)
       + i32::size_with(&LE);
     debug!("Footer size: {}", size);
     size
@@ -150,7 +167,7 @@ impl<'a> SizeWith<WorldCtx<'a>> for Footer {
 pub struct TownManager(Vec<u8>);
 
 impl SizeWith<TownManager> for TownManager {
-  fn size_with(ctx: &TownManager) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     ctx.as_ref().len()
   }
 }
@@ -167,7 +184,7 @@ impl<'a> TryFromCtx<'a, usize> for TownManager {
     for _ in 0..ctx {
       vec.push(buf.gread::<u8>(offset)?);
     }
-    Ok((TownManager(vec), *offset))
+    Ok((Self(vec), *offset))
   }
 }
 
@@ -188,8 +205,12 @@ impl<'a> TryIntoCtx<Endian> for &TownManager {
 }
 
 impl World {
+  /// Reads a [`World`] from a slice of bytes.
+  ///
+  /// # Errors
+  /// May return all manner of [`scroll::Error`] instances.
   #[inline]
-  pub fn read(bytes: &[u8]) -> Result<World, scroll::Error> {
+  pub fn read(bytes: &[u8]) -> Result<Self, ScrollError> {
     let offset = &mut 0;
     // order matters
     let status = bytes.gread::<WorldStatus>(offset)?;
@@ -248,7 +269,7 @@ impl World {
     );
     let footer = bytes.gread_with::<Footer>(offset, world_ctx)?;
     debug!("Read {:?} bytes", *offset);
-    Ok(World {
+    Ok(Self {
       status,
       tiles,
       chests,
@@ -263,9 +284,13 @@ impl World {
     })
   }
 
+  /// Given a [`World`] instance, serialize into a slice of bytes.
+  ///
+  /// # Errors
+  /// Mainly emits [`scroll::Error`].
   pub fn write(&self) -> Result<Box<[u8]>, Box<dyn std::error::Error>> {
     let offset = &mut 0;
-    let size = World::size_with(self);
+    let size = Self::size_with(self);
     debug!("Total size: {:?}", size);
     let mut v: Vec<u8> = Vec::with_capacity(size);
     unsafe {
@@ -329,6 +354,10 @@ impl World {
     Ok(v.into_boxed_slice())
   }
 
+  /// Given a [`World`] instance, render a PNG to file at `path`.
+  ///
+  /// # Errors
+  /// Emits [`std::io::Error`] if unable to save to the path.
   pub fn render<P>(&self, path: P) -> Result<(), Box<dyn std::error::Error>>
   where
     P: AsRef<std::path::Path>,
@@ -337,7 +366,7 @@ impl World {
     let height = self.status.properties.height as u32;
     let mut img = RgbaImage::new(width, height);
     self.draw_background(&mut img);
-    println!("Rendering {:?} tiles...", width * height);
+    info!("Rendering {:?} tiles...", width * height);
     for x in 0..width {
       for y in 0..height {
         self.draw_wall(x, y, &mut img);
@@ -374,64 +403,54 @@ impl World {
 
   fn draw_wall(&self, x: u32, y: u32, img: &mut RgbaImage) {
     let tile = &self.tiles[x as usize][y as usize];
-    match tile.wall {
-      Some(wall) => {
-        let color = match wall.wall_paint {
-          Some(paint) => PAINT_COLOR_MAP.get(&paint).unwrap(),
-          None => WALLTYPE_COLOR_MAP.get(&wall.wall_type).unwrap(),
-        };
-        img.put_pixel(x, y, *color);
-      }
-      _ => {}
+    if let Some(wall) = tile.wall {
+      let color = match wall.wall_paint {
+        Some(paint) => PAINT_COLOR_MAP.get(&paint).unwrap(),
+        None => WALLTYPE_COLOR_MAP.get(&wall.wall_type).unwrap(),
+      };
+      img.put_pixel(x, y, *color);
     };
   }
 
   fn draw_liquid(&self, x: u32, y: u32, img: &mut RgbaImage) {
     let tile = &self.tiles[x as usize][y as usize];
-    match tile.liquid {
-      Some(liquid) => {
-        let color = match liquid.liquid_type {
-          LiquidType::Water => WATER_COLOR,
-          LiquidType::Lava => LAVA_COLOR,
-          LiquidType::Honey => HONEY_COLOR,
-          _ => WATER_COLOR, // TODO: ERROR
-        };
-        img.put_pixel(x, y, color);
+    if let Some(liquid) = tile.liquid {
+      let color: Option<Rgba<u8>> = match liquid.liquid_type {
+        LiquidType::Water => Some(WATER_COLOR),
+        LiquidType::Lava => Some(LAVA_COLOR),
+        LiquidType::Honey => Some(HONEY_COLOR),
+        _ => None,
+      };
+      if let Some(c) = color {
+        img.put_pixel(x, y, c);
       }
-      _ => {}
     };
   }
 
   fn draw_block(&self, x: u32, y: u32, img: &mut RgbaImage) {
     let tile = &self.tiles[x as usize][y as usize];
-    match tile.block {
-      Some(block) => {
-        let color = match block.block_paint {
-          Some(paint) => PAINT_COLOR_MAP.get(&paint).unwrap(),
-          None => BLOCKTYPE_COLOR_MAP.get(&block.block_type).unwrap(),
-        };
-        img.put_pixel(x, y, *color);
-      }
-      _ => {}
+    if let Some(block) = tile.block {
+      let color = match block.block_paint {
+        Some(paint) => PAINT_COLOR_MAP.get(&paint).unwrap(),
+        None => BLOCKTYPE_COLOR_MAP.get(&block.block_type).unwrap(),
+      };
+      img.put_pixel(x, y, *color);
     };
   }
 
   fn draw_wire(&self, x: u32, y: u32, img: &mut RgbaImage) {
     let tile = &self.tiles[x as usize][y as usize];
-    match tile.wiring {
-      Some(wiring) => {
-        let color = if wiring.blue {
-          BLUE_WIRE_COLOR
-        } else if wiring.green {
-          GREEN_WIRE_COLOR
-        } else if wiring.yellow {
-          YELLOW_WIRE_COLOR
-        } else {
-          RED_WIRE_COLOR
-        };
-        img.put_pixel(x, y, color);
-      }
-      _ => {}
+    if let Some(wiring) = tile.wiring {
+      let color = if wiring.blue {
+        BLUE_WIRE_COLOR
+      } else if wiring.green {
+        GREEN_WIRE_COLOR
+      } else if wiring.yellow {
+        YELLOW_WIRE_COLOR
+      } else {
+        RED_WIRE_COLOR
+      };
+      img.put_pixel(x, y, color);
     };
   }
 }

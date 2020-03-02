@@ -60,7 +60,7 @@ pub struct Position {
 pub struct TString(String, usize);
 
 impl SizeWith<TString> for TString {
-  fn size_with(ctx: &TString) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     (u8::size_with(&LE) * ctx.1) + (ctx.0.len() * u8::size_with(&LE))
   }
 }
@@ -75,7 +75,6 @@ impl<'a> TryFromCtx<'a, Endian> for TString {
     let offset = &mut 0;
     let str_len = buf.gread::<Uleb128>(offset)?;
     let count = str_len.size();
-    // let str_len = Uleb128::read(buf, offset)?;
     let str_len = *str_len.as_ref() as usize;
     let value = buf.gread_with::<&str>(offset, StrCtx::Length(str_len))?;
     Ok((Self(value.to_string(), count), *offset))
@@ -103,10 +102,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TString {
       Err(e) => return Err(ScrollError::Custom(format!("{:?}", e))),
     };
     buf.gwrite(value.as_bytes(), offset)?;
-    assert!(
-      *offset == TString::size_with(&self),
-      "TString size mismatch"
-    );
+    assert!(*offset == TString::size_with(self), "TString size mismatch");
     Ok(*offset)
   }
 }
@@ -116,9 +112,9 @@ impl From<&str> for TString {
     Self(
       s.to_string(),
       match s.len() {
-        0..=128 => 1,
-        128..=256 => 2,
-        256..=512 => 3,
+        0..=127 => 1,
+        128..=255 => 2,
+        256..=511 => 3,
         _ => 4,
       },
     )
@@ -162,14 +158,7 @@ impl<'a> TryFromCtx<'a, Endian> for TBool {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let value = buf.gread::<u8>(offset)?;
-    Ok((
-      if value == 0 {
-        TBool::False
-      } else {
-        TBool::True
-      },
-      *offset,
-    ))
+    Ok((if value == 0 { Self::False } else { Self::True }, *offset))
   }
 }
 
@@ -182,7 +171,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TBool {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    buf.gwrite(if *self == TBool::True { 1u8 } else { 0u8 }, offset)?;
+    buf.gwrite(if *self == TBool::True { 1_u8 } else { 0_u8 }, offset)?;
     let expected_size = TBool::size_with(&LE);
     assert!(
       expected_size == *offset,
@@ -199,11 +188,13 @@ impl<'a> TryIntoCtx<Endian> for &'a TBool {
 pub struct VariableTBitVec(BitVec<Lsb0, u8>, i16);
 
 impl VariableTBitVec {
-  pub fn bitvec(&self) -> &BitVec<Lsb0, u8> {
+  #[must_use]
+  pub const fn bitvec(&self) -> &BitVec<Lsb0, u8> {
     &self.0
   }
 
-  pub fn size(&self) -> i16 {
+  #[must_use]
+  pub const fn size(&self) -> i16 {
     self.1
   }
 }
@@ -223,7 +214,7 @@ impl From<Vec<bool>> for VariableTBitVec {
 }
 
 impl SizeWith<VariableTBitVec> for VariableTBitVec {
-  fn size_with(ctx: &VariableTBitVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i16::size_with(&LE) + ctx.bitvec().as_slice().len()
   }
 }
@@ -237,7 +228,7 @@ impl<'a> TryFromCtx<'a, Endian> for VariableTBitVec {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let len = buf.gread_with::<i16>(offset, LE)?;
-    let byte_len = (len as f32 / 8.0).ceil() as usize;
+    let byte_len = (f32::from(len) / 8.0).ceil() as usize;
     let bits =
       BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + byte_len]);
     *offset += byte_len;
@@ -258,7 +249,7 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
     let size = self.size();
     buf.gwrite(size, offset)?;
     buf.gwrite(bits.as_slice(), offset)?;
-    let expected_size = VariableTBitVec::size_with(&self);
+    let expected_size = VariableTBitVec::size_with(self);
     assert!(
       expected_size == *offset,
       "VariableTBitVec offset mismatch on write; expected {:?}, got {:?}",
@@ -281,7 +272,7 @@ impl TBitVec {
 }
 
 impl SizeWith<TBitVec> for TBitVec {
-  fn size_with(ctx: &TBitVec) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     ctx.as_ref().as_slice().len()
   }
 }
@@ -359,7 +350,7 @@ impl<'a> TryFromCtx<'a, Endian> for TBitVec {
     _: Endian,
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
-    let bits = BitVec::<Lsb0, u8>::from_slice(&buf[*offset..*offset + 1]);
+    let bits = BitVec::<Lsb0, u8>::from_slice(&buf[*offset..=*offset]);
     *offset += 1;
     Ok((Self(bits), *offset))
   }
@@ -375,7 +366,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     buf.gwrite(self.as_ref().as_slice(), offset)?;
-    let expected_size = TBitVec::size_with(&self);
+    let expected_size = TBitVec::size_with(self);
     assert!(
       expected_size == *offset,
       "TBitVec offset mismatch on write; expected {:?}, got {:?}",
@@ -388,14 +379,21 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
 
 #[cfg(test)]
 mod test_common {
-  use super::*;
+  use super::{
+    Pwrite,
+    TBitVec,
+    TBool,
+    TString,
+    TileAttributes,
+    TryFromCtx,
+  };
   use crate::{
     enums::BlockShape,
     model::Wiring,
   };
   use scroll::LE;
   #[test]
-  fn test_tbool_rw() {
+  fn test_tbool_true_rw() {
     let t = &TBool::True;
     let mut bytes = [0; 1];
     let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();
@@ -403,7 +401,10 @@ mod test_common {
       TBool::try_from_ctx(&bytes[..], LE).unwrap(),
       (TBool::True, 1)
     );
+  }
 
+  #[test]
+  fn test_tbool_false_rw() {
     let t = &TBool::False;
     let mut bytes = [0; 1];
     let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();

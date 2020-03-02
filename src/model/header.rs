@@ -27,7 +27,7 @@ pub struct Offsets {
   pub pressure_plates: i32,
   pub town_manager: i32,
   pub footer: i32,
-  _extra: i32,
+  extra: i32, // unused?
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
@@ -104,7 +104,7 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
     }?;
 
     Ok((
-      Header {
+      Self {
         version: version.to_string(),
         revision,
         is_favorite,
@@ -152,14 +152,14 @@ impl<'a> TryIntoCtx<Endian> for &'a Header {
 
     buf.gwrite_with(v, offset, LE)?;
     buf.gwrite(RELOGIC.as_bytes(), offset)?;
-    buf.gwrite(2u8, offset)?;
+    buf.gwrite(2_u8, offset)?;
     buf.gwrite(revision, offset)?;
     let is_favorite: u64 = match is_favorite {
       true => 1,
       false => 0,
     };
     buf.gwrite_with(is_favorite, offset, LE)?;
-    buf.gwrite_with(10u16, offset, LE)?; // offset count
+    buf.gwrite_with(10_u16, offset, LE)?; // offset count
     buf.gwrite_with(offsets, offset, LE)?;
     assert!(*offset == Header::size_with(&LE), "Header size mismatch");
     Ok(*offset)
@@ -182,7 +182,15 @@ impl SizeWith<Endian> for Header {
 
 #[cfg(test)]
 mod test_header {
-  use super::*;
+  use super::{
+    Header,
+    Offsets,
+    Pread,
+    Pwrite,
+    SizeWith,
+    TryFromCtx,
+    LE,
+  };
 
   #[test]
   fn test_header_rw() {
@@ -200,7 +208,7 @@ mod test_header {
         pressure_plates: 12,
         town_manager: 14,
         footer: 16,
-        _extra: 0,
+        extra: 0,
       },
     };
     let mut bytes = [0; 70];

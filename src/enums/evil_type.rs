@@ -34,10 +34,10 @@ impl<'a> TryFromCtx<'a, Endian> for EvilType {
     let offset = &mut 0;
     let raw_value = buf.gread::<u8>(offset)?;
     Ok((
-      if raw_value != 0 {
-        Self::Crimson
-      } else {
+      if raw_value == 0 {
         Self::Corruption
+      } else {
+        Self::Crimson
       },
       *offset,
     ))

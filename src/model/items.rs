@@ -48,7 +48,7 @@ impl Debug for ItemStack {
 }
 
 impl SizeWith<ItemStack> for ItemStack {
-  fn size_with(ctx: &ItemStack) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i16::size_with(&LE)
       + ctx.item_type.map_or(0, |_| ItemType::size_with(&LE))
       + ctx.modifier.map_or(0, |_| u8::size_with(&LE))
@@ -64,12 +64,14 @@ impl<'a> TryFromCtx<'a, Endian> for ItemStack {
   ) -> Result<(Self, usize), Self::Error> {
     let offset = &mut 0;
     let quantity = buf.gread_with::<i16>(offset, LE)?;
-    let mut item_type: Option<ItemType> = None;
-    let mut modifier: Option<u8> = None;
-    if quantity > 0 {
-      item_type = Some(buf.gread::<ItemType>(offset)?);
-      modifier = Some(buf.gread::<u8>(offset)?);
-    }
+    let (item_type, modifier) = if quantity > 0 {
+      (
+        Some(buf.gread::<ItemType>(offset)?),
+        Some(buf.gread::<u8>(offset)?),
+      )
+    } else {
+      (None, None)
+    };
     Ok((
       Self {
         quantity,
@@ -96,19 +98,17 @@ impl TryIntoCtx<Endian> for &ItemStack {
     } = self;
     let offset = &mut 0;
     buf.gwrite_with(quantity, offset, LE)?;
-    match quantity {
-      0 => {}
-      _ => {
-        if let Some(it) = item_type {
-          buf.gwrite(it, offset)?;
-        }
-        if let Some(m) = modifier {
-          buf.gwrite(m, offset)?;
-        }
+    if let 0 = quantity {
+    } else {
+      if let Some(it) = item_type {
+        buf.gwrite(it, offset)?;
+      }
+      if let Some(m) = modifier {
+        buf.gwrite(m, offset)?;
       }
     }
 
-    let expected_size = ItemStack::size_with(&self);
+    let expected_size = ItemStack::size_with(self);
     assert!(
       *offset == expected_size,
       "ItemStack size mismatch; expected {:?}, got {:?}",
@@ -164,7 +164,7 @@ impl<'a> TryIntoCtx<Endian> for &'a Chest {
     buf.gwrite_with(position, offset, LE)?;
     buf.gwrite(name, offset)?;
     buf.gwrite(contents, offset)?;
-    let expected_size = Chest::size_with(&self);
+    let expected_size = Chest::size_with(self);
     assert!(
       *offset == expected_size,
       "Chest size mismatch; expected {:?}, got {:?}",
@@ -175,7 +175,7 @@ impl<'a> TryIntoCtx<Endian> for &'a Chest {
   }
 }
 impl SizeWith<Chest> for Chest {
-  fn size_with(ctx: &Chest) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     Position::size_with(&LE)
       + TString::size_with(&ctx.name)
       + ItemStackVec::size_with(&ctx.contents)
@@ -205,12 +205,9 @@ impl Debug for Chest {
 pub struct ItemStackVec(Vec<ItemStack>);
 
 impl ItemStackVec {
+  #[must_use]
   pub fn total_quantity(&self) -> i32 {
-    self
-      .as_ref()
-      .iter()
-      .map(|is| is.quantity)
-      .fold(0, |acc, len| acc + (len as i32))
+    self.as_ref().iter().map(|is| i32::from(is.quantity)).sum()
   }
 }
 
@@ -224,21 +221,15 @@ impl<'a> TryFromCtx<'a, i16> for ItemStackVec {
     let offset = &mut 0;
     // XXX this should be a loop
     let stack: Vec<ItemStack> = Vec::from_iter(
-      (0..size)
-        .into_iter()
-        .map(|_| buf.gread::<ItemStack>(offset).unwrap()),
+      (0..size).map(|_| buf.gread::<ItemStack>(offset).unwrap()),
     );
     Ok((Self(stack), *offset))
   }
 }
 
 impl SizeWith<ItemStackVec> for ItemStackVec {
-  fn size_with(ctx: &ItemStackVec) -> usize {
-    ctx
-      .as_ref()
-      .iter()
-      .map(|is| ItemStack::size_with(&is))
-      .fold(0, |acc, len| acc + len)
+  fn size_with(ctx: &Self) -> usize {
+    ctx.as_ref().iter().map(|is| ItemStack::size_with(is)).sum()
   }
 }
 
@@ -255,7 +246,7 @@ impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
       buf.gwrite(stack, offset).unwrap();
     });
 
-    let expected_size = ItemStackVec::size_with(&self);
+    let expected_size = ItemStackVec::size_with(self);
     assert!(
       *offset == expected_size,
       "ItemStackVec size mismatch; expected {:?}, got {:?}",
@@ -268,11 +259,7 @@ impl<'a> TryIntoCtx<Endian> for &'a ItemStackVec {
 
 impl Debug for ItemStackVec {
   fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-    let total_quantity = self
-      .as_ref()
-      .iter()
-      .map(|is| is.quantity)
-      .fold(0, |acc, len| acc + len);
+    let total_quantity: i16 = self.as_ref().iter().map(|is| is.quantity).sum();
 
     if total_quantity > 0 {
       write!(f, "ItemStackVec {{ {:?} }}", self.as_ref())
@@ -291,9 +278,10 @@ pub struct Chests {
 }
 
 impl Chests {
-  pub fn find_chest_at_position(&self, position: &Position) -> Option<&Chest> {
+  #[must_use]
+  pub fn find_chest_at_position(&self, position: Position) -> Option<&Chest> {
     let c = &self.chests;
-    c.into_iter().find(|chest| &chest.position == position)
+    c.iter().find(|chest| chest.position == position)
   }
 }
 
@@ -308,11 +296,10 @@ impl<'a> TryFromCtx<'a, Endian> for Chests {
     let count = buf.gread_with::<i16>(offset, LE)?;
     let stacks_per_chest = buf.gread_with::<i16>(offset, LE)?;
     let chests: Vec<_> = (0..count)
-      .into_iter()
       .map(|_| buf.gread_with::<Chest>(offset, stacks_per_chest))
       .collect::<Result<Vec<_>, Self::Error>>()?;
     Ok((
-      Chests {
+      Self {
         count,
         stacks_per_chest,
         chests,
@@ -323,13 +310,13 @@ impl<'a> TryFromCtx<'a, Endian> for Chests {
 }
 
 impl SizeWith<Chests> for Chests {
-  fn size_with(ctx: &Chests) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     (i16::size_with(&LE) * 2)
       + ctx
         .chests
         .iter()
-        .map(|chest| Chest::size_with(&chest))
-        .fold(0, |acc, len| acc + len)
+        .map(|chest| Chest::size_with(chest))
+        .sum::<usize>()
   }
 }
 
@@ -353,7 +340,7 @@ impl TryIntoCtx<Endian> for &Chests {
       .iter()
       .map(|chest| buf.gwrite(chest, offset))
       .collect::<Result<Vec<_>, Self::Error>>()?;
-    let expected_size = Chests::size_with(&self);
+    let expected_size = Chests::size_with(self);
     assert!(
       expected_size == *offset,
       "Chests offset mismatch on write; expected {:?}, got {:?}",
@@ -366,7 +353,13 @@ impl TryIntoCtx<Endian> for &Chests {
 
 #[cfg(test)]
 mod test_items {
-  use super::*;
+  use super::{
+    ItemStack,
+    ItemStackVec,
+    ItemType,
+    Pread,
+    Pwrite,
+  };
 
   #[test]
   fn test_item_stack_rw() {
@@ -397,6 +390,6 @@ mod test_items {
 
     let mut buf = [0; 14];
     assert_eq!(14, buf.pwrite(&vec, 0).unwrap());
-    assert_eq!(vec, buf.pread_with::<ItemStackVec>(0, 2i16).unwrap());
+    assert_eq!(vec, buf.pread_with::<ItemStackVec>(0, 2_i16).unwrap());
   }
 }

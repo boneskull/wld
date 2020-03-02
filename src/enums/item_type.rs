@@ -4047,7 +4047,11 @@ impl SizeWith<Endian> for ItemType {
 
 #[cfg(test)]
 mod test_item_type {
-  use super::*;
+  use super::{
+    ItemType,
+    Pread,
+    Pwrite,
+  };
 
   #[test]
   fn test_item_type_rw() {

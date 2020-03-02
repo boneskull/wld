@@ -23,7 +23,7 @@ pub struct Sign {
 }
 
 impl SizeWith<Sign> for Sign {
-  fn size_with(ctx: &Sign) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     TString::size_with(&ctx.text) + Position::size_with(&LE)
   }
 }
@@ -36,9 +36,10 @@ pub struct Signs {
 }
 
 impl Signs {
-  pub fn find_sign_at_position(&self, position: &Position) -> Option<&Sign> {
+  #[must_use]
+  pub fn find_sign_at_position(&self, position: Position) -> Option<&Sign> {
     let s = &self.signs;
-    s.into_iter().find(|sign| &sign.position == position)
+    s.iter().find(|sign| sign.position == position)
   }
 }
 
@@ -52,7 +53,6 @@ impl<'a> TryFromCtx<'a, Endian> for Signs {
     let offset = &mut 0;
     let count = buf.gread_with::<u16>(offset, LE)?;
     let signs = (0..count)
-      .into_iter()
       .map(|_| buf.gread::<Sign>(offset))
       .collect::<Result<Vec<_>, Self::Error>>()?;
 
@@ -61,13 +61,13 @@ impl<'a> TryFromCtx<'a, Endian> for Signs {
 }
 
 impl SizeWith<Signs> for Signs {
-  fn size_with(ctx: &Signs) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     u16::size_with(&LE)
       + ctx
         .signs
         .iter()
-        .map(|sign| Sign::size_with(&sign))
-        .fold(0, |acc, len| acc + len)
+        .map(|sign| Sign::size_with(sign))
+        .sum::<usize>()
   }
 }
 
@@ -86,7 +86,7 @@ impl TryIntoCtx<Endian> for &Signs {
       .iter()
       .map(|sign| buf.gwrite(sign, offset))
       .collect::<Result<Vec<_>, Self::Error>>()?;
-    let expected_size = Signs::size_with(&self);
+    let expected_size = Signs::size_with(self);
     assert!(
       expected_size == *offset,
       "Signs offset mismatch on write; expected {:?}, got {:?}",

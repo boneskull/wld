@@ -34,7 +34,6 @@ impl<'a> TryFromCtx<'a, Endian> for PressurePlates {
       Self {
         count,
         pressure_plates: (0..count)
-          .into_iter()
           .map(|_| buf.gread::<PressurePlate>(offset))
           .collect::<Result<Vec<_>, Self::Error>>()?,
       },
@@ -61,7 +60,7 @@ impl TryIntoCtx<Endian> for &PressurePlates {
       .iter()
       .map(|sign| buf.gwrite(sign, offset))
       .collect::<Result<Vec<_>, Self::Error>>()?;
-    let expected_size = PressurePlates::size_with(&self);
+    let expected_size = PressurePlates::size_with(self);
     assert!(
       expected_size == *offset,
       "PressurePlates offset mismatch on write; expected {:?}, got {:?}",
@@ -73,14 +72,18 @@ impl TryIntoCtx<Endian> for &PressurePlates {
 }
 
 impl SizeWith<PressurePlates> for PressurePlates {
-  fn size_with(ctx: &PressurePlates) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i32::size_with(&LE) + (ctx.pressure_plates.len() * Position::size_with(&LE))
   }
 }
 
 #[cfg(test)]
 mod test_pressure_plate {
-  use super::*;
+  use super::{
+    Pread,
+    PressurePlate,
+    Pwrite,
+  };
 
   #[test]
   fn test_pressure_plate_rw() {

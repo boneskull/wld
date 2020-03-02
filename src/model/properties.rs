@@ -71,7 +71,7 @@ pub struct GeneratorInfo {
 }
 
 impl SizeWith<GeneratorInfo> for GeneratorInfo {
-  fn size_with(ctx: &GeneratorInfo) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     TString::size_with(&ctx.seed) + u64::size_with(&LE)
   }
 }
@@ -81,7 +81,7 @@ impl GeneratorInfo {
   where
     S: Into<TString>,
   {
-    GeneratorInfo {
+    Self {
       seed: seed.into(),
       version,
     }
@@ -115,7 +115,7 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
     buf.gwrite(seed, offset)?;
     buf.gwrite_with(version, offset, LE)?;
     assert!(
-      *offset == GeneratorInfo::size_with(&self),
+      *offset == GeneratorInfo::size_with(self),
       "GeneratorInfo size mismatch"
     );
 
@@ -201,7 +201,8 @@ pub struct Properties {
 }
 
 impl Properties {
-  pub fn as_world_context<'s>(&'s self) -> WorldCtx<'s> {
+  #[must_use]
+  pub const fn as_world_context(&self) -> WorldCtx<'_> {
     WorldCtx {
       world_height: &self.height,
       world_width: &self.width,
@@ -213,7 +214,7 @@ impl Properties {
 }
 
 impl SizeWith<Properties> for Properties {
-  fn size_with(ctx: &Properties) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     let size = VariableTBitVec::size_with(&ctx.tile_frame_importances)
       + TString::size_with(&ctx.name)
       + GeneratorInfo::size_with(&ctx.generator)
@@ -234,8 +235,25 @@ impl SizeWith<Properties> for Properties {
 
 #[cfg(test)]
 mod test_properties {
-  use super::*;
-  use crate::model::common::TBool::*;
+  use super::{
+    EvilType,
+    GeneratorInfo,
+    Position,
+    Properties,
+    Pwrite,
+    QuadrantStyle,
+    Rect,
+    TString,
+    TUuid,
+    TryFromCtx,
+    Uuid,
+    VariableTBitVec,
+    WorldStyle,
+  };
+  use crate::model::common::TBool::{
+    False,
+    True,
+  };
   use scroll::LE;
 
   #[test]
@@ -291,12 +309,12 @@ mod test_properties {
       name: TString::from("Foon"),
       generator: GeneratorInfo {
         seed: TString::from("1451234789"),
-        version: 9860045932737703464,
+        version: 9_860_045_932_737_703_464,
       },
       uuid: TUuid(
         Uuid::parse_str("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap(),
       ),
-      id: 1468463142,
+      id: 1_468_463_142,
       bounds: Rect {
         left: 0,
         right: 67200,
@@ -306,7 +324,7 @@ mod test_properties {
       width: 4200,
       height: 1200,
       is_expert: False,
-      created_on: 8518612034984415,
+      created_on: 8_518_612_034_984_415,
       style: WorldStyle {
         moon: 1,
         trees: QuadrantStyle::new(4, 5, 0, 0, 3072, 4200, 4200),
@@ -320,7 +338,7 @@ mod test_properties {
       cavern_level: 528.0,
       current_time: 0.0,
       is_daytime: True,
-      moon_phase: 0u32,
+      moon_phase: 0_u32,
       is_blood_moon: False,
       is_eclipse: True,
       dungeon_point: Position::new(3426, 211),

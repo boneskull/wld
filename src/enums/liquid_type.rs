@@ -9,16 +9,16 @@ pub enum LiquidType {
 }
 
 impl LiquidType {
-  pub fn assign_bits(&self, tbv: &mut TBitVec) {
+  pub fn assign_bits(self, tbv: &mut TBitVec) {
     match self {
-      LiquidType::Water => {
+      Self::Water => {
         tbv.set(3, true);
       }
-      LiquidType::Honey => {
+      Self::Honey => {
         tbv.set(3, true);
         tbv.set(4, true);
       }
-      LiquidType::Lava => {
+      Self::Lava => {
         tbv.set(4, true);
       }
       _ => {}
@@ -29,13 +29,13 @@ impl LiquidType {
 impl From<&TBitVec> for LiquidType {
   fn from(flags: &TBitVec) -> Self {
     if flags[3] && flags[4] {
-      LiquidType::Honey
+      Self::Honey
     } else if flags[4] {
-      LiquidType::Lava
+      Self::Lava
     } else if flags[3] {
-      LiquidType::Water
+      Self::Water
     } else {
-      LiquidType::NoLiquid
+      Self::NoLiquid
     }
   }
 }

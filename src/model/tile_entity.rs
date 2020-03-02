@@ -1,5 +1,8 @@
 use super::{
-  common::*,
+  common::{
+    Position,
+    TBool,
+  },
   items::ItemStack,
 };
 use scroll::{
@@ -31,6 +34,7 @@ pub enum TileEntityType {
 }
 
 impl TileEntityType {
+  #[must_use]
   pub fn raw_type(&self) -> u8 {
     match self {
       Self::TargetDummy(_) => 0,
@@ -41,10 +45,10 @@ impl TileEntityType {
 }
 
 impl SizeWith<TileEntityType> for TileEntityType {
-  fn size_with(ctx: &TileEntityType) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     match ctx {
       Self::TargetDummy(_) => i16::size_with(&LE),
-      Self::ItemFrame(stack) => ItemStack::size_with(&stack),
+      Self::ItemFrame(stack) => ItemStack::size_with(stack),
       Self::LogicSensor(_) => LogicSensor::size_with(&LE),
     }
   }
@@ -88,7 +92,7 @@ impl TryIntoCtx<Endian> for &TileEntityType {
       TileEntityType::ItemFrame(frame) => buf.gwrite(frame, offset)?,
       TileEntityType::LogicSensor(sensor) => buf.gwrite(sensor, offset)?,
     };
-    let expected_size = TileEntityType::size_with(&self);
+    let expected_size = TileEntityType::size_with(self);
     assert!(
       expected_size == *offset,
       "TileEntityType offset mismatch on write; expected {:?}, got {:?}",
@@ -110,7 +114,7 @@ pub struct TileEntity {
 }
 
 impl SizeWith<TileEntity> for TileEntity {
-  fn size_with(ctx: &TileEntity) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     u8::size_with(&LE) + // raw_type
     i32::size_with(&LE)
       + (i16::size_with(&LE) * 2)// position is i16, not standard i32
@@ -161,7 +165,7 @@ impl TryIntoCtx<Endian> for &TileEntity {
     buf.gwrite_with(position_y, offset, LE)?;
     buf.gwrite(tile_entity_type, offset)?;
 
-    let expected_size = TileEntity::size_with(&self);
+    let expected_size = TileEntity::size_with(self);
     assert!(
       *offset == expected_size,
       "TileEntity size mismatch; expected {:?}, got {:?}",
@@ -181,14 +185,15 @@ pub struct TileEntities {
 }
 
 impl TileEntities {
+  #[must_use]
   pub fn find_tile_entity_at_position(
     &self,
-    position: &Position,
+    position: Position,
   ) -> Option<&TileEntity> {
     let s = &self.tile_entities;
-    s.into_iter().find(|tile_entity| {
-      (tile_entity.position_x as i32) == position.x
-        && (tile_entity.position_y as i32 == position.y)
+    s.iter().find(|tile_entity| {
+      i32::from(tile_entity.position_x) == position.x
+        && i32::from(tile_entity.position_y) == position.y
     })
   }
 }
@@ -206,7 +211,6 @@ impl<'a> TryFromCtx<'a, Endian> for TileEntities {
       Self {
         count,
         tile_entities: (0..count)
-          .into_iter()
           .map(|_| buf.gread::<TileEntity>(offset))
           .collect::<Result<Vec<_>, Self::Error>>()?,
       },
@@ -216,13 +220,13 @@ impl<'a> TryFromCtx<'a, Endian> for TileEntities {
 }
 
 impl SizeWith<TileEntities> for TileEntities {
-  fn size_with(ctx: &TileEntities) -> usize {
+  fn size_with(ctx: &Self) -> usize {
     i32::size_with(&LE)
       + ctx
         .tile_entities
         .iter()
-        .map(|tile_entity| TileEntity::size_with(&tile_entity))
-        .fold(0, |acc, len| acc + len)
+        .map(|tile_entity| TileEntity::size_with(tile_entity))
+        .sum::<usize>()
   }
 }
 
@@ -244,7 +248,7 @@ impl TryIntoCtx<Endian> for &TileEntities {
       .iter()
       .map(|tile_entity| buf.gwrite(tile_entity, offset))
       .collect::<Result<Vec<_>, Self::Error>>()?;
-    let expected_size = TileEntities::size_with(&self);
+    let expected_size = TileEntities::size_with(self);
     assert!(
       expected_size == *offset,
       "TileEntities offset mismatch on write; expected {:?}, got {:?}",
@@ -257,7 +261,15 @@ impl TryIntoCtx<Endian> for &TileEntities {
 
 #[cfg(test)]
 mod test_tile_entity {
-  use super::*;
+  use super::{
+    ItemStack,
+    LogicSensor,
+    Pread,
+    Pwrite,
+    TBool,
+    TileEntity,
+    TileEntityType,
+  };
   use crate::enums::ItemType;
 
   #[test]

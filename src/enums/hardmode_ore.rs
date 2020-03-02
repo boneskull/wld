@@ -70,10 +70,10 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
 #[repr(C)]
 pub enum HardmodeOreType {
   UnknownOre,
-  CobaltOre = 107,
-  MythrilOre = 108,
-  AdamantiteOre = 111,
-  PalladiumOre = 221,
-  OrichalcumOre = 222,
-  TitaniumOre = 223,
+  Cobalt = 107,
+  Mythril = 108,
+  Adamantite = 111,
+  Palladium = 221,
+  Orichalcum = 222,
+  Titanium = 223,
 }

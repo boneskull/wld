@@ -1,5 +1,7 @@
 use crate::model::TBitVec;
 use num_traits::FromPrimitive;
+use scroll::Error as ScrollError;
+use std::convert::TryFrom;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum BlockShape {
@@ -17,16 +19,27 @@ impl Default for BlockShape {
   }
 }
 
-impl From<&TBitVec> for BlockShape {
-  fn from(flags: &TBitVec) -> Self {
+impl TryFrom<&TBitVec> for BlockShape {
+  type Error = ScrollError;
+
+  fn try_from(flags: &TBitVec) -> Result<Self, Self::Error> {
     let value =
       ((flags[6] as u8) << 2) + ((flags[5] as u8) << 1) + flags[4] as u8;
-    Self::from_u8(value).unwrap()
+    Self::from_u8(value)
+      .ok_or_else(|| Self::Error::Custom("unknown BlockShape".to_owned()))
   }
 }
 
+// impl From<&TBitVec> for BlockShape {
+//   fn from(flags: &TBitVec) -> Self {
+//     let value =
+//       ((flags[6] as u8) << 2) + ((flags[5] as u8) << 1) + flags[4] as u8;
+//     Self::from_u8(value).unwrap()
+//   }
+// }
+
 impl BlockShape {
-  pub fn assign_bits(&self, attrs: &mut TBitVec) {
+  pub fn assign_bits(self, attrs: &mut TBitVec) {
     match self {
       Self::HalfTile => {
         attrs.set(4, true);

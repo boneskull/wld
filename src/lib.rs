@@ -1,3 +1,10 @@
+#![warn(clippy::pedantic, clippy::cargo, clippy::nursery)]
+#![allow(
+  clippy::pedantic::module_name_repetitions,
+  clippy::pedantic::cast_possible_truncation,
+  clippy::pedantic::cast_possible_wrap,
+  clippy::pedantic::cast_sign_loss
+)]
 #[macro_use]
 extern crate num_derive;
 #[macro_use]
@@ -10,7 +17,6 @@ extern crate scroll_derive;
 extern crate log;
 use crate::model::World;
 use log::LevelFilter;
-use mowl;
 use std::{
   boxed::Box,
   error::Error,
@@ -21,10 +27,14 @@ pub mod enums;
 pub mod model;
 // use image, imageproc to render.
 
-pub fn parse_world<'a>(bytes: &'a [u8]) -> Result<World, Box<dyn Error>> {
+/// Instantiate a [`World`] from a slice of bytes.
+///
+/// # Errors
+/// See [`scroll::Error`].
+pub fn parse_world(bytes: &[u8]) -> Result<World, Box<dyn Error>> {
   Ok(World::read(bytes)?)
 }
 
-pub fn init_logger() {
-  mowl::init_with_level(LevelFilter::Debug).unwrap();
+pub fn init_logger(level: LevelFilter) {
+  mowl::init_with_level(level).unwrap();
 }

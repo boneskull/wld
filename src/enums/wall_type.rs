@@ -248,8 +248,9 @@ pub enum WallType {
 
 impl WallType {
   /// Returns the associated [`Rgba`] color for this `WallType`.
-  pub fn color(&self) -> Rgba<u8> {
-    WALLTYPE_COLOR_MAP[self]
+  #[must_use]
+  pub fn color(self) -> Rgba<u8> {
+    WALLTYPE_COLOR_MAP[&self]
   }
 }
 
@@ -261,7 +262,7 @@ impl SizeWith<Endian> for WallType {
 
 #[cfg(test)]
 mod test_wall_type {
-  use super::*;
+  use super::WallType;
   use crate::constants::BLACK;
 
   #[test]

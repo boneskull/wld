@@ -482,8 +482,9 @@ pub enum BlockType {
 }
 
 impl BlockType {
-  pub fn color(&self) -> Rgba<u8> {
-    BLOCKTYPE_COLOR_MAP[self]
+  #[must_use]
+  pub fn color(self) -> Rgba<u8> {
+    BLOCKTYPE_COLOR_MAP[&self]
   }
 }
 
