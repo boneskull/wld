@@ -21,7 +21,6 @@ impl From<&TBitVec> for BlockShape {
 
 impl BlockShape {
   pub fn assign_bits(&self, attrs: &mut TBitVec) {
-    let attrs = attrs.as_mut();
     match self {
       Self::HalfTile => {
         attrs.set(4, true);

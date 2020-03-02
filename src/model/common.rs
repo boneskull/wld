@@ -1,4 +1,7 @@
-use crate::model::TileHeader;
+use crate::model::{
+  tiles::TileAttributes,
+  TileHeader,
+};
 use bitvec::prelude::*;
 use nano_leb128::ULEB128 as NanoUleb128;
 use scroll::{
@@ -294,7 +297,7 @@ impl<'a> From<&'a [u8]> for TBitVec {
 
 impl From<&TileHeader> for TBitVec {
   fn from(th: &TileHeader) -> Self {
-    let mut v = Self::from(vec![
+    let mut bits = Self::from(vec![
       th.has_attributes,
       th.has_block,
       th.has_wall,
@@ -304,9 +307,29 @@ impl From<&TileHeader> for TBitVec {
       false,
       false,
     ]);
-    th.liquid_type.assign_bits(&mut v);
-    th.rle_type.assign_bits(&mut v);
-    v
+    th.liquid_type.assign_bits(&mut bits);
+    th.rle_type.assign_bits(&mut bits);
+    bits
+  }
+}
+
+impl From<&TileAttributes> for TBitVec {
+  fn from(ta: &TileAttributes) -> Self {
+    let mut bits = Self::from(vec![
+      ta.has_extended_attributes,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
+    ta.shape.assign_bits(&mut bits);
+    if let Some(wiring) = ta.wiring {
+      wiring.assign_bits(&mut bits);
+    }
+    bits
   }
 }
 
@@ -348,6 +371,10 @@ impl<'a> TryIntoCtx<Endian> for &'a TBitVec {
 #[cfg(test)]
 mod test_common {
   use super::*;
+  use crate::{
+    enums::BlockShape,
+    model::Wiring,
+  };
   use scroll::LE;
   #[test]
   fn test_tbool_rw() {
@@ -376,6 +403,39 @@ mod test_common {
     assert_eq!(
       TString::try_from_ctx(&bytes[..], LE).unwrap(),
       (TString::from("foo"), 4)
+    );
+  }
+
+  #[test]
+  fn test_tbitvec_from_tile_attributes() {
+    let ta = TileAttributes {
+      has_extended_attributes: true,
+      shape: BlockShape::HalfTile,
+      wiring: None,
+    };
+    assert_eq!(
+      TBitVec::from(
+        vec![true, false, false, false, true, false, false, false,]
+      ),
+      TBitVec::from(&ta)
+    );
+
+    let ta = TileAttributes {
+      has_extended_attributes: false,
+      shape: BlockShape::TopRightSlope,
+      wiring: Some(Wiring {
+        red: true,
+        blue: false,
+        green: false,
+        yellow: false,
+        actuator: false,
+      }),
+    };
+    assert_eq!(
+      TBitVec::from(
+        vec![false, true, false, false, false, true, false, false,]
+      ),
+      TBitVec::from(&ta)
     );
   }
 }

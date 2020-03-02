@@ -141,7 +141,6 @@ impl Wiring {
   /// If either [`Wiring::yellow`] or [`Wiring::actuator`] is `true`, the
   /// `TBitVec` should be two (2) bytes in size (length 16).
   pub fn assign_bits(&self, attrs: &mut TBitVec) {
-    let attrs = attrs.as_mut();
     if self.red {
       attrs.set(1, true);
     }
@@ -304,7 +303,6 @@ pub struct TileAttributes {
   pub shape: BlockShape,
   pub has_extended_attributes: bool,
   pub wiring: Option<Wiring>,
-  pub bits: TBitVec,
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
@@ -327,7 +325,6 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
         shape,
         has_extended_attributes,
         wiring,
-        bits,
       },
       *offset,
     ))
@@ -349,7 +346,7 @@ impl<'a> TryIntoCtx<Endian> for &'a TileAttributes {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    buf.gwrite(&self.bits, offset)?;
+    buf.gwrite(&TBitVec::from(self), offset)?;
     Ok(*offset)
   }
 }
@@ -487,8 +484,10 @@ impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
       if let Some(w) = attrs.wiring {
         wiring = Some(w);
       } else if attrs.has_extended_attributes {
-        let ext_attrs =
-          buf.gread_with::<ExtendedTileAttributes>(offset, &attrs.bits)?;
+        let ext_attrs = buf.gread_with::<ExtendedTileAttributes>(
+          offset,
+          &TBitVec::from(&attrs),
+        )?;
         is_block_inactive = ext_attrs.is_block_inactive;
         is_block_painted = ext_attrs.is_block_painted;
         is_wall_painted = ext_attrs.is_wall_painted;
@@ -863,9 +862,6 @@ mod test_tiles {
       has_extended_attributes: true,
       shape: BlockShape::HalfTile,
       wiring: None,
-      bits: TBitVec::from(vec![
-        true, false, false, false, true, false, false, false,
-      ]),
     };
 
     let mut buf = [0; 1];
@@ -882,9 +878,6 @@ mod test_tiles {
         yellow: false,
         actuator: false,
       }),
-      bits: TBitVec::from(vec![
-        false, true, false, false, false, true, false, false,
-      ]),
     };
 
     let mut buf = [0; 1];
@@ -907,9 +900,6 @@ mod test_tiles {
         has_extended_attributes: false,
         shape: BlockShape::HalfTile,
         wiring: Some(Wiring::default()),
-        bits: TBitVec::from(vec![
-          false, false, false, false, true, false, false, false,
-        ]),
       }),
       ext_attributes: None,
       block: Some(Block {
@@ -965,9 +955,6 @@ mod test_tiles {
         has_extended_attributes: false,
         shape: BlockShape::HalfTile,
         wiring: Some(Wiring::default()),
-        bits: TBitVec::from(vec![
-          false, false, false, false, true, false, false, false,
-        ]),
       }),
       ext_attributes: None,
       block: Some(Block {
@@ -1003,9 +990,6 @@ mod test_tiles {
         has_extended_attributes: false,
         shape: BlockShape::HalfTile,
         wiring: Some(Wiring::default()),
-        bits: TBitVec::from(vec![
-          false, false, false, false, true, false, false, false,
-        ]),
       }),
       ext_attributes: None,
       block: Some(Block {
