@@ -71,7 +71,7 @@ impl<'a> TryFromCtx<'a, BlockCtx<'a>> for Block {
       buf.gread::<u8>(offset)? as u16
     };
     let block_type = BlockType::from_u16(block_id).unwrap();
-    if ctx.tile_frame_importances[block_type as usize] {
+    if ctx.tile_frame_importances[block_id as usize] {
       let x = buf.gread_with::<u16>(offset, LE)?;
       let y = buf.gread_with::<u16>(offset, LE)?;
       frame_data = Some(Position {

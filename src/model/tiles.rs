@@ -231,14 +231,13 @@ impl TryIntoCtx<Endian> for &RunLength {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
-struct TileHeader {
-  has_block: bool,
-  has_attributes: bool,
-  has_wall: bool,
-  liquid_type: LiquidType,
-  has_extended_block_id: bool,
-  rle_type: RLEType,
-  bits: TBitVec,
+pub struct TileHeader {
+  pub has_block: bool,
+  pub has_attributes: bool,
+  pub has_wall: bool,
+  pub liquid_type: LiquidType,
+  pub has_extended_block_id: bool,
+  pub rle_type: RLEType,
 }
 
 impl SizeWith<Endian> for TileHeader {
@@ -270,7 +269,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileHeader {
         liquid_type,
         has_extended_block_id,
         rle_type,
-        bits,
+        // bits,
       },
       *offset,
     ))
@@ -287,7 +286,7 @@ impl TryIntoCtx<Endian> for &TileHeader {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
 
-    buf.gwrite(&self.bits, offset)?;
+    buf.gwrite(&TBitVec::from(self), offset)?;
     let expected_size = TileHeader::size_with(&LE);
     assert!(
       expected_size == *offset,
@@ -302,10 +301,10 @@ impl TryIntoCtx<Endian> for &TileHeader {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TileAttributes {
-  shape: BlockShape,
-  has_extended_attributes: bool,
-  wiring: Option<Wiring>,
-  bits: TBitVec,
+  pub shape: BlockShape,
+  pub has_extended_attributes: bool,
+  pub wiring: Option<Wiring>,
+  pub bits: TBitVec,
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
@@ -790,209 +789,241 @@ mod test_tiles {
   #[test]
   fn test_tile_header_rw() {
     let th = TileHeader {
-      has_attributes: false,
       has_block: true,
+      has_attributes: false,
       has_wall: false,
       liquid_type: LiquidType::Water,
       has_extended_block_id: false,
       rle_type: RLEType::SingleByte,
-      bits: TBitVec::from(vec![
-        false, true, false, true, false, false, true, false,
-      ]),
     };
 
     let mut buf = [0; 1];
     assert_eq!(1, buf.pwrite(&th, 0).unwrap());
+    assert_eq!(
+      TBitVec::from(vec![false, true, false, true, false, false, true, false,]),
+      TBitVec::from(&buf[..])
+    );
     assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
-    // let th = TileHeader {
-    //   has_extended_attributes: false,
-    //   has_block: true,
-    //   has_attributes: true,
-    //   has_wall: false,
-    //   liquid_type: LiquidType::NoLiquid,
-    //   has_extended_block_id: true,
-    //   rle_type: RLEType::DoubleByte,
-    // };
+    let th = TileHeader {
+      has_block: true,
+      has_attributes: true,
+      has_wall: false,
+      liquid_type: LiquidType::NoLiquid,
+      has_extended_block_id: true,
+      rle_type: RLEType::DoubleByte,
+    };
 
-    // let mut buf = [0; 1];
-    // assert_eq!(1, buf.pwrite(&th, 0).unwrap());
-    // assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+    let mut buf = [0; 1];
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
+    assert_eq!(
+      TBitVec::from(vec![true, true, false, false, false, true, false, true]),
+      TBitVec::from(&buf[..])
+    );
+    assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
-    // let th = TileHeader {
-    //   has_extended_attributes: false,
-    //   has_block: true,
-    //   has_attributes: true,
-    //   has_wall: false,
-    //   liquid_type: LiquidType::Lava,
-    //   has_extended_block_id: true,
-    //   rle_type: RLEType::NoCompression,
-    // };
+    let th = TileHeader {
+      has_block: true,
+      has_attributes: true,
+      has_wall: false,
+      liquid_type: LiquidType::Lava,
+      has_extended_block_id: true,
+      rle_type: RLEType::NoCompression,
+    };
 
-    // let mut buf = [0; 1];
-    // assert_eq!(1, buf.pwrite(&th, 0).unwrap());
-    // assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+    let mut buf = [0; 1];
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
+    assert_eq!(
+      TBitVec::from(vec![true, true, false, false, true, true, false, false]),
+      TBitVec::from(&buf[..])
+    );
+    assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
 
-    // let th = TileHeader {
-    //   has_extended_attributes: false,
-    //   has_block: false,
-    //   has_attributes: false,
-    //   has_wall: true,
-    //   liquid_type: LiquidType::Honey,
-    //   has_extended_block_id: false,
-    //   rle_type: RLEType::SingleByte,
-    // };
+    let th = TileHeader {
+      has_block: false,
+      has_attributes: false,
+      has_wall: true,
+      liquid_type: LiquidType::Honey,
+      has_extended_block_id: false,
+      rle_type: RLEType::SingleByte,
+    };
 
-    // let mut buf = [0; 1];
-    // assert_eq!(1, buf.pwrite(&th, 0).unwrap());
-    // assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
+    let mut buf = [0u8; 1];
+    assert_eq!(1, buf.pwrite(&th, 0).unwrap());
+    assert_eq!(
+      TBitVec::from(vec![false, false, true, true, true, false, true, false]),
+      TBitVec::from(&buf[..])
+    );
+    assert_eq!(th, buf.pread::<TileHeader>(0).unwrap());
   }
 
-  // #[test]
-  // fn test_tile_attributes_rw() {
-  //   let attrs = TileAttributes {
-  //     shape: BlockShape::HalfTile,
-  //     is_block_inactive: true,
-  //     is_block_painted: true,
-  //     is_wall_painted: false,
-  //     has_extended_attributes: true,
-  //     wiring: Wiring {
-  //       red: true,
-  //       blue: false,
-  //       green: false,
-  //       yellow: true,
-  //       actuator: false,
-  //     },
-  //   };
+  #[test]
+  fn test_tile_attributes_rw() {
+    let attrs = TileAttributes {
+      has_extended_attributes: true,
+      shape: BlockShape::HalfTile,
+      wiring: None,
+      bits: TBitVec::from(vec![
+        true, false, false, false, true, false, false, false,
+      ]),
+    };
 
-  //   let mut buf = [0; 2];
-  //   assert_eq!(2, buf.pwrite(&attrs, 0).unwrap());
-  //   assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
+    let mut buf = [0; 1];
+    assert_eq!(1, buf.pwrite(&attrs, 0).unwrap());
+    assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
 
-  //   let attrs = TileAttributes {
-  //     shape: BlockShape::HalfTile,
-  //     is_block_inactive: false,
-  //     is_block_painted: false,
-  //     is_wall_painted: false,
-  //     has_extended_attributes: false,
-  //     wiring: Wiring {
-  //       red: true,
-  //       blue: false,
-  //       green: false,
-  //       yellow: false,
-  //       actuator: false,
-  //     },
-  //   };
+    let attrs = TileAttributes {
+      has_extended_attributes: false,
+      shape: BlockShape::TopRightSlope,
+      wiring: Some(Wiring {
+        red: true,
+        blue: false,
+        green: false,
+        yellow: false,
+        actuator: false,
+      }),
+      bits: TBitVec::from(vec![
+        false, true, false, false, false, true, false, false,
+      ]),
+    };
 
-  //   let mut buf = [0; 1];
-  //   assert_eq!(1, buf.pwrite(&attrs, 0).unwrap());
-  //   assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
-  // }
+    let mut buf = [0; 1];
+    assert_eq!(1, buf.pwrite(&attrs, 0).unwrap());
+    assert_eq!(attrs, buf.pread::<TileAttributes>(0).unwrap());
+  }
 
-  // #[test]
-  // fn test_tile_rw() {
-  //   let tile = Tile {
-  //     tile_header: TileHeader {
-  //       has_block: true,
-  //       has_attributes: true,
-  //       has_wall: false,
-  //       liquid_type: LiquidType::NoLiquid,
-  //       has_extended_block_id: false,
-  //       has_extended_attributes: true,
-  //       rle_type: RLEType::SingleByte,
-  //     },
-  //     block: Some(Block {
-  //       block_type: BlockType::Dirt,
-  //       shape: BlockShape::Normal,
-  //       frame_data: None,
-  //       block_paint: None,
-  //       is_block_inactive: true,
-  //       has_extended_block_id: false,
-  //     }),
-  //     wall: None,
-  //     liquid: None,
-  //     wiring: Some(Wiring::default()),
-  //     run_length: RunLength::new(2, RLEType::SingleByte),
-  //     position: Position { x: 0, y: 0 },
-  //   };
-  //   let world_ctx = WorldCtx {
-  //     world_width: &4200,
-  //     world_height: &1200,
-  //     tile_frame_importances: &VariableTBitVec::from(vec![
-  //       false, false, false, false, false, false, false, false,
-  //     ]),
-  //     id: &123,
-  //     name: &TString::from("Fat City"),
-  //   };
-  //   let ctx = TileCtx {
-  //     world_ctx: &world_ctx,
-  //     position: Position { x: 0, y: 0 },
-  //   };
+  #[test]
+  fn test_tile_rw() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: LiquidType::NoLiquid,
+        has_extended_block_id: false,
+        rle_type: RLEType::SingleByte,
+      },
+      attributes: Some(TileAttributes {
+        has_extended_attributes: false,
+        shape: BlockShape::HalfTile,
+        wiring: Some(Wiring::default()),
+        bits: TBitVec::from(vec![
+          false, false, false, false, true, false, false, false,
+        ]),
+      }),
+      ext_attributes: None,
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::HalfTile,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: false,
+        has_extended_block_id: false,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: Some(Wiring::default()),
+      run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
+    };
+    let world_ctx = WorldCtx {
+      world_width: &4200,
+      world_height: &1200,
+      tile_frame_importances: &VariableTBitVec::from(vec![false; 257]),
+      id: &123,
+      name: &TString::from("Fat City"),
+    };
+    let ctx = TileCtx {
+      world_ctx: &world_ctx,
+      position: Position { x: 0, y: 0 },
+    };
 
-  //   let mut buf = [0; 5];
+    let mut buf = [0; 4];
+    assert_eq!(buf.pwrite(&tile, 0).unwrap(), Tile::size_with(&tile));
+    assert_eq!(
+      TBitVec::from(&buf[..2]),
+      TBitVec::from(vec![
+        true, true, false, false, false, false, true, false, false, false,
+        false, false, true, false, false, false
+      ])
+    );
+    assert_eq!(tile, buf.pread_with::<Tile>(0, ctx).unwrap());
+  }
 
-  //   assert_eq!(5, buf.pwrite(&tile, 0).unwrap());
-  //   assert_eq!(tile, buf.pread_with::<Tile>(0, ctx).unwrap());
-  // }
+  #[test]
+  fn test_tile_sizewith() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: LiquidType::NoLiquid,
+        has_extended_block_id: false,
+        rle_type: RLEType::SingleByte,
+      },
+      attributes: Some(TileAttributes {
+        has_extended_attributes: false,
+        shape: BlockShape::HalfTile,
+        wiring: Some(Wiring::default()),
+        bits: TBitVec::from(vec![
+          false, false, false, false, true, false, false, false,
+        ]),
+      }),
+      ext_attributes: None,
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::HalfTile,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: false,
+        has_extended_block_id: false,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: Some(Wiring::default()),
+      run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
+    };
 
-  // #[test]
-  // fn test_tile_sizewith() {
-  //   let tile = Tile {
-  //     tile_header: TileHeader {
-  //       has_block: true,
-  //       has_attributes: true,
-  //       has_wall: false,
-  //       liquid_type: LiquidType::NoLiquid,
-  //       has_extended_block_id: false,
-  //       has_extended_attributes: true,
-  //       rle_type: RLEType::SingleByte,
-  //     },
-  //     block: Some(Block {
-  //       block_type: BlockType::Dirt,
-  //       shape: BlockShape::Normal,
-  //       frame_data: None,
-  //       block_paint: None,
-  //       is_block_inactive: true,
-  //       has_extended_block_id: false,
-  //     }),
-  //     wall: None,
-  //     liquid: None,
-  //     wiring: None,
-  //     run_length: RunLength::new(2, RLEType::SingleByte),
-  //     position: Position { x: 0, y: 0 },
-  //   };
+    assert_eq!(4, Tile::size_with(&tile));
+  }
 
-  //   assert_eq!(5, Tile::size_with(&tile));
-  // }
-
-  // #[test]
-  // fn test_tilevec_sizewith() {
-  //   let tile = Tile {
-  //     tile_header: TileHeader {
-  //       has_block: true,
-  //       has_attributes: true,
-  //       has_wall: false,
-  //       liquid_type: LiquidType::NoLiquid,
-  //       has_extended_block_id: false,
-  //       has_extended_attributes: true,
-  //       rle_type: RLEType::SingleByte,
-  //     },
-  //     block: Some(Block {
-  //       block_type: BlockType::Dirt,
-  //       shape: BlockShape::Normal,
-  //       frame_data: None,
-  //       block_paint: None,
-  //       is_block_inactive: true,
-  //       has_extended_block_id: false,
-  //     }),
-  //     wall: None,
-  //     liquid: None,
-  //     wiring: None,
-  //     run_length: RunLength::new(2, RLEType::SingleByte),
-  //     position: Position { x: 0, y: 0 },
-  //   };
-  //   let tv = TileVec(vec![tile.clone(), tile.clone()]);
-
-  //   assert_eq!(5, TileVec::size_with(&tv));
-  // }
+  #[test]
+  fn test_tilevec_sizewith() {
+    let tile = Tile {
+      tile_header: TileHeader {
+        has_block: true,
+        has_attributes: true,
+        has_wall: false,
+        liquid_type: LiquidType::NoLiquid,
+        has_extended_block_id: false,
+        rle_type: RLEType::SingleByte,
+      },
+      attributes: Some(TileAttributes {
+        has_extended_attributes: false,
+        shape: BlockShape::HalfTile,
+        wiring: Some(Wiring::default()),
+        bits: TBitVec::from(vec![
+          false, false, false, false, true, false, false, false,
+        ]),
+      }),
+      ext_attributes: None,
+      block: Some(Block {
+        block_type: BlockType::Dirt,
+        shape: BlockShape::HalfTile,
+        frame_data: None,
+        block_paint: None,
+        is_block_inactive: false,
+        has_extended_block_id: false,
+      }),
+      wall: None,
+      liquid: None,
+      wiring: Some(Wiring::default()),
+      run_length: RunLength::new(2, RLEType::SingleByte),
+      position: Position { x: 0, y: 0 },
+    };
+    let tv = TileVec(vec![tile.clone(), tile.clone(), tile.clone()]);
+    // it's 8 because of the run_length of 2.
+    assert_eq!(8, TileVec::size_with(&tv));
+  }
 }

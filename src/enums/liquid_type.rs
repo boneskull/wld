@@ -10,17 +10,16 @@ pub enum LiquidType {
 
 impl LiquidType {
   pub fn assign_bits(&self, tbv: &mut TBitVec) {
-    let bv = tbv.as_mut();
     match self {
       LiquidType::Water => {
-        bv.set(3, true);
+        tbv.set(3, true);
       }
       LiquidType::Honey => {
-        bv.set(3, true);
-        bv.set(4, true);
+        tbv.set(3, true);
+        tbv.set(4, true);
       }
       LiquidType::Lava => {
-        bv.set(4, true);
+        tbv.set(4, true);
       }
       _ => {}
     }

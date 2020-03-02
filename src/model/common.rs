@@ -1,3 +1,4 @@
+use crate::model::TileHeader;
 use bitvec::prelude::*;
 use nano_leb128::ULEB128 as NanoUleb128;
 use scroll::{
@@ -267,6 +268,12 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
 #[repr(C)]
 pub struct TBitVec(BitVec<Lsb0, u8>);
 
+impl TBitVec {
+  pub fn set(&mut self, idx: usize, value: bool) {
+    self.as_mut().set(idx, value)
+  }
+}
+
 impl SizeWith<TBitVec> for TBitVec {
   fn size_with(ctx: &TBitVec) -> usize {
     ctx.as_ref().as_slice().len()
@@ -275,7 +282,31 @@ impl SizeWith<TBitVec> for TBitVec {
 
 impl From<Vec<bool>> for TBitVec {
   fn from(v: Vec<bool>) -> Self {
-    Self(BitVec::<Lsb0, u8>::from(&v[..]))
+    Self(BitVec::from(&v[..]))
+  }
+}
+
+impl<'a> From<&'a [u8]> for TBitVec {
+  fn from(v: &'a [u8]) -> Self {
+    Self(BitVec::from_slice(v))
+  }
+}
+
+impl From<&TileHeader> for TBitVec {
+  fn from(th: &TileHeader) -> Self {
+    let mut v = Self::from(vec![
+      th.has_attributes,
+      th.has_block,
+      th.has_wall,
+      false,
+      false,
+      th.has_extended_block_id,
+      false,
+      false,
+    ]);
+    th.liquid_type.assign_bits(&mut v);
+    th.rle_type.assign_bits(&mut v);
+    v
   }
 }
 
