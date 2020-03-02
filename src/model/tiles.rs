@@ -83,11 +83,10 @@ impl TryIntoCtx<Endian> for &Liquid {
   }
 }
 
-/**
-Represents wires on a [`Tile`].  A `Tile` can have all of these, none of these, or any in between.
-
-For more information, see [Wire](https://terraria.gamepedia.com/Wire) on the [Official Terraria Wiki](https://terraria.gamepedia.com).
-*/
+/// Represents wires on a [`Tile`].  A `Tile` can have all of these, none of
+/// these, or any in between.
+/// For more information, see [Wire](https://terraria.gamepedia.com/Wire) on
+/// the [Official Terraria Wiki](https://terraria.gamepedia.com).
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Constructor)]
 pub struct Wiring {
   /// If `true`, a red wire is present
@@ -103,6 +102,7 @@ pub struct Wiring {
 }
 
 impl Default for Wiring {
+  /// Creates a [`Wiring`] instance with all flags disabled.
   fn default() -> Self {
     Self::new(false, false, false, false, false)
   }
@@ -111,7 +111,9 @@ impl Default for Wiring {
 impl From<(&TBitVec, &TBitVec)> for Wiring {
   /// Used when extended attributes are present.  Extended attributes are used
   /// if [`yellow`](Wiring::yellow) or [`actuator`](Wiring::actuator) should be
-  /// set.
+  /// set
+  /// TODO: This should instead accept a [`Wiring`] instance and call
+  /// [`Wiring::extend`] instead.
   fn from(flags: (&TBitVec, &TBitVec)) -> Self {
     let (flags, more_flags) = flags;
     Self {
@@ -125,6 +127,7 @@ impl From<(&TBitVec, &TBitVec)> for Wiring {
 }
 
 impl From<&TBitVec> for Wiring {
+  /// Create a [`Wiring`] instance given the bits from [`TileAttributes`].
   fn from(flags: &TBitVec) -> Self {
     Self {
       red: flags[1],
@@ -137,9 +140,7 @@ impl From<&TBitVec> for Wiring {
 }
 
 impl Wiring {
-  /// Flips the bit flags in a [`TBitVec`] depending on our internal flags.
-  /// If either [`Wiring::yellow`] or [`Wiring::actuator`] is `true`, the
-  /// `TBitVec` should be two (2) bytes in size (length 16).
+  /// Flips bits in a [`TBitVec`] for red, green, and blue wires.
   pub fn assign_bits(&self, attrs: &mut TBitVec) {
     if self.red {
       attrs.set(1, true);
@@ -150,16 +151,43 @@ impl Wiring {
     if self.blue {
       attrs.set(3, true);
     }
+  }
+
+  // Flips bits in a [`TBitVec`] for yellow wires and actuators.
+  pub fn assign_extended_bits(&self, ext_attrs: &mut TBitVec) {
     if self.yellow {
-      attrs.set(13, true);
+      ext_attrs.set(5, true);
     }
     if self.actuator {
-      attrs.set(8, true);
+      ext_attrs.set(1, true);
     }
   }
 
+  /// Returns `true` if _any_ wire or actuator is present.
   pub fn has_wires(&self) -> bool {
     self.red || self.blue || self.green || self.yellow || self.actuator
+  }
+
+  /// Extend this [`Wiring`] with another.  Only enables flags; does not
+  /// disable them.  Used to merge a `Wiring` instance from
+  /// [`ExtendedTileAttributes`] into a `Wiring` instance from
+  /// [`TileAttributes`].
+  pub fn extend(&mut self, other: &Wiring) {
+    if other.red {
+      self.red = other.red;
+    }
+    if other.green {
+      self.green = other.green;
+    }
+    if other.blue {
+      self.blue = other.blue;
+    }
+    if other.yellow {
+      self.yellow = other.yellow;
+    }
+    if other.actuator {
+      self.actuator = other.actuator;
+    }
   }
 }
 
@@ -268,7 +296,6 @@ impl<'a> TryFromCtx<'a, Endian> for TileHeader {
         liquid_type,
         has_extended_block_id,
         rle_type,
-        // bits,
       },
       *offset,
     ))
@@ -298,11 +325,11 @@ impl TryIntoCtx<Endian> for &TileHeader {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct TileAttributes {
   pub shape: BlockShape,
   pub has_extended_attributes: bool,
-  pub wiring: Option<Wiring>,
+  pub wiring: Wiring,
 }
 
 impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
@@ -316,10 +343,7 @@ impl<'a> TryFromCtx<'a, Endian> for TileAttributes {
     let bits = buf.gread::<TBitVec>(offset)?;
     let has_extended_attributes = bits[0];
     let shape = BlockShape::from(&bits);
-    let mut wiring: Option<Wiring> = None;
-    if !has_extended_attributes {
-      wiring = Some(Wiring::from(&bits));
-    }
+    let wiring = Wiring::from(&bits);
     Ok((
       Self {
         shape,
@@ -351,14 +375,13 @@ impl<'a> TryIntoCtx<Endian> for &'a TileAttributes {
   }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[repr(C)]
-struct ExtendedTileAttributes {
-  is_block_inactive: bool,
-  is_block_painted: bool,
-  is_wall_painted: bool,
-  wiring: Wiring,
-  bits: TBitVec,
+pub struct ExtendedTileAttributes {
+  pub is_block_inactive: bool,
+  pub is_block_painted: bool,
+  pub is_wall_painted: bool,
+  pub wiring: Wiring,
 }
 
 impl SizeWith<Endian> for ExtendedTileAttributes {
@@ -386,7 +409,6 @@ impl<'a> TryFromCtx<'a, &TBitVec> for ExtendedTileAttributes {
         is_block_painted,
         is_wall_painted,
         wiring,
-        bits,
       },
       *offset,
     ))
@@ -402,7 +424,7 @@ impl TryIntoCtx<Endian> for &ExtendedTileAttributes {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    buf.gwrite(&self.bits, offset)?;
+    buf.gwrite(&TBitVec::from(self), offset)?;
     Ok(*offset)
   }
 }
@@ -481,9 +503,8 @@ impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
     if tile_header.has_attributes {
       let attrs = buf.gread::<TileAttributes>(offset)?;
       shape = attrs.shape;
-      if let Some(w) = attrs.wiring {
-        wiring = Some(w);
-      } else if attrs.has_extended_attributes {
+      wiring = Some(attrs.wiring);
+      if attrs.has_extended_attributes {
         let ext_attrs = buf.gread_with::<ExtendedTileAttributes>(
           offset,
           &TBitVec::from(&attrs),
@@ -491,12 +512,15 @@ impl<'a> TryFromCtx<'a, TileCtx<'a>> for Tile {
         is_block_inactive = ext_attrs.is_block_inactive;
         is_block_painted = ext_attrs.is_block_painted;
         is_wall_painted = ext_attrs.is_wall_painted;
-        wiring = Some(ext_attrs.wiring);
+        if let Some(w) = &mut wiring {
+          w.extend(&ext_attrs.wiring);
+        }
         ext_attributes = Some(ext_attrs);
       }
       attributes = Some(attrs);
     }
 
+    wiring = wiring.and_then(|w| if w.has_wires() { Some(w) } else { None });
     if tile_header.has_block {
       block = Some(buf.gread_with::<Block>(
         offset,
@@ -861,7 +885,7 @@ mod test_tiles {
     let attrs = TileAttributes {
       has_extended_attributes: true,
       shape: BlockShape::HalfTile,
-      wiring: None,
+      wiring: Wiring::default(),
     };
 
     let mut buf = [0; 1];
@@ -871,13 +895,13 @@ mod test_tiles {
     let attrs = TileAttributes {
       has_extended_attributes: false,
       shape: BlockShape::TopRightSlope,
-      wiring: Some(Wiring {
+      wiring: Wiring {
         red: true,
         blue: false,
         green: false,
         yellow: false,
         actuator: false,
-      }),
+      },
     };
 
     let mut buf = [0; 1];
@@ -897,11 +921,16 @@ mod test_tiles {
         rle_type: RLEType::SingleByte,
       },
       attributes: Some(TileAttributes {
-        has_extended_attributes: false,
+        has_extended_attributes: true,
         shape: BlockShape::HalfTile,
-        wiring: Some(Wiring::default()),
+        wiring: Wiring::default(),
       }),
-      ext_attributes: None,
+      ext_attributes: Some(ExtendedTileAttributes {
+        is_block_inactive: false,
+        is_block_painted: false,
+        is_wall_painted: false,
+        wiring: Wiring::new(false, false, false, false, true),
+      }),
       block: Some(Block {
         block_type: BlockType::Dirt,
         shape: BlockShape::HalfTile,
@@ -912,7 +941,7 @@ mod test_tiles {
       }),
       wall: None,
       liquid: None,
-      wiring: Some(Wiring::default()),
+      wiring: Some(Wiring::new(false, false, false, false, true)),
       run_length: RunLength::new(2, RLEType::SingleByte),
       position: Position { x: 0, y: 0 },
     };
@@ -928,12 +957,12 @@ mod test_tiles {
       position: Position { x: 0, y: 0 },
     };
 
-    let mut buf = [0; 4];
+    let mut buf = [0; 5];
     assert_eq!(buf.pwrite(&tile, 0).unwrap(), Tile::size_with(&tile));
     assert_eq!(
       TBitVec::from(&buf[..2]),
       TBitVec::from(vec![
-        true, true, false, false, false, false, true, false, false, false,
+        true, true, false, false, false, false, true, false, true, false,
         false, false, true, false, false, false
       ])
     );
@@ -954,7 +983,7 @@ mod test_tiles {
       attributes: Some(TileAttributes {
         has_extended_attributes: false,
         shape: BlockShape::HalfTile,
-        wiring: Some(Wiring::default()),
+        wiring: Wiring::default(),
       }),
       ext_attributes: None,
       block: Some(Block {
@@ -989,7 +1018,7 @@ mod test_tiles {
       attributes: Some(TileAttributes {
         has_extended_attributes: false,
         shape: BlockShape::HalfTile,
-        wiring: Some(Wiring::default()),
+        wiring: Wiring::default(),
       }),
       ext_attributes: None,
       block: Some(Block {

@@ -11,6 +11,12 @@ pub enum BlockShape {
   BottomLeftSlope = 5,
 }
 
+impl Default for BlockShape {
+  fn default() -> Self {
+    Self::Normal
+  }
+}
+
 impl From<&TBitVec> for BlockShape {
   fn from(flags: &TBitVec) -> Self {
     let value =

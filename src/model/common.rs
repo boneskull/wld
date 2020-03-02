@@ -1,5 +1,8 @@
 use crate::model::{
-  tiles::TileAttributes,
+  tiles::{
+    ExtendedTileAttributes,
+    TileAttributes,
+  },
   TileHeader,
 };
 use bitvec::prelude::*;
@@ -326,9 +329,24 @@ impl From<&TileAttributes> for TBitVec {
       false,
     ]);
     ta.shape.assign_bits(&mut bits);
-    if let Some(wiring) = ta.wiring {
-      wiring.assign_bits(&mut bits);
-    }
+    ta.wiring.assign_bits(&mut bits);
+    bits
+  }
+}
+
+impl From<&ExtendedTileAttributes> for TBitVec {
+  fn from(ext_attrs: &ExtendedTileAttributes) -> Self {
+    let mut bits = Self::from(vec![
+      false,
+      false,
+      ext_attrs.is_block_inactive,
+      ext_attrs.is_block_painted,
+      ext_attrs.is_wall_painted,
+      false,
+      false,
+      false,
+    ]);
+    ext_attrs.wiring.assign_extended_bits(&mut bits);
     bits
   }
 }
@@ -411,7 +429,7 @@ mod test_common {
     let ta = TileAttributes {
       has_extended_attributes: true,
       shape: BlockShape::HalfTile,
-      wiring: None,
+      wiring: Wiring::default(),
     };
     assert_eq!(
       TBitVec::from(
@@ -423,13 +441,13 @@ mod test_common {
     let ta = TileAttributes {
       has_extended_attributes: false,
       shape: BlockShape::TopRightSlope,
-      wiring: Some(Wiring {
+      wiring: Wiring {
         red: true,
         blue: false,
         green: false,
         yellow: false,
         actuator: false,
-      }),
+      },
     };
     assert_eq!(
       TBitVec::from(

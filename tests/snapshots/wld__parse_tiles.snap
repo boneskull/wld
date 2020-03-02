@@ -11,11 +11,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -40,11 +35,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -69,11 +59,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -98,11 +83,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -127,11 +107,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -156,11 +131,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -185,11 +155,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -214,11 +179,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -243,11 +203,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -272,11 +227,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -301,11 +251,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -330,11 +275,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -359,11 +299,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -388,11 +323,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -417,11 +347,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -446,11 +371,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -475,11 +395,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -504,11 +419,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -533,11 +443,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -562,11 +467,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -591,11 +491,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -620,11 +515,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -649,11 +539,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -678,11 +563,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -707,11 +587,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -736,11 +611,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -765,11 +635,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -794,11 +659,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -823,11 +683,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -852,11 +707,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -881,11 +731,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -910,11 +755,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -939,11 +779,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -968,11 +803,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -997,11 +827,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1026,11 +851,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1055,11 +875,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1084,11 +899,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1113,11 +923,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1142,11 +947,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1171,11 +971,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1200,11 +995,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1229,11 +1019,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1258,11 +1043,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1287,11 +1067,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1316,11 +1091,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1345,11 +1115,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1374,11 +1139,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1403,11 +1163,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
@@ -1432,11 +1187,6 @@ expression: "&PARSED_WORLD.tiles[0][0..50]"
             liquid_type: NoLiquid,
             has_extended_block_id: false,
             rle_type: SingleByte,
-            bits: TBitVec(
-                BitVec<Lsb0, u8> [
-                    0b00000010,
-                ],
-            ),
         },
         attributes: None,
         ext_attributes: None,
