@@ -30,14 +30,6 @@ impl TryFrom<&TBitVec> for BlockShape {
   }
 }
 
-// impl From<&TBitVec> for BlockShape {
-//   fn from(flags: &TBitVec) -> Self {
-//     let value =
-//       ((flags[6] as u8) << 2) + ((flags[5] as u8) << 1) + flags[4] as u8;
-//     Self::from_u8(value).unwrap()
-//   }
-// }
-
 impl BlockShape {
   pub fn assign_bits(self, attrs: &mut TBitVec) {
     match self {
