@@ -1,8 +1,10 @@
 use crate::{
-  enums::EntityType,
-  model::{
-    Position,
+  enums::{
+    EntityType,
     TBool,
+  },
+  models::{
+    Position,
     TString,
   },
 };

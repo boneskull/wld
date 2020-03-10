@@ -1,6 +1,6 @@
 use crate::{
   enums::ItemType,
-  model::common::{
+  models::common::{
     Position,
     TString,
   },

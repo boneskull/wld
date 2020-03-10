@@ -15,7 +15,7 @@ extern crate lazy_static;
 extern crate scroll_derive;
 #[macro_use]
 extern crate log;
-use crate::model::World;
+use crate::models::World;
 use log::LevelFilter;
 use std::{
   boxed::Box,
@@ -24,7 +24,7 @@ use std::{
 
 pub mod constants;
 pub mod enums;
-pub mod model;
+pub mod models;
 // use image, imageproc to render.
 
 /// Instantiate a [`World`] from a slice of bytes.

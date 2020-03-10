@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use scroll::ctx::SizeWith;
 use std::fs::read;
 use wld::{
-  model::World,
+  models::World,
   parse_world,
 };
 

@@ -3,7 +3,7 @@ use crate::{
     BlockShape,
     BlockType,
   },
-  model::VariableTBitVec,
+  models::VariableTBitVec,
 };
 use num_traits::FromPrimitive;
 use scroll::{

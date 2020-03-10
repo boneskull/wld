@@ -1,11 +1,11 @@
 use crate::{
   enums::{
     AnglerQuestFish,
-    HardmodeOre,
     InvasionType,
-  },
-  model::common::{
     TBool,
+  },
+  models::{
+    HardmodeOre,
     TString,
   },
 };

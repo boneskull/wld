@@ -15,8 +15,11 @@ use crate::{
     WATER_COLOR,
     YELLOW_WIRE_COLOR,
   },
-  enums::LiquidType,
-  model::{
+  enums::{
+    LiquidType,
+    TBool,
+  },
+  models::{
     Chests,
     Header,
     HouseVec,
@@ -26,7 +29,6 @@ use crate::{
     Properties,
     Signs,
     Status,
-    TBool,
     TString,
     TileEntities,
     TileMatrix,

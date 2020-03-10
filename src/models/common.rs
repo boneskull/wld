@@ -1,4 +1,4 @@
-use crate::model::{
+use crate::models::{
   tiles::{
     ExtendedTileAttributes,
     TileAttributes,
@@ -133,54 +133,6 @@ impl From<String> for TString {
         _ => 4,
       },
     )
-  }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[repr(C)]
-pub enum TBool {
-  False,
-  True,
-}
-
-impl SizeWith<Endian> for TBool {
-  fn size_with(_: &Endian) -> usize {
-    u8::size_with(&LE)
-  }
-}
-
-impl<'a> TryFromCtx<'a, Endian> for TBool {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    _: Endian,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let value = buf.gread::<u8>(offset)?;
-    Ok((if value == 0 { Self::False } else { Self::True }, *offset))
-  }
-}
-
-impl<'a> TryIntoCtx<Endian> for &'a TBool {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    _: Endian,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    buf.gwrite(if *self == TBool::True { 1_u8 } else { 0_u8 }, offset)?;
-    let expected_size = TBool::size_with(&LE);
-    assert!(
-      expected_size == *offset,
-      "TBool offset mismatch on write; expected {:?}, got {:?}",
-      expected_size,
-      offset
-    );
-
-    Ok(*offset)
   }
 }
 
@@ -382,38 +334,15 @@ mod test_common {
   use super::{
     Pwrite,
     TBitVec,
-    TBool,
     TString,
     TileAttributes,
     TryFromCtx,
   };
   use crate::{
     enums::BlockShape,
-    model::Wiring,
+    models::Wiring,
   };
   use scroll::LE;
-  #[test]
-  fn test_tbool_true_rw() {
-    let t = &TBool::True;
-    let mut bytes = [0; 1];
-    let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();
-    assert_eq!(
-      TBool::try_from_ctx(&bytes[..], LE).unwrap(),
-      (TBool::True, 1)
-    );
-  }
-
-  #[test]
-  fn test_tbool_false_rw() {
-    let t = &TBool::False;
-    let mut bytes = [0; 1];
-    let _res = bytes.pwrite_with::<&TBool>(t, 0, LE).unwrap();
-    assert_eq!(
-      TBool::try_from_ctx(&bytes[..], LE).unwrap(),
-      (TBool::False, 1)
-    );
-  }
-
   #[test]
   fn test_tstring_rw() {
     let t = &TString::from("foo");

@@ -1,6 +1,6 @@
-use crate::{
-  enums::EntityType,
-  model::TBool,
+use crate::enums::{
+  EntityType,
+  TBool,
 };
 use scroll::{
   ctx::{

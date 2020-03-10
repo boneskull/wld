@@ -1,4 +1,4 @@
-use num_traits::FromPrimitive;
+use crate::enums::HardmodeOreType;
 use scroll::{
   ctx::{
     SizeWith,
@@ -18,6 +18,7 @@ pub struct HardmodeOre {
   pub raw_value: i32,
   pub ore_type: HardmodeOreType,
 }
+use num_traits::FromPrimitive;
 
 impl SizeWith<Endian> for HardmodeOre {
   fn size_with(_: &Endian) -> usize {
@@ -58,22 +59,13 @@ impl<'a> TryIntoCtx<Endian> for &'a HardmodeOre {
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
     buf.gwrite_with(&self.raw_value, offset, LE)?;
+    let expected_size = HardmodeOre::size_with(&LE);
     assert!(
-      *offset == HardmodeOre::size_with(&LE),
-      "HardmodeOre size mismatch"
+      *offset == expected_size,
+      "HardmodeOre size mismatch; expected {:?}, got {:?}",
+      expected_size,
+      offset
     );
     Ok(*offset)
   }
-}
-
-#[derive(Copy, Clone, Debug, Eq, PartialEq, FromPrimitive)]
-#[repr(C)]
-pub enum HardmodeOreType {
-  UnknownOre,
-  Cobalt = 107,
-  Mythril = 108,
-  Adamantite = 111,
-  Palladium = 221,
-  Orichalcum = 222,
-  Titanium = 223,
 }

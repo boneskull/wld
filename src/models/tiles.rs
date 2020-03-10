@@ -6,7 +6,7 @@ use crate::{
     LiquidType,
     RLEType,
   },
-  model::{
+  models::{
     Block,
     BlockCtx,
     Chest,

@@ -1,4 +1,4 @@
-use crate::model::TBitVec;
+use crate::models::TBitVec;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, FromPrimitive)]
 pub enum LiquidType {

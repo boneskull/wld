@@ -1,9 +1,11 @@
 use crate::{
-  enums::EvilType,
-  model::{
+  enums::{
+    EvilType,
+    TBool,
+  },
+  models::{
     Position,
     Rect,
-    TBool,
     TString,
     VariableTBitVec,
     WorldCtx,
@@ -250,7 +252,7 @@ mod test_properties {
     VariableTBitVec,
     WorldStyle,
   };
-  use crate::model::common::TBool::{
+  use crate::enums::TBool::{
     False,
     True,
   };

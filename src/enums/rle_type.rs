@@ -1,4 +1,4 @@
-use crate::model::TBitVec;
+use crate::models::TBitVec;
 use num_traits::FromPrimitive;
 use std::convert::TryFrom;
 

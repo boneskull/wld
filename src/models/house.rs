@@ -1,5 +1,7 @@
-use super::common::Position;
-use crate::enums::EntityType;
+use crate::{
+  enums::EntityType,
+  models::Position,
+};
 use scroll::{
   ctx::{
     SizeWith,

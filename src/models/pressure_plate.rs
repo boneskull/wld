@@ -1,4 +1,4 @@
-use crate::model::Position;
+use crate::models::Position;
 use scroll::{
   ctx::{
     SizeWith,
