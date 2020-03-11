@@ -1,6 +1,6 @@
 ---
 source: tests/wld.rs
-expression: PARSED_WORLD.status.header
+expression: PARSED_WORLD.header
 ---
 Header {
     version: "1.3.5.3",
@@ -14,7 +14,7 @@ Header {
         npcs: 2880141,
         tile_entities: 2880453,
         pressure_plates: 2880457,
-        town_manager: 2880461,
+        houses: 2880461,
         footer: 2880489,
         extra: 0,
     },

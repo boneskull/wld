@@ -1,0 +1,8 @@
+---
+source: tests/wld.rs
+expression: PARSED_WORLD.tile_entities
+---
+TileEntities {
+    count: 0,
+    tile_entities: [],
+}

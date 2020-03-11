@@ -16,23 +16,33 @@ lazy_static! {
 
 #[test]
 fn test_parse_status_header() {
-  assert_debug_snapshot!(PARSED_WORLD.status.header);
+  assert_debug_snapshot!(PARSED_WORLD.header);
 }
 
 #[test]
 fn test_parse_status_properties() {
-  assert_debug_snapshot!(PARSED_WORLD.status.properties);
+  assert_debug_snapshot!(PARSED_WORLD.properties);
 }
 
 #[test]
 fn test_parse_status_status() {
-  assert_debug_snapshot!(PARSED_WORLD.status.status);
+  assert_debug_snapshot!(PARSED_WORLD.status);
 }
 
 #[test]
 fn test_parse_tiles() {
   // if we did the whole thing, the snapshot would be about 2GB
   assert_debug_snapshot!(&PARSED_WORLD.tiles[0][0..50]);
+}
+
+#[test]
+fn test_parse_chests() {
+  assert_debug_snapshot!(PARSED_WORLD.chests);
+}
+
+#[test]
+fn test_parse_signs() {
+  assert_debug_snapshot!(PARSED_WORLD.signs);
 }
 
 #[test]
@@ -43,6 +53,11 @@ fn test_parse_npcs() {
 #[test]
 fn test_parse_mobs() {
   assert_debug_snapshot!(PARSED_WORLD.mobs);
+}
+
+#[test]
+fn test_parse_tile_entities() {
+  assert_debug_snapshot!(PARSED_WORLD.tile_entities);
 }
 
 #[test]

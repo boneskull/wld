@@ -13,33 +13,95 @@ use scroll::{
 
 static RELOGIC: &str = "relogic";
 
+/// Byte offsets in a `.wld` file corresponding to certain data points.
+///
+/// We can use these offsets to check the file for corruption (or, more likely,
+/// to check our code for bugs).
+///
+/// # Notes
+///
+/// - While the fields are all of type [`i32`], the values cannot be negative.
+/// - There seems to be an extra, unused offset, found after the
+///   [`Offsets::footer`] offset. It appears to be always `0`.
 #[derive(
   Copy, Clone, Debug, Default, PartialEq, Eq, Pwrite, Pread, SizeWith,
 )]
 #[repr(C)]
 pub struct Offsets {
+  /// The offset for where [`Header`] parsing should begin.  This should always be 0.
   pub header: i32,
+
+  /// The offset for where [`TileMatrix`] parsing should begin.
+  ///
+  /// [`TileMatrix`]: crate::models::TileMatrix
   pub tiles: i32,
+
+  /// The offset for where [`Chests`] parsing should begin.
+  ///
+  /// [`Chests`]: crate::models::Chests
   pub chests: i32,
+
+  /// The offset for where [`Signs`] parsing should begin.
+  ///
+  /// [`Signs`]: crate::models::Signs
   pub signs: i32,
+
+  /// The offset for where [`NPCVec`] parsing should begin.
+  ///
+  /// [`NPCVec`]: crate::models::NPCVec
   pub npcs: i32,
+
+  /// The offset for where [`MobVec`] parsing should begin.
+  ///
+  /// [`MobVec`]: crate::models::MobVec
   pub tile_entities: i32,
+
+  /// The offset for where [`PressurePlates`] parsing should begin.
+  ///
+  /// [`PressurePlates`]: crate::models::PressurePlates
   pub pressure_plates: i32,
-  pub town_manager: i32,
+
+  /// The offset for where [`HouseVec`] parsing should begin.
+  ///
+  /// [`HouseVec`]: crate::models::HouseVec
+  pub houses: i32,
+
+  /// The offset for where [`Footer`] parsing should begin.
+  ///
+  /// [`Footer`]: crate::models::Footer
   pub footer: i32,
   extra: i32, // unused?
 }
 
+/// World file header.
+///
+/// Contains metadata about the file format.
+///
+/// Currently, only world files created by Terraria v1.3.5.3 are supported.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[repr(C)]
 pub struct Header {
+  /// The version of Terraria which generated this world file.
+  ///
+  /// This converted from an [`i32`] upon read.
   pub version: String,
+
+  /// The world revision.
+  ///
+  /// I don't know what this is.
   pub revision: u32,
-  pub is_favorite: bool, // is weird & cannot be a TBool
+
+  /// Whether or not the world has been marked as a "favorite".
+  ///
+  /// Converted, inexplicably, from a [`u64`] upon read.
+  pub is_favorite: bool,
+
+  /// List of offsets.
   pub offsets: Offsets,
 }
 
 impl Header {
+  /// Convenience method to instantiate a new [`Header`].
   pub fn new<S>(
     version: S,
     revision: u32,
@@ -81,10 +143,6 @@ impl<'a> TryFromCtx<'a, Endian> for Header {
     let is_favorite = buf.gread_with::<u64>(offset, LE)? != 0;
     let _raw_offset_lengths = buf.gread_with::<i16>(offset, LE)?;
     let offsets = buf.gread::<Offsets>(offset)?;
-
-    // for _ in 0..raw_offset_lengths {
-    //   buf.gread_with::<i32>(offset, LE)?;
-    // }
 
     let version = match raw_version {
       71 => Ok("1.2.0.3.1"),
@@ -206,7 +264,7 @@ mod test_header {
         npcs: 8,
         tile_entities: 10,
         pressure_plates: 12,
-        town_manager: 14,
+        houses: 14,
         footer: 16,
         extra: 0,
       },

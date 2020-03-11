@@ -1,4 +1,5 @@
 use crate::enums::HardmodeOreType;
+use num_traits::FromPrimitive;
 use scroll::{
   ctx::{
     SizeWith,
@@ -12,13 +13,28 @@ use scroll::{
   LE,
 };
 
+/// Represents one of three types of ore available in hardmode.
+///
+/// If the world is not [in hardmode], or the player has not yet spawned the
+/// corresponding tier of ore, [`HardmodeOre::ore_type`] will be
+/// [`HardmodeOreType::UnknownOre`].
+///
+/// See [Terraria Wiki: Ores](https://terraria.gamepedia.com/Ores#Hardmode) for
+/// more information.
+///
+/// [in hardmode]: crate::models::Status::is_hardmode
+///
+/// # Notes
+///
+/// - The integer representation of an unknown ore is either `-1` or seemingly
+///   some random number. I have no idea. So that's why we save it in the
+///   [`HardmodeOre::raw_value`] field.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
 pub struct HardmodeOre {
   pub raw_value: i32,
   pub ore_type: HardmodeOreType,
 }
-use num_traits::FromPrimitive;
 
 impl SizeWith<Endian> for HardmodeOre {
   fn size_with(_: &Endian) -> usize {

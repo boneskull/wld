@@ -5,7 +5,6 @@ use crate::{
   },
   models::{
     Position,
-    Rect,
     TString,
     VariableTBitVec,
     WorldCtx,
@@ -24,6 +23,33 @@ use scroll::{
 };
 use std::fmt::Debug;
 pub use uuid::Uuid;
+
+/// Represents the size of a Terraria map, as a rectangle.
+///
+/// See [Terraria Wiki: Map Size] for more information.
+///
+/// [Terraria Wiki: Map Size]: https://terraria.gamepedia.com/Map_size
+///
+/// # Notes
+///
+/// - For our purposes, the _top left corner_ is the origin.
+/// - While the fields are of type [`i32`], I don't believe they can be negative
+///   integers.
+/// - [`Bounds::left`] and [`Bounds::top`] are always `0`, as far as I can tell.
+#[derive(
+  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, SizeWith,
+)]
+#[repr(C)]
+pub struct Bounds {
+  /// The minimum x-coordinate of the map.
+  pub left: i32,
+  /// The maximum x-coordinate of the map.
+  pub right: i32,
+  /// The minimum y-coordinate of the map.
+  pub top: i32,
+  /// The maximum y-coordinate of the map.
+  pub bottom: i32,
+}
 
 pub type MoonStyle = u8;
 pub type UndergroundSnowStyle = i32;
@@ -184,7 +210,7 @@ pub struct Properties {
   pub generator: GeneratorInfo,
   pub uuid: TUuid,
   pub id: i32,
-  pub bounds: Rect,
+  pub bounds: Bounds,
   pub height: i32,
   pub width: i32,
   pub is_expert: TBool,
@@ -222,7 +248,7 @@ impl SizeWith<Properties> for Properties {
       + GeneratorInfo::size_with(&ctx.generator)
       + TUuid::size_with(&LE)
       + (i32::size_with(&LE) * 3)
-      + Rect::size_with(&LE)
+      + Bounds::size_with(&LE)
       + (TBool::size_with(&LE) * 4)
       + u64::size_with(&LE)
       + WorldStyle::size_with(&LE)
@@ -238,13 +264,13 @@ impl SizeWith<Properties> for Properties {
 #[cfg(test)]
 mod test_properties {
   use super::{
+    Bounds,
     EvilType,
     GeneratorInfo,
     Position,
     Properties,
     Pwrite,
     QuadrantStyle,
-    Rect,
     TString,
     TUuid,
     TryFromCtx,
@@ -317,7 +343,7 @@ mod test_properties {
         Uuid::parse_str("6ba7b810-9dad-11d1-80b4-00c04fd430c8").unwrap(),
       ),
       id: 1_468_463_142,
-      bounds: Rect {
+      bounds: Bounds {
         left: 0,
         right: 67200,
         top: 0,

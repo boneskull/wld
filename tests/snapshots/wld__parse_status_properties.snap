@@ -1,6 +1,6 @@
 ---
 source: tests/wld.rs
-expression: PARSED_WORLD.status.properties
+expression: PARSED_WORLD.properties
 ---
 Properties {
     tile_frame_importances: VariableTBitVec(
@@ -82,7 +82,7 @@ Properties {
         d578e106-3827-f648-a224-254c06ca78cb,
     ),
     id: 1468463142,
-    bounds: Rect {
+    bounds: Bounds {
         left: 0,
         right: 67200,
         top: 0,

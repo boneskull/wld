@@ -15,12 +15,10 @@ use crate::{
     WATER_COLOR,
     YELLOW_WIRE_COLOR,
   },
-  enums::{
-    LiquidType,
-    TBool,
-  },
+  enums::LiquidType,
   models::{
     Chests,
+    Footer,
     Header,
     HouseVec,
     MobVec,
@@ -29,10 +27,8 @@ use crate::{
     Properties,
     Signs,
     Status,
-    TString,
     TileEntities,
     TileMatrix,
-    WorldCtx,
   },
 };
 use image::{
@@ -56,10 +52,13 @@ use scroll::{
   LE,
 };
 
+/// Top-level representation of a Terraria world file (`.wld`).
 #[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct World {
-  pub status: WorldStatus,
+  pub header: Header,
+  pub properties: Properties,
+  pub status: Status,
   pub tiles: TileMatrix,
   pub chests: Chests,
   pub signs: Signs,
@@ -74,7 +73,9 @@ pub struct World {
 
 impl SizeWith<World> for World {
   fn size_with(ctx: &Self) -> usize {
-    WorldStatus::size_with(&ctx.status)
+    Header::size_with(&LE)
+      + Properties::size_with(&ctx.properties)
+      + Status::size_with(&ctx.status)
       + TileMatrix::size_with(&ctx.tiles)
       + Chests::size_with(&ctx.chests)
       + Signs::size_with(&ctx.signs)
@@ -84,83 +85,7 @@ impl SizeWith<World> for World {
       + PressurePlates::size_with(&ctx.pressure_plates)
       + HouseVec::size_with(&ctx.houses)
       + TownManager::size_with(&ctx.town_manager)
-      + Footer::size_with(&ctx.status.properties.as_world_context())
-  }
-}
-
-#[derive(Clone, Debug, PartialEq, Pwrite, Pread)]
-#[repr(C)]
-pub struct WorldStatus {
-  pub header: Header,
-  pub properties: Properties,
-  pub status: Status,
-}
-
-impl SizeWith<WorldStatus> for WorldStatus {
-  fn size_with(ctx: &Self) -> usize {
-    let size = Header::size_with(&LE)
-      + Properties::size_with(&ctx.properties)
-      + Status::size_with(&ctx.status);
-    debug!("WorldStatus size: {}", size);
-    size
-  }
-}
-
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct Footer;
-
-impl<'a> TryFromCtx<'a, WorldCtx<'a>> for Footer {
-  type Error = ScrollError;
-
-  fn try_from_ctx(
-    buf: &'a [u8],
-    ctx: WorldCtx<'a>,
-  ) -> Result<(Self, usize), Self::Error> {
-    let offset = &mut 0;
-    let is_valid = buf.gread::<TBool>(offset)?;
-    if is_valid == TBool::False {
-      return Err(ScrollError::Custom("invalid footer".to_string()));
-    }
-    let name = buf.gread::<TString>(offset)?;
-    if name != *ctx.name {
-      return Err(ScrollError::Custom(format!(
-        "invalid footer: name mismatch ({:?} vs. {:?})",
-        name, *ctx.name
-      )));
-    }
-    let id = buf.gread_with::<i32>(offset, LE)?;
-    if id != *ctx.id {
-      return Err(ScrollError::Custom(
-        "invalid footer: id mismatch".to_string(),
-      ));
-    }
-    Ok((Self, *offset))
-  }
-}
-
-impl<'a> TryIntoCtx<WorldCtx<'a>> for &Footer {
-  type Error = ScrollError;
-
-  fn try_into_ctx(
-    self,
-    buf: &mut [u8],
-    ctx: WorldCtx<'a>,
-  ) -> Result<usize, Self::Error> {
-    let offset = &mut 0;
-    buf.gwrite(&TBool::True, offset)?;
-    buf.gwrite(ctx.name, offset)?;
-    buf.gwrite_with(ctx.id, offset, LE)?;
-    Ok(*offset)
-  }
-}
-
-impl<'a> SizeWith<WorldCtx<'a>> for Footer {
-  fn size_with(ctx: &WorldCtx) -> usize {
-    let size = TBool::size_with(&LE)
-      + TString::size_with(ctx.name)
-      + i32::size_with(&LE);
-    debug!("Footer size: {}", size);
-    size
+      + Footer::size_with(&ctx.properties.as_world_context())
   }
 }
 
@@ -215,63 +140,66 @@ impl World {
   pub fn read(bytes: &[u8]) -> Result<Self, ScrollError> {
     let offset = &mut 0;
     // order matters
-    let status = bytes.gread::<WorldStatus>(offset)?;
-    debug!("{:?}", status.header.offsets);
+    let header = bytes.gread::<Header>(offset)?;
+    let properties = bytes.gread::<Properties>(offset)?;
+    let status = bytes.gread::<Status>(offset)?;
     // need this context to associate various bits with other bits
-    let world_ctx = status.properties.as_world_context();
-    debug!("{:?}", status.properties);
+    let world_ctx = properties.as_world_context();
+    debug!("{:?}", properties);
     assert!(
-      status.header.offsets.tiles as usize == *offset,
+      header.offsets.tiles as usize == *offset,
       "Tiles offset mismatch; expected {:?}, got {:?}",
-      status.header.offsets.tiles,
+      header.offsets.tiles,
       offset
     );
     let tiles = bytes.gread_with::<TileMatrix>(offset, world_ctx)?;
     assert!(
-      status.header.offsets.chests as usize == *offset,
+      header.offsets.chests as usize == *offset,
       "Chests offset mismatch"
     );
     let chests = bytes.gread::<Chests>(offset)?;
     assert!(
-      status.header.offsets.signs as usize == *offset,
+      header.offsets.signs as usize == *offset,
       "Signs offset mismatch"
     );
     let signs = bytes.gread::<Signs>(offset)?;
     assert!(
-      status.header.offsets.npcs as usize == *offset,
+      header.offsets.npcs as usize == *offset,
       "NPCs offset mismatch"
     );
     let npcs = bytes.gread::<NPCVec>(offset)?;
     let mobs = bytes.gread::<MobVec>(offset)?;
     assert!(
-      status.header.offsets.tile_entities as usize == *offset,
+      header.offsets.tile_entities as usize == *offset,
       "TileEntities offset mismatch"
     );
     let tile_entities = bytes.gread::<TileEntities>(offset)?;
     assert!(
-      status.header.offsets.pressure_plates as usize == *offset,
+      header.offsets.pressure_plates as usize == *offset,
       "PressurePlates offset mismatch"
     );
     let pressure_plates = bytes.gread::<PressurePlates>(offset)?;
     assert!(
-      status.header.offsets.town_manager as usize == *offset,
+      header.offsets.houses as usize == *offset,
       "RoomVec offset mismatch; expected {:?}, got {:?}",
-      status.header.offsets.town_manager,
+      header.offsets.houses,
       offset
     );
     let houses = bytes.gread::<HouseVec>(offset)?;
     // likely junk data
     let town_manager = bytes.gread_with::<TownManager>(
       offset,
-      status.header.offsets.footer as usize - *offset,
+      header.offsets.footer as usize - *offset,
     )?;
     assert!(
-      status.header.offsets.footer as usize == *offset,
+      header.offsets.footer as usize == *offset,
       "Footer offset mismatch"
     );
     let footer = bytes.gread_with::<Footer>(offset, world_ctx)?;
     debug!("Read {:?} bytes", *offset);
     Ok(Self {
+      header,
+      properties,
       status,
       tiles,
       chests,
@@ -298,60 +226,58 @@ impl World {
     unsafe {
       v.set_len(size);
     }
+    v.gwrite(&self.header, offset)?;
+    v.gwrite(&self.properties, offset)?;
     v.gwrite(&self.status, offset)?;
     assert!(
-      self.status.header.offsets.tiles as usize == *offset,
+      self.header.offsets.tiles as usize == *offset,
       "Tiles offset mismatch; expected {:?}, got {:?}",
-      self.status.header.offsets.tiles,
+      self.header.offsets.tiles,
       offset
     );
     v.gwrite_with(&self.tiles, offset, *offset)?;
     assert!(
-      self.status.header.offsets.chests as usize == *offset,
+      self.header.offsets.chests as usize == *offset,
       "Chests offset mismatch; expected {:?}, got {:?}",
-      self.status.header.offsets.chests,
+      self.header.offsets.chests,
       offset
     );
     v.gwrite(&self.chests, offset)?;
     assert!(
-      self.status.header.offsets.signs as usize == *offset,
+      self.header.offsets.signs as usize == *offset,
       "Signs offset mismatch; expected {:?}, got {:?}",
-      self.status.header.offsets.signs,
+      self.header.offsets.signs,
       offset
     );
     v.gwrite(&self.signs, offset)?;
     assert!(
-      self.status.header.offsets.npcs as usize == *offset,
+      self.header.offsets.npcs as usize == *offset,
       "NPCs offset mismatch"
     );
 
     v.gwrite(&self.npcs, offset)?;
     v.gwrite(&self.mobs, offset)?;
     assert!(
-      self.status.header.offsets.tile_entities as usize == *offset,
+      self.header.offsets.tile_entities as usize == *offset,
       "TileEntities offset mismatch"
     );
     v.gwrite(&self.tile_entities, offset)?;
     assert!(
-      self.status.header.offsets.pressure_plates as usize == *offset,
+      self.header.offsets.pressure_plates as usize == *offset,
       "PressurePlates offset mismatch"
     );
     v.gwrite(&self.pressure_plates, offset)?;
     assert!(
-      self.status.header.offsets.town_manager as usize == *offset,
+      self.header.offsets.houses as usize == *offset,
       "RoomVec offset mismatch"
     );
     v.gwrite(&self.houses, offset)?;
     // v.gwrite(&self.town_manager, offset)?;
     assert!(
-      self.status.header.offsets.footer as usize == *offset,
+      self.header.offsets.footer as usize == *offset,
       "Footer offset mismatch"
     );
-    v.gwrite_with(
-      &self.footer,
-      offset,
-      self.status.properties.as_world_context(),
-    )?;
+    v.gwrite_with(&self.footer, offset, self.properties.as_world_context())?;
     debug!("Size in bytes - actual: {}, expected: {}", offset, size);
     Ok(v.into_boxed_slice())
   }
@@ -364,8 +290,8 @@ impl World {
   where
     P: AsRef<std::path::Path>,
   {
-    let width = self.status.properties.width as u32;
-    let height = self.status.properties.height as u32;
+    let width = self.properties.width as u32;
+    let height = self.properties.height as u32;
     let mut img = RgbaImage::new(width, height);
     self.draw_background(&mut img);
     info!("Rendering {:?} tiles...", width * height);
@@ -383,8 +309,8 @@ impl World {
 
   fn draw_background(&self, img: &mut RgbaImage) {
     let mut y: i32 = 0;
-    let underground_level = self.status.properties.underground_level as u32;
-    let cavern_level = self.status.properties.cavern_level as u32;
+    let underground_level = self.properties.underground_level as u32;
+    let cavern_level = self.properties.cavern_level as u32;
     let world_width = img.width();
     let world_height = img.height();
     let sky_y = underground_level.min(world_height);

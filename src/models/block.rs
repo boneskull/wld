@@ -19,14 +19,34 @@ use scroll::{
   LE,
 };
 
+/// Represents a block.  A [`Tile`] optionally "has" a [`Block`].
+///
+/// See [Terraria Wiki: Blocks] for more information.
+///
+/// [`Tile`]: crate::models::Tile
+/// [Terraria Wiki: Blocks]: https://terraria.gamepedia.com/Blocks
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
 pub struct Block {
+  /// The type of this block.  Dirt, brick, glass, etc.
   pub block_type: BlockType,
+  /// The shape of this block. Will be [`BlockShape::Normal`] unless otherwise specified.
   pub shape: BlockShape,
+  /// Optional frame data.  Set if
+  /// [`Properties::tile_frame_importances`](crate::models::Properties::tile_frame_importances)
+  /// has data at the [parent `Tile`'s position](crate::models::Tile::position).
   pub frame_data: Option<(u16, u16)>,
+  /// Optional paint information, if painted.
+  ///
+  /// _TODO: This should probably have its own enum._
   pub block_paint: Option<u8>,
+  /// From
+  /// [`ExtendedTileAttributes::is_block_inactive`](crate::models::ExtendedTileAttributes::is_block_inactive)
+  /// by way of [`BlockCtx`].
   pub is_block_inactive: bool,
+  /// From
+  /// [`TileHeader::has_extended_block_id`](crate::models::TileHeader::has_extended_block_id)
+  /// by way of [`BlockCtx`].
   pub has_extended_block_id: bool,
 }
 
@@ -42,12 +62,23 @@ impl SizeWith<Block> for Block {
   }
 }
 
+/// Contains some metadata from the [`Tile`] instance to which a
+/// [`Block`] belongs. Only used when reading a [`Block`] from a slice of bytes
+/// via [`scroll::ctx::TryFromCtx`].
+///
+/// [`Tile`]: crate::models::Tile
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct BlockCtx<'a> {
+  /// From [`TileHeader::has_extended_block_id`](crate::models::TileHeader::has_extended_block_id).
   pub has_extended_block_id: bool,
+  /// From [`Properties::tile_frame_importances`](crate::models::Properties::tile_frame_importances).
   pub tile_frame_importances: &'a VariableTBitVec,
+  /// From [`ExtendedTileAttributes::is_block_painted`](crate::models::ExtendedTileAttributes::is_block_painted).
   pub is_block_painted: bool,
+  /// From [`ExtendedTileAttributes::is_block_inactive`](crate::models::ExtendedTileAttributes::is_block_inactive).
   pub is_block_inactive: bool,
+  /// From [`TileAttributes::shape`](crate::models::TileAttributes::shape).
   pub shape: BlockShape,
 }
 

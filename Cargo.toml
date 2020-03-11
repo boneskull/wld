@@ -3,25 +3,31 @@ name = "wld"
 version = "0.1.0"
 authors = ["Christopher Hiller <boneskull@boneskull.com>"]
 edition = "2018"
-description = "Serialize & deserialize Terraria world files"
+description = "Read & write Terraria world files"
 license = "Apache-2.0"
+repository = "https://github.com/boneskull/wld"
+keywords = ["terraria", "world", "wld", "render"]
+readme = "README.md"
+categories = ["parser-implementations", "command-line-utilities"]
 
 [dependencies]
 uuid = "0.8.1"
 scroll = { version = "0.10.1", features = ["derive"] }
 nano-leb128 = "0.1.0"
-bitvec = "0.17.2"
+bitvec = "0.17.3"
 num-derive = "0.3.0"
 num-traits = "0.2.11"
 derive_more = "0.99.3"
 imageproc = "0.20.0"
-image = "0.23.0"
+image = "0.23.1"
 lazy_static = "1.4.0"
 fnv = "1.0.6"
-memmap = "0.7.0"
 scroll_derive = "0.10.1"
 mowl = "2.0.0"
 log = "0.4.8"
 
 [dev-dependencies]
-insta = "0.13.1"
+insta = "0.15.0"
+
+[badges]
+maintenance = { status = "experimental" }

@@ -1,5 +1,6 @@
 mod block;
 mod common;
+mod footer;
 mod hardmode_ore;
 mod header;
 mod house;
@@ -17,6 +18,7 @@ mod world;
 
 pub use block::*;
 pub use common::*;
+pub use footer::*;
 pub use hardmode_ore::*;
 pub use header::*;
 pub use house::*;

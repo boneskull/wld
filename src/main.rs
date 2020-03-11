@@ -7,12 +7,12 @@ use std::{
   },
 };
 use wld::{
-  init_logger,
+  enable_logger,
   parse_world,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
-  init_logger(log::LevelFilter::Debug);
+  enable_logger(log::LevelFilter::Debug);
   let world_file: Vec<u8> =
     read("tests/fixtures/Foon.wld").expect("Unable to read file");
   let world = parse_world(&world_file)?;

@@ -632,6 +632,7 @@ impl TryIntoCtx<usize> for &Tile {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Constructor)]
+#[repr(C)]
 pub struct WorldCtx<'a> {
   pub world_width: &'a i32,
   pub world_height: &'a i32,
@@ -641,6 +642,7 @@ pub struct WorldCtx<'a> {
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[repr(C)]
 pub struct TileCtx<'a> {
   world_ctx: &'a WorldCtx<'a>,
   position: Position,

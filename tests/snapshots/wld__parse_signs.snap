@@ -1,0 +1,109 @@
+---
+source: tests/wld.rs
+expression: PARSED_WORLD.signs
+---
+Signs {
+    count: 10,
+    signs: [
+        Sign {
+            text: TString(
+                "Dolomite didn\'t bounce.",
+                1,
+            ),
+            position: Position {
+                x: 2912,
+                y: 1151,
+            },
+        },
+        Sign {
+            text: TString(
+                "",
+                1,
+            ),
+            position: Position {
+                x: 591,
+                y: 231,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite let their arms get torn off by Dolomite\'s Dynamite.",
+                1,
+            ),
+            position: Position {
+                x: 1813,
+                y: 516,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite watched their innards become outards by Cochineal Beetle.",
+                1,
+            ),
+            position: Position {
+                x: 2153,
+                y: 609,
+            },
+        },
+        Sign {
+            text: TString(
+                "",
+                1,
+            ),
+            position: Position {
+                x: 2070,
+                y: 226,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite was decapitated by Dolomite\'s Dynamite.",
+                1,
+            ),
+            position: Position {
+                x: 415,
+                y: 342,
+            },
+        },
+        Sign {
+            text: TString(
+                "",
+                1,
+            ),
+            position: Position {
+                x: 573,
+                y: 236,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite fell to their death.",
+                1,
+            ),
+            position: Position {
+                x: 517,
+                y: 351,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite\'s face was torn off by Queen Bee.",
+                1,
+            ),
+            position: Position {
+                x: 503,
+                y: 622,
+            },
+        },
+        Sign {
+            text: TString(
+                "Dolomite didn\'t bounce.",
+                1,
+            ),
+            position: Position {
+                x: 2452,
+                y: 331,
+            },
+        },
+    ],
+}

@@ -26,17 +26,13 @@ use std::{
   ops::Index,
 };
 
-#[derive(
-  Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, SizeWith,
-)]
-#[repr(C)]
-pub struct Rect {
-  pub left: i32,
-  pub right: i32,
-  pub top: i32,
-  pub bottom: i32,
-}
-
+/// Represents a position (or point) in terms of cartesian coordinates.
+///
+/// # Notes
+///
+/// - While [`i32`] is the most commonly-used value for coordinates, not all
+///   coordinates found in the data format are `i32`. In those cases, we just
+///   use a tuple, `(T, T)` where `T` is whatever numeric type is used.
 #[derive(
   Copy,
   Clone,
@@ -55,6 +51,24 @@ pub struct Position {
   pub y: i32,
 }
 
+/// Represents a string as per the data format; a fancy wrapper around [`String`].
+///
+/// The format used is a ULEB128 value representing the string length, followed
+/// by 0 or more characters encoded in ISO-8859-1 or CP-1252 (not sure).  Either way, it
+/// seems to be a subset of UTF-8, so we don't need to fuss around with the encoding because
+/// of how Rust treats strings.  I think.
+///
+/// See [Wikipedia: LEB128] for more information.
+///
+/// [Wikipedia: LEB128]: https://en.wikipedia.org/wiki/LEB128
+///
+/// # Notes
+///
+/// - The second member of this tuple struct--a [`usize`]--represents how many
+///   bytes the actual ULEB128 value consumes, which is helpful (but not
+///   strictly necessary) when writing the value out again.  IIRC it will be a
+///   number between 1 and 8, inclusive.  In the future, this should probably just be
+///   calculated.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[repr(C)]
 pub struct TString(String, usize);
@@ -136,15 +150,34 @@ impl From<String> for TString {
   }
 }
 
+/// A variable-length vector of bits; a fancy wrapper around [`BitVec`].
+///
+/// Bits are calculated from a byte of type [`u8`], beginning with the
+/// least-significant bit.
+///
+/// Bits are either `true` or `false`.
+///
+/// [`BitVec`]: bitvec::vec::BitVec
 #[derive(Clone, Debug, Default, PartialEq, Eq, From)]
+#[repr(C)]
 pub struct VariableTBitVec(BitVec<Lsb0, u8>, i16);
 
 impl VariableTBitVec {
+  /// Returns the underlying [`BitVec`].
+  ///
+  /// [`BitVec`]: bitvec::vec::BitVec
   #[must_use]
   pub const fn bitvec(&self) -> &BitVec<Lsb0, u8> {
     &self.0
   }
 
+  /// The "variable" part of the variable length.
+  ///
+  /// The number of bits we care about.  Note that the number of _bytes_ this takes up is not
+  /// necessarily evenly divisible by this number, and thus is not calculable from the
+  /// [underlying `BitVec`](VariableTBitVec::bitvec) itself.
+  ///
+  /// Cannot be negative, despite being a signed integer.
   #[must_use]
   pub const fn size(&self) -> i16 {
     self.1
@@ -213,19 +246,50 @@ impl<'a> TryIntoCtx<Endian> for &'a VariableTBitVec {
   }
 }
 
+/// A fixed-length vector of bits; a fancy wrapper around [`BitVec`].
+///
+/// The length corresponds to the size of [`u8`] in bits, which is eight (8).
+///
+/// Bits are calculated from a byte of type `u8`, beginning with the
+/// least-significant bit.
+///
+/// Bits are either `true` or `false`.
+///
+/// [`BitVec`]: bitvec::vec::BitVec
+///
+/// # Notes
+///
+/// - This is used by [`TileHeader`], [`TileAttributes`] and
+///   [`ExtendedTileAttributes`]. As such, there are some conversion functions
+///   for convenience.
+///
+/// [`TileHeader`]: crate::models::TileHeader
+/// [`TileAttributes`]: crate::models::TileAttributes
+/// [`ExtendedTileAttributes`]: crate::models::ExtendedTileAttributes
 #[derive(Clone, Debug, Default, PartialEq, Eq, From, Index, AsRef, AsMut)]
 #[repr(C)]
 pub struct TBitVec(BitVec<Lsb0, u8>);
 
 impl TBitVec {
+  /// Sets a bit at [`usize`] index `idx` to [`bool`] `value`.
+  ///
+  /// Passes through to [`BitVec::set`].
+  ///
+  /// # Panics
+  ///
+  /// This will panic if `idx` is greater than the length of the underlying
+  /// [`BitVec`] (which is 8).
+  ///
+  /// [`BitVec`]: bitvec::vec::BitVec
+  /// [`BitVec::set`]: bitvec::slice::BitSlice::set
   pub fn set(&mut self, idx: usize, value: bool) {
     self.as_mut().set(idx, value)
   }
 }
 
 impl SizeWith<TBitVec> for TBitVec {
-  fn size_with(ctx: &Self) -> usize {
-    ctx.as_ref().as_slice().len()
+  fn size_with(_: &Self) -> usize {
+    1
   }
 }
 
