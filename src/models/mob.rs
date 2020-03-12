@@ -15,14 +15,35 @@ use scroll::{
   LE,
 };
 
+/// Represents a "mob"; a non-friendly NPC entity.
+///
+/// # Notes
+///
+/// - I'm not sure when this is actually used, as mobs don't typically
+///   persist.  Maybe it's for events?
 #[derive(Clone, Debug, PartialEq, SizeWith, Pread, Pwrite)]
 #[repr(C)]
 pub struct Mob {
+  /// The type of mob.
   pub entity_type: EntityType,
+
+  /// X-coordinate.  I don't know why it's an [`f32`].
   pub position_x: f32,
+
+  /// Y-coordinate.  I don't know why it's an [`f32`], either.
   pub position_y: f32,
 }
 
+/// List of [`Mob`]s; fancy wrapper around a [`Vec`].
+///
+/// # Notes
+///
+/// - When reading at the offset (see [`Offsets`]), we start by reading a byte flag (a [`u8`]).
+/// - Instead of the list being preceded by a numeric count of mobs, each chunk of mob data is
+///   followed by a byte flag.  If the byte flag is true (nonzero), then we read another mob.
+///   If it's false (zero), then we're done.
+///
+/// [`Offsets`]: crate::models::Offsets
 #[derive(Clone, Debug, Default, PartialEq, AsRef)]
 #[repr(C)]
 pub struct MobVec(Vec<Mob>);

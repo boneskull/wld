@@ -30,20 +30,25 @@ use scroll::{
 pub struct Block {
   /// The type of this block.  Dirt, brick, glass, etc.
   pub block_type: BlockType,
+
   /// The shape of this block. Will be [`BlockShape::Normal`] unless otherwise specified.
   pub shape: BlockShape,
+
   /// Optional frame data.  Set if
   /// [`Properties::tile_frame_importances`](crate::models::Properties::tile_frame_importances)
   /// has data at the [parent `Tile`'s position](crate::models::Tile::position).
   pub frame_data: Option<(u16, u16)>,
+
   /// Optional paint information, if painted.
   ///
   /// _TODO: This should probably have its own enum._
   pub block_paint: Option<u8>,
+
   /// From
   /// [`ExtendedTileAttributes::is_block_inactive`](crate::models::ExtendedTileAttributes::is_block_inactive)
   /// by way of [`BlockCtx`].
   pub is_block_inactive: bool,
+
   /// From
   /// [`TileHeader::has_extended_block_id`](crate::models::TileHeader::has_extended_block_id)
   /// by way of [`BlockCtx`].

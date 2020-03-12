@@ -30,9 +30,8 @@ use std::{
 ///
 /// # Notes
 ///
-/// - While [`i32`] is the most commonly-used value for coordinates, not all
-///   coordinates found in the data format are `i32`. In those cases, we just
-///   use a tuple, `(T, T)` where `T` is whatever numeric type is used.
+/// - While [`i32`] is the most commonly-used value for coordinates in the
+///   data format, not all coordinates found in the data format are `i32`.
 #[derive(
   Copy,
   Clone,

@@ -25,11 +25,31 @@ use std::{
   iter::FromIterator,
 };
 
+/// Represents a stack of items in a [`Chest`].
+///
+/// Each `Chest` will contain a number of these (probably 40).  If the slot is unused,
+/// the [`quantity`] field will be `0`; otherwise it will be a positive integer and the [`item_type`]
+/// and [`modifier`] fields will have a [`Some`] value.
+///
+/// [`quantity`]: ItemStack::quantity
+/// [`item_type`]: ItemStack::item_type
+/// [`modifier`]: ItemStack::modifier
+///
+/// # Notes
+///
+/// - Despite being a signed integer, `quantity` should not be negative.
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct ItemStack {
+  /// The number of items in this stack.  Defaults to `0`.
   pub quantity: i16,
+
+  /// The type of item in the stack.
   pub item_type: Option<ItemType>,
+
+  /// This _may_ correspond to a prefix ID.
+  ///
+  /// See [Terraria Wiki: Prefix IDs](https://terraria.gamepedia.com/Prefix_IDs) for more information.
   pub modifier: Option<u8>,
 }
 
@@ -119,11 +139,19 @@ impl TryIntoCtx<Endian> for &ItemStack {
   }
 }
 
+/// Represents a chest.
+///
+/// See [Terraria Wiki: Chest](https://terraria.gamepedia.com/Chests) for more information.
 #[derive(Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct Chest {
+  /// The position of this chest on the map.
   pub position: Position,
+
+  /// The custom name of this chest, if any.  Defaults to an empty string.
   pub name: TString,
+
+  /// Chest contents.
   pub contents: ItemStackVec,
 }
 
@@ -174,6 +202,7 @@ impl<'a> TryIntoCtx<Endian> for &'a Chest {
     Ok(*offset)
   }
 }
+
 impl SizeWith<Chest> for Chest {
   fn size_with(ctx: &Self) -> usize {
     Position::size_with(&LE)
@@ -200,11 +229,19 @@ impl Debug for Chest {
   }
 }
 
+/// A list of [`ItemStack`]s, which make up the contents of a [`Chest`].
 #[derive(Clone, Default, PartialEq, Eq, IntoIterator, AsRef)]
 #[repr(C)]
 pub struct ItemStackVec(Vec<ItemStack>);
 
 impl ItemStackVec {
+  /// Gets the total count of items in this [`ItemStackVec`], and by association, a [`Chest`].
+  ///
+  /// While [`ItemStack::quantity`] is an [`i16`], an unmodded game has a maximum stack size of
+  /// `999`, and the number of chest slots is `40`, we will use an [`i32`] here out of an abundance
+  /// of caution.
+  ///
+  /// This is only used for debugging purposes, internally.
   #[must_use]
   pub fn total_quantity(&self) -> i32 {
     self.as_ref().iter().map(|is| i32::from(is.quantity)).sum()
@@ -269,15 +306,37 @@ impl Debug for ItemStackVec {
   }
 }
 
+/// Represents all [`Chest`]s in a Terraria world.
+///
+/// # Notes
+///
+/// - [`Chests::stacks_per_chest`] may always be `40`.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 #[repr(C)]
 pub struct Chests {
+  /// The number of [`Chest`]s on the map.
+  ///
+  /// Despite being a signed integer, this cannot be negative.
   pub count: i16,
+
+  /// The number of [`ItemStack`]s (or slots) per [`Chest`].
   pub stacks_per_chest: i16,
+
+  /// All the chests.
   pub chests: Vec<Chest>,
 }
 
 impl Chests {
+  /// Try to find a [`Chest`] at a particular [`Position`].
+  ///
+  /// Used to associate a [`Tile`] with a [`Chest`].
+  ///
+  /// [`Tile`]: crate::model::Tile
+  /// [`Position`]: crate::model::Position
+  ///
+  /// # Notes
+  ///
+  /// - This runs in linear time, bounded by [`Chests::count`].
   #[must_use]
   pub fn find_chest_at_position(&self, position: Position) -> Option<&Chest> {
     let c = &self.chests;
