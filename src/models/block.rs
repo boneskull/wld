@@ -68,8 +68,9 @@ impl SizeWith<Block> for Block {
 }
 
 /// Contains some metadata from the [`Tile`] instance to which a
-/// [`Block`] belongs. Only used when reading a [`Block`] from a slice of bytes
-/// via [`scroll::ctx::TryFromCtx`].
+/// [`Block`] belongs.
+///
+/// Only used when reading a [`Block`] from a slice of bytes via [`scroll::ctx::TryFromCtx`].
 ///
 /// [`Tile`]: crate::models::Tile
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

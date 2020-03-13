@@ -331,8 +331,8 @@ impl Chests {
   ///
   /// Used to associate a [`Tile`] with a [`Chest`].
   ///
-  /// [`Tile`]: crate::model::Tile
-  /// [`Position`]: crate::model::Position
+  /// [`Tile`]: crate::models::Tile
+  /// [`Position`]: crate::models::Position
   ///
   /// # Notes
   ///

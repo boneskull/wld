@@ -21,14 +21,36 @@ use scroll::{
   LE,
 };
 
+/// Represents a friendly NPC.
+///
+/// See [Terraria Wiki: NPCs](https://terraria.gamepedia.com/NPCs) for more information.
 #[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct NPC {
+  /// The type of NPC.
   pub entity_type: EntityType,
+
+  /// X-coordinate.  I don't know why it's an [`f32`].
   pub position_x: f32,
+
+  /// Y-coordinate.  I don't know why it's an [`f32`], either.
   pub position_y: f32,
+
+  /// The name of this NPC.
   pub name: TString,
+
+  /// This _may_ correspond to a [`House`] at the same position.
+  ///
+  /// It will be [`None`] if [`is_homeless`] is [`True`].
+  ///
+  /// [`House`]: crate::models::House
+  /// [`is_homeless`]: NPC::is_homeless
+  /// [`True`]: TBool::True
   pub home_position: Option<Position>,
+
+  /// If [`True`], this NPC currently does not have living arrangements.
+  ///
+  /// [`True`]: TBool::True
   pub is_homeless: TBool,
 }
 

@@ -51,11 +51,27 @@ pub struct Bounds {
   pub bottom: i32,
 }
 
+/// Represents the appearance of the moon.
+///
+/// # Notes
+///
+/// - This is _not_ the same as the [moon phase](crate::models::Properties::moon_phase).
 pub type MoonStyle = u8;
+
+/// Represents the appearance of the underground snow biome's background.
 pub type UndergroundSnowStyle = i32;
+
+/// Represents the appearance of the underground jungle biome's background.
 pub type UndergroundJungleStyle = i32;
+
+/// Represents the appearance of the hell biome's background.
 pub type HellStyle = i32;
 
+/// Represents styles which differ by "quandrant" of the map (by X-axis).
+///
+/// # Notes
+///
+/// - A "quadrant" is not necessarily 1/4th of the map, but there will be four.
 #[derive(
   Copy,
   Clone,
@@ -70,31 +86,70 @@ pub type HellStyle = i32;
 )]
 #[repr(C)]
 pub struct QuadrantStyle {
+  /// The X-coordinate separating the first quadrant from the second.
   pub x1: i32,
+
+  /// The X-coordinate separating the second quadrant from the third.
   pub x2: i32,
+
+  /// The X-coordinate separating the third quadrant from the fourth.
   pub x3: i32,
-  pub far_left: i32,
-  pub near_left: i32,
-  pub near_right: i32,
-  pub far_right: i32,
+
+  /// The value of the first quadrant's style, counting from the left.
+  pub first: i32,
+
+  /// The value of the second quadrant's style, counting from the left.
+  pub second: i32,
+
+  /// The value of the third quadrant's style, counting from the left.
+  pub third: i32,
+
+  /// The value of the fourth quadrant's style, counting from the left.
+  pub fourth: i32,
 }
 
+/// A bucket in which some style information lives.
+///
+/// # Notes
+///
+/// - Probably unnecessary.
 #[derive(
   Copy, Clone, Debug, Default, PartialEq, Eq, Pread, Pwrite, SizeWith,
 )]
 #[repr(C)]
 pub struct WorldStyle {
+  /// Represents the appearance of the moon.
   pub moon: MoonStyle,
+
+  /// Represents the appearance of the surface (?) over four map "quadrants".
   pub trees: QuadrantStyle,
+
+  /// Represents the appearance of the moss (?) over four map "quadrants".
   pub moss: QuadrantStyle,
+
+  /// Represents the appearance of the underground snow biome.
+  ///
+  /// See [Terraria Wiki: Ice Biome](https://terraria.gamepedia.com/Ice_biome) for more information.
   pub underground_snow: UndergroundSnowStyle,
+
+  /// Represents the appearance of the underground jungle biome.
+  ///
+  /// See [Terraria Wiki: Underground Jungle](https://terraria.gamepedia.com/Underground_Jungle) for more information.
   pub underground_jungle: UndergroundJungleStyle,
+
+  /// Represents the appearance of the hell biome.
+  ///
+  /// See [Terraria Wiki: The Underworld](https://terraria.gamepedia.com/The_Underworld) for more information.
   pub hell: HellStyle,
 }
 
+/// Information about the world seed.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct GeneratorInfo {
+  /// The seed value which was used to generate the world.
   pub seed: TString,
+
+  /// The version of the generator, I think.
   pub version: u64,
 }
 
@@ -105,6 +160,7 @@ impl SizeWith<GeneratorInfo> for GeneratorInfo {
 }
 
 impl GeneratorInfo {
+  /// Convenience method to create a [`GeneratorInfo`] instance.
   pub fn new<S>(seed: S, version: u64) -> Self
   where
     S: Into<TString>,
@@ -151,6 +207,9 @@ impl<'a> TryIntoCtx<Endian> for &'a GeneratorInfo {
   }
 }
 
+/// A UUID.
+///
+/// Fancy wrapper around [`Uuid`].
 #[derive(Copy, Clone, Debug, Default, PartialEq, Eq, AsRef)]
 pub struct TUuid(Uuid);
 

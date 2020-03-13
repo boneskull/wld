@@ -12,14 +12,25 @@ use scroll::{
   LE,
 };
 
+/// Represents a pressure plate.
+///
+/// See [Terraria Wiki: Pressure Plates](https://terraria.gamepedia.com/Pressure_Plates) for more information.
+///
+/// # Notes
+///
+/// - There's no further information in the data format about these _other_ than a position, so this is just an alias.
 pub type PressurePlate = Position;
 
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
+/// Represents all [`PressurePlate`]s in the game world.
+///
+/// A fancy wrapper around a `Vec`.
+///
+/// # Notes
+///
+/// - The length is dynamic and is represented by an [`i32`], but cannot be negative, practically speaking.
+#[derive(Clone, Debug, Default, PartialEq, Eq, AsRef)]
 #[repr(C)]
-pub struct PressurePlates {
-  count: i32,
-  pub pressure_plates: Vec<PressurePlate>,
-}
+pub struct PressurePlates(Vec<PressurePlate>);
 
 impl<'a> TryFromCtx<'a, Endian> for PressurePlates {
   type Error = ScrollError;
@@ -31,12 +42,11 @@ impl<'a> TryFromCtx<'a, Endian> for PressurePlates {
     let offset = &mut 0;
     let count = buf.gread_with::<i32>(offset, LE)?;
     Ok((
-      Self {
-        count,
-        pressure_plates: (0..count)
+      Self(
+        (0..count)
           .map(|_| buf.gread::<PressurePlate>(offset))
           .collect::<Result<Vec<_>, Self::Error>>()?,
-      },
+      ),
       *offset,
     ))
   }
@@ -51,11 +61,8 @@ impl TryIntoCtx<Endian> for &PressurePlates {
     _: Endian,
   ) -> Result<usize, Self::Error> {
     let offset = &mut 0;
-    let PressurePlates {
-      count,
-      pressure_plates,
-    } = self;
-    buf.gwrite_with(count, offset, LE)?;
+    let pressure_plates = self.as_ref();
+    buf.gwrite_with(pressure_plates.len() as i32, offset, LE)?;
     pressure_plates
       .iter()
       .map(|sign| buf.gwrite(sign, offset))
@@ -73,7 +80,7 @@ impl TryIntoCtx<Endian> for &PressurePlates {
 
 impl SizeWith<PressurePlates> for PressurePlates {
   fn size_with(ctx: &Self) -> usize {
-    i32::size_with(&LE) + (ctx.pressure_plates.len() * Position::size_with(&LE))
+    i32::size_with(&LE) + (ctx.as_ref().len() * Position::size_with(&LE))
   }
 }
 

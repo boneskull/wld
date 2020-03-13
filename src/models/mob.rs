@@ -17,6 +17,7 @@ use scroll::{
 
 /// Represents a "mob"; a non-friendly NPC entity.
 ///
+/// See [Terraria Wiki: Enemies](https://terraria.gamepedia.com/Enemies) for more information.
 /// # Notes
 ///
 /// - I'm not sure when this is actually used, as mobs don't typically
