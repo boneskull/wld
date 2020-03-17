@@ -128,11 +128,19 @@ pub struct Clouds {
   pub wind_speed: f32,
 }
 
+/// A bucket for a few angler-related things.
+///
+/// See [Terraria Wiki: Angler](https://terraria.gamepedia.com/Angler) cor more information.
 #[derive(Clone, Debug, PartialEq)]
 #[repr(C)]
 pub struct AnglerQuestStatus {
+  /// A list of players, by name, who have completed the day's angler quest.
   pub completed_players: Vec<TString>,
+
+  /// If `true`, the Angler has been saved.
   pub angler_saved: TBool,
+
+  /// The current quest fish; the objective of today's angler quest.
   pub target: AnglerQuestFish,
 }
 
@@ -205,17 +213,26 @@ impl<'a> TryIntoCtx<Endian> for &'a AnglerQuestStatus {
   }
 }
 
+/// A list of kill counts corresponding to mobs.
+///
+/// Fancy wrapper around a [`Vec`].
+///
+/// # Notes
+///
+/// - Given some mobs have a negatigve ID, I'm unsure of the mapping between the position in this `Vec` and the entity ID.  The lowest ID is `-65`, so perhaps the 0th element in this `Vec` corresponds to that [`EntityType`].  There's also no entity with an ID of `0`.
+///
+/// [`EntityType`]: crate::enums::EntityType
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
 #[repr(C)]
-pub struct MobKillVec(Vec<i32>);
+pub struct MobKills(Vec<i32>);
 
-impl SizeWith<MobKillVec> for MobKillVec {
+impl SizeWith<MobKills> for MobKills {
   fn size_with(ctx: &Self) -> usize {
     i16::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
   }
 }
 
-impl<'a> TryFromCtx<'a, Endian> for MobKillVec {
+impl<'a> TryFromCtx<'a, Endian> for MobKills {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -232,7 +249,7 @@ impl<'a> TryFromCtx<'a, Endian> for MobKillVec {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
+impl<'a> TryIntoCtx<Endian> for &'a MobKills {
   type Error = scroll::Error;
 
   fn try_into_ctx(
@@ -247,24 +264,31 @@ impl<'a> TryIntoCtx<Endian> for &'a MobKillVec {
       buf.gwrite_with(mob_kill, offset, LE)?;
     }
     assert!(
-      *offset == MobKillVec::size_with(self),
-      "Size mismatch for MobKillVec"
+      *offset == MobKills::size_with(self),
+      "Size mismatch for MobKills"
     );
     Ok(*offset)
   }
 }
 
+/// A list of partying NPCs.
+///
+/// # TODO
+///
+/// - Do these values directly correspond to [`EntityType`]s? If so, this should be a `Vec<EntityType>`.
+///
+/// [`EntityType`]: crate::enums::EntityType
 #[derive(Clone, Debug, Eq, PartialEq, AsRef)]
 #[repr(C)]
-pub struct PartyingNPCVec(Vec<i32>);
+pub struct PartyingNPCs(Vec<i32>);
 
-impl SizeWith<PartyingNPCVec> for PartyingNPCVec {
+impl SizeWith<PartyingNPCs> for PartyingNPCs {
   fn size_with(ctx: &Self) -> usize {
     i32::size_with(&LE) + (ctx.as_ref().len() * i32::size_with(&LE))
   }
 }
 
-impl<'a> TryFromCtx<'a, Endian> for PartyingNPCVec {
+impl<'a> TryFromCtx<'a, Endian> for PartyingNPCs {
   type Error = scroll::Error;
 
   fn try_from_ctx(
@@ -281,7 +305,7 @@ impl<'a> TryFromCtx<'a, Endian> for PartyingNPCVec {
   }
 }
 
-impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
+impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCs {
   type Error = scroll::Error;
 
   fn try_into_ctx(
@@ -296,20 +320,36 @@ impl<'a> TryIntoCtx<Endian> for &'a PartyingNPCVec {
       buf.gwrite_with(partying_npc, offset, LE)?;
     }
     assert!(
-      *offset == PartyingNPCVec::size_with(self),
-      "Size mismatch for PartyingNPCVec"
+      *offset == PartyingNPCs::size_with(self),
+      "Size mismatch for PartyingNPCs"
     );
     Ok(*offset)
   }
 }
 
+/// Various bits of party-related information.
+///
+/// See [Terraria Wiki: Party] for more information.
+///
+/// [Terraria Wiki: Party]: https://terraria.gamepedia.com/Party
 #[derive(Clone, Debug, PartialEq, Eq, Pread, Pwrite)]
 #[repr(C)]
 pub struct PartyStatus {
+  /// `True` if a party center is currently active.
+  ///
+  /// See [Terraria Wiki: Party Center] for more information.
+  ///
+  /// [Terraria Wiki: Party Center]: https://terraria.gamepedia.com/Party_Center
   pub party_center_is_active: TBool,
+
+  /// `True` if a party which was _not_ created with a party center is active.
   pub natural_party_is_active: TBool,
+
+  /// Assuming that this is the cooldown before another "natural" party can be thrown.
   pub party_cooldown: i32,
-  pub partying_npcs: PartyingNPCVec,
+
+  /// List of currently-partying NPCs.
+  pub partying_npcs: PartyingNPCs,
 }
 
 impl SizeWith<PartyStatus> for PartyStatus {
@@ -317,24 +357,50 @@ impl SizeWith<PartyStatus> for PartyStatus {
     TBool::size_with(&LE)
       + TBool::size_with(&LE)
       + i32::size_with(&LE)
-      + PartyingNPCVec::size_with(&ctx.partying_npcs)
+      + PartyingNPCs::size_with(&ctx.partying_npcs)
   }
 }
 
+/// Bucket for info about sandstorm events.
+///
+/// See [Terraria Wiki: Sandstorm] for more information.
+///
+/// [Terraria Wiki: Sandstorm]: https://terraria.gamepedia.com/Sandstorm
 #[derive(Copy, Clone, Debug, PartialEq, Pread, Pwrite, SizeWith)]
 #[repr(C)]
 pub struct SandstormStatus {
+  /// Whether or not a sandstorm is currently happening.
   pub is_active: TBool,
+
+  /// How long the current sandstorm will last.
+  ///
+  /// This may be in "game ticks".  A sandstorm will last between `28880` to `86400` game ticks (8-24m).
   pub time_left: i32,
+
+  /// The "severity" of the sandstorm.
   pub severity: f32,
+
+  /// Unknown.
   pub intended_severity: f32,
 }
 
+/// Represents the unlocked tiers of the Old One's Army event.
+///
+/// See [Terraria Wiki: Old One's Army] for more information.
+///
+/// [Terraria Wiki: Old One's Army]: https://terraria.gamepedia.com/Old_One's_Army
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Pread, Pwrite, SizeWith)]
 #[repr(C)]
 pub struct OldOnesArmyStatus {
+  /// Whether the first tier has been unlocked.
+  ///
+  /// (When is this `False`?)
   pub tier1: TBool,
+
+  /// Whether the second tier has been unlocked.
   pub tier2: TBool,
+
+  /// Whether the third tier has been unlocked.
   pub tier3: TBool,
 }
 
@@ -360,7 +426,7 @@ pub struct Status {
   pub tax_collector_saved: TBool,
   pub invasion_size_start: i32,
   pub cultist_delay: i32,
-  pub mob_kills: MobKillVec,
+  pub mob_kills: MobKills,
   pub fast_forward_time: TBool,
   pub bosses_slain_2: BossesSlain2,
   pub pillar_status: PillarStatus,
@@ -385,7 +451,7 @@ impl SizeWith<Status> for Status {
       + Clouds::size_with(&LE)
       + AnglerQuestStatus::size_with(&ctx.angler_quest_status)
       + (TBool::size_with(&LE) * 5)
-      + MobKillVec::size_with(&ctx.mob_kills)
+      + MobKills::size_with(&ctx.mob_kills)
       + BossesSlain2::size_with(&LE)
       + PillarStatus::size_with(&LE)
       + SandstormStatus::size_with(&LE)
@@ -401,8 +467,8 @@ mod test_status {
   use super::{
     AnglerQuestFish,
     AnglerQuestStatus,
-    MobKillVec,
-    PartyingNPCVec,
+    MobKills,
+    PartyingNPCs,
     Pread,
     Pwrite,
     SizeWith,
@@ -439,19 +505,19 @@ mod test_status {
 
   #[test]
   fn test_mob_kill_vec_rw() {
-    let mkv = MobKillVec(vec![2_i32, 4_i32, 6_i32, 8_i32]);
+    let mkv = MobKills(vec![2_i32, 4_i32, 6_i32, 8_i32]);
 
     let mut buf = [0; 18];
     assert_eq!(18, buf.pwrite(&mkv, 0).unwrap());
-    assert_eq!(mkv, buf.pread::<MobKillVec>(0).unwrap());
+    assert_eq!(mkv, buf.pread::<MobKills>(0).unwrap());
   }
 
   #[test]
   fn test_partying_npc_vec_rw() {
-    let pnpcv = PartyingNPCVec(vec![2_i32, 4_i32, 6_i32, 8_i32]);
+    let pnpcv = PartyingNPCs(vec![2_i32, 4_i32, 6_i32, 8_i32]);
 
     let mut buf = [0; 20];
     assert_eq!(20, buf.pwrite(&pnpcv, 0).unwrap());
-    assert_eq!(pnpcv, buf.pread::<PartyingNPCVec>(0).unwrap());
+    assert_eq!(pnpcv, buf.pread::<PartyingNPCs>(0).unwrap());
   }
 }

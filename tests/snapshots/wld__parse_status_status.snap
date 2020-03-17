@@ -1,6 +1,6 @@
 ---
 source: tests/wld.rs
-expression: PARSED_WORLD.status.status
+expression: PARSED_WORLD.status
 ---
 Status {
     bosses_slain: BossesSlain {
@@ -83,7 +83,7 @@ Status {
     tax_collector_saved: False,
     invasion_size_start: 120,
     cultist_delay: 0,
-    mob_kills: MobKillVec(
+    mob_kills: MobKills(
         [
             0,
             0,
@@ -694,7 +694,7 @@ Status {
         party_center_is_active: False,
         natural_party_is_active: False,
         party_cooldown: 3,
-        partying_npcs: PartyingNPCVec(
+        partying_npcs: PartyingNPCs(
             [],
         ),
     },
