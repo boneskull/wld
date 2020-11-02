@@ -15,6 +15,7 @@ This is a thing I made to learn Rust.  It does not work for newer or older versi
 - There's also an test executable in here which will render a world map to `.png`.  The functionality to generate an image is there mainly because I wanted to see if I could do it.  It works, at least for the test world (`newworld.wld`)!
 - I had wanted to use this library in combination with custom procedural generation algorithms to create weird art with Terraria blocks.
 - Maybe someone can find bits of this useful or pick it up.  Feel free, but I am not planning on working on this further.
+- You need to install [Git LFS](https://git-lfs.github.com) to clone this repo in its entirety.
 
 ## License
 
