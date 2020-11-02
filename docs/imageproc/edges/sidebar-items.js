@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["canny","Runs the canny edge detection algorithm."]]});

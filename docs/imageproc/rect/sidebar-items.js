@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Rect","A rectangular region of non-zero width and height."],["RectPosition","Position of the top left of a rectangle. Only used when building a `Rect`."]],"trait":[["Region","A geometrical representation of a set of 2D points with coordinate type T."]]});

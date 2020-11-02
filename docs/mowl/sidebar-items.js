@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["init","Initializes the global logger with `max_log_level` set to `LevelFilter::Trace`."],["init_with_level","Initializes the global logger with a specific `max_log_level`."],["init_with_level_and_without_colors","Initializes the global logger with a specific `max_log_level` and without any coloring."]],"struct":[["Logger","The logging structure"]]});
