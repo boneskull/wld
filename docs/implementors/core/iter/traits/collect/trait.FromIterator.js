@@ -1,0 +1,9 @@
+(function() {var implementors = {};
+implementors["arrayvec"] = [{"text":"impl&lt;A:&nbsp;Array&gt; FromIterator&lt;&lt;A as Array&gt;::Item&gt; for ArrayVec&lt;A&gt;","synthetic":false,"types":[]}];
+implementors["bitvec"] = [{"text":"impl&lt;O, T&gt; FromIterator&lt;bool&gt; for BitVec&lt;O, T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;O: BitOrder,<br>&nbsp;&nbsp;&nbsp;&nbsp;T: BitStore,&nbsp;</span>","synthetic":false,"types":[]}];
+implementors["crossbeam_deque"] = [{"text":"impl&lt;T&gt; FromIterator&lt;Steal&lt;T&gt;&gt; for Steal&lt;T&gt;","synthetic":false,"types":[]}];
+implementors["png"] = [{"text":"impl FromIterator&lt;Transformations&gt; for Transformations","synthetic":false,"types":[]}];
+implementors["proc_macro2"] = [{"text":"impl FromIterator&lt;TokenTree&gt; for TokenStream","synthetic":false,"types":[]},{"text":"impl FromIterator&lt;TokenStream&gt; for TokenStream","synthetic":false,"types":[]}];
+implementors["rulinalg"] = [{"text":"impl&lt;'a, T:&nbsp;'a + Copy&gt; FromIterator&lt;&amp;'a [T]&gt; for Matrix&lt;T&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'a, T:&nbsp;'a + Copy&gt; FromIterator&lt;Row&lt;'a, T&gt;&gt; for Matrix&lt;T&gt;","synthetic":false,"types":[]},{"text":"impl&lt;'a, T:&nbsp;'a + Copy&gt; FromIterator&lt;RowMut&lt;'a, T&gt;&gt; for Matrix&lt;T&gt;","synthetic":false,"types":[]},{"text":"impl&lt;T&gt; FromIterator&lt;T&gt; for Vector&lt;T&gt;","synthetic":false,"types":[]}];
+implementors["syn"] = [{"text":"impl&lt;T, P&gt; FromIterator&lt;T&gt; for Punctuated&lt;T, P&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;P: Default,&nbsp;</span>","synthetic":false,"types":[]},{"text":"impl&lt;T, P&gt; FromIterator&lt;Pair&lt;T, P&gt;&gt; for Punctuated&lt;T, P&gt;","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

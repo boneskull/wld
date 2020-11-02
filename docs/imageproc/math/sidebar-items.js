@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["cast","Helper for a conversion that we know can't fail."],["l1_norm","L1 norm of a vector."],["l2_norm","L2 norm of a vector."]]});

@@ -1,0 +1,6 @@
+(function() {var implementors = {};
+implementors["byteio"] = [{"text":"impl&lt;'a, R:&nbsp;ReadBytes&lt;'a&gt;&gt; Read for Reader&lt;'a, R&gt;","synthetic":false,"types":[]}];
+implementors["image"] = [{"text":"impl&lt;R:&nbsp;Read&gt; Read for DXTReader&lt;R&gt;","synthetic":false,"types":[]},{"text":"impl&lt;R&gt; Read for GifReader&lt;R&gt;","synthetic":false,"types":[]},{"text":"impl&lt;R&gt; Read for HdrReader&lt;R&gt;","synthetic":false,"types":[]},{"text":"impl&lt;R:&nbsp;Read&gt; Read for PNGReader&lt;R&gt;","synthetic":false,"types":[]},{"text":"impl&lt;R&gt; Read for TiffReader&lt;R&gt;","synthetic":false,"types":[]}];
+implementors["inflate"] = [{"text":"impl&lt;R:&nbsp;BufRead&gt; Read for DeflateDecoderBuf&lt;R&gt;","synthetic":false,"types":[]},{"text":"impl&lt;R:&nbsp;Read&gt; Read for DeflateDecoder&lt;R&gt;","synthetic":false,"types":[]}];
+implementors["rand_core"] = [{"text":"impl Read for dyn RngCore","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
