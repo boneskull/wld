@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["enable_logger","Enable logging for this crate given [`log::LevelFilter`] `level`."],["parse_world","Instantiate a [`World`] from a slice of bytes."]],"mod":[["constants",""],["enums",""],["models",""]]});

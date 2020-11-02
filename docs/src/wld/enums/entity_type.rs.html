@@ -1,0 +1,1440 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/enums/entity_type.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>entity_type.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../wld/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<span id="2">  2</span>
+<span id="3">  3</span>
+<span id="4">  4</span>
+<span id="5">  5</span>
+<span id="6">  6</span>
+<span id="7">  7</span>
+<span id="8">  8</span>
+<span id="9">  9</span>
+<span id="10"> 10</span>
+<span id="11"> 11</span>
+<span id="12"> 12</span>
+<span id="13"> 13</span>
+<span id="14"> 14</span>
+<span id="15"> 15</span>
+<span id="16"> 16</span>
+<span id="17"> 17</span>
+<span id="18"> 18</span>
+<span id="19"> 19</span>
+<span id="20"> 20</span>
+<span id="21"> 21</span>
+<span id="22"> 22</span>
+<span id="23"> 23</span>
+<span id="24"> 24</span>
+<span id="25"> 25</span>
+<span id="26"> 26</span>
+<span id="27"> 27</span>
+<span id="28"> 28</span>
+<span id="29"> 29</span>
+<span id="30"> 30</span>
+<span id="31"> 31</span>
+<span id="32"> 32</span>
+<span id="33"> 33</span>
+<span id="34"> 34</span>
+<span id="35"> 35</span>
+<span id="36"> 36</span>
+<span id="37"> 37</span>
+<span id="38"> 38</span>
+<span id="39"> 39</span>
+<span id="40"> 40</span>
+<span id="41"> 41</span>
+<span id="42"> 42</span>
+<span id="43"> 43</span>
+<span id="44"> 44</span>
+<span id="45"> 45</span>
+<span id="46"> 46</span>
+<span id="47"> 47</span>
+<span id="48"> 48</span>
+<span id="49"> 49</span>
+<span id="50"> 50</span>
+<span id="51"> 51</span>
+<span id="52"> 52</span>
+<span id="53"> 53</span>
+<span id="54"> 54</span>
+<span id="55"> 55</span>
+<span id="56"> 56</span>
+<span id="57"> 57</span>
+<span id="58"> 58</span>
+<span id="59"> 59</span>
+<span id="60"> 60</span>
+<span id="61"> 61</span>
+<span id="62"> 62</span>
+<span id="63"> 63</span>
+<span id="64"> 64</span>
+<span id="65"> 65</span>
+<span id="66"> 66</span>
+<span id="67"> 67</span>
+<span id="68"> 68</span>
+<span id="69"> 69</span>
+<span id="70"> 70</span>
+<span id="71"> 71</span>
+<span id="72"> 72</span>
+<span id="73"> 73</span>
+<span id="74"> 74</span>
+<span id="75"> 75</span>
+<span id="76"> 76</span>
+<span id="77"> 77</span>
+<span id="78"> 78</span>
+<span id="79"> 79</span>
+<span id="80"> 80</span>
+<span id="81"> 81</span>
+<span id="82"> 82</span>
+<span id="83"> 83</span>
+<span id="84"> 84</span>
+<span id="85"> 85</span>
+<span id="86"> 86</span>
+<span id="87"> 87</span>
+<span id="88"> 88</span>
+<span id="89"> 89</span>
+<span id="90"> 90</span>
+<span id="91"> 91</span>
+<span id="92"> 92</span>
+<span id="93"> 93</span>
+<span id="94"> 94</span>
+<span id="95"> 95</span>
+<span id="96"> 96</span>
+<span id="97"> 97</span>
+<span id="98"> 98</span>
+<span id="99"> 99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+<span id="251">251</span>
+<span id="252">252</span>
+<span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
+<span id="256">256</span>
+<span id="257">257</span>
+<span id="258">258</span>
+<span id="259">259</span>
+<span id="260">260</span>
+<span id="261">261</span>
+<span id="262">262</span>
+<span id="263">263</span>
+<span id="264">264</span>
+<span id="265">265</span>
+<span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
+<span id="283">283</span>
+<span id="284">284</span>
+<span id="285">285</span>
+<span id="286">286</span>
+<span id="287">287</span>
+<span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+<span id="591">591</span>
+<span id="592">592</span>
+<span id="593">593</span>
+<span id="594">594</span>
+<span id="595">595</span>
+<span id="596">596</span>
+<span id="597">597</span>
+<span id="598">598</span>
+<span id="599">599</span>
+<span id="600">600</span>
+<span id="601">601</span>
+<span id="602">602</span>
+<span id="603">603</span>
+<span id="604">604</span>
+<span id="605">605</span>
+<span id="606">606</span>
+<span id="607">607</span>
+<span id="608">608</span>
+<span id="609">609</span>
+<span id="610">610</span>
+<span id="611">611</span>
+<span id="612">612</span>
+<span id="613">613</span>
+<span id="614">614</span>
+<span id="615">615</span>
+<span id="616">616</span>
+<span id="617">617</span>
+<span id="618">618</span>
+<span id="619">619</span>
+<span id="620">620</span>
+<span id="621">621</span>
+<span id="622">622</span>
+<span id="623">623</span>
+<span id="624">624</span>
+<span id="625">625</span>
+<span id="626">626</span>
+<span id="627">627</span>
+<span id="628">628</span>
+<span id="629">629</span>
+<span id="630">630</span>
+<span id="631">631</span>
+<span id="632">632</span>
+<span id="633">633</span>
+<span id="634">634</span>
+<span id="635">635</span>
+<span id="636">636</span>
+<span id="637">637</span>
+<span id="638">638</span>
+<span id="639">639</span>
+<span id="640">640</span>
+<span id="641">641</span>
+<span id="642">642</span>
+<span id="643">643</span>
+<span id="644">644</span>
+<span id="645">645</span>
+<span id="646">646</span>
+<span id="647">647</span>
+<span id="648">648</span>
+<span id="649">649</span>
+<span id="650">650</span>
+<span id="651">651</span>
+<span id="652">652</span>
+<span id="653">653</span>
+<span id="654">654</span>
+<span id="655">655</span>
+<span id="656">656</span>
+<span id="657">657</span>
+<span id="658">658</span>
+<span id="659">659</span>
+<span id="660">660</span>
+<span id="661">661</span>
+<span id="662">662</span>
+<span id="663">663</span>
+<span id="664">664</span>
+<span id="665">665</span>
+<span id="666">666</span>
+<span id="667">667</span>
+<span id="668">668</span>
+<span id="669">669</span>
+<span id="670">670</span>
+<span id="671">671</span>
+<span id="672">672</span>
+<span id="673">673</span>
+<span id="674">674</span>
+<span id="675">675</span>
+<span id="676">676</span>
+<span id="677">677</span>
+<span id="678">678</span>
+<span id="679">679</span>
+<span id="680">680</span>
+<span id="681">681</span>
+<span id="682">682</span>
+<span id="683">683</span>
+<span id="684">684</span>
+<span id="685">685</span>
+<span id="686">686</span>
+<span id="687">687</span>
+<span id="688">688</span>
+<span id="689">689</span>
+<span id="690">690</span>
+<span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
+<span id="710">710</span>
+<span id="711">711</span>
+<span id="712">712</span>
+<span id="713">713</span>
+<span id="714">714</span>
+<span id="715">715</span>
+<span id="716">716</span>
+<span id="717">717</span>
+</pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">num_traits</span>::<span class="ident">FromPrimitive</span>;
+<span class="kw">use</span> <span class="ident">scroll</span>::{
+  <span class="ident">ctx</span>::{
+    <span class="ident">SizeWith</span>,
+    <span class="ident">TryFromCtx</span>,
+    <span class="ident">TryIntoCtx</span>,
+  },
+  <span class="ident">Endian</span>,
+  <span class="ident">Error</span> <span class="kw">as</span> <span class="ident">ScrollError</span>,
+  <span class="ident">Pread</span>,
+  <span class="ident">Pwrite</span>,
+  <span class="ident">LE</span>,
+};
+
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">FromPrimitive</span>)]</span>
+<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EntityType</span> {
+  <span class="ident">BigHornetStingy</span> <span class="op">=</span> <span class="op">-</span><span class="number">65</span>,
+  <span class="ident">LittleHornetStingy</span> <span class="op">=</span> <span class="op">-</span><span class="number">64</span>,
+  <span class="ident">BigHornetSpikey</span> <span class="op">=</span> <span class="op">-</span><span class="number">63</span>,
+  <span class="ident">LittleHornetSpikey</span> <span class="op">=</span> <span class="op">-</span><span class="number">62</span>,
+  <span class="ident">BigHornetLeafy</span> <span class="op">=</span> <span class="op">-</span><span class="number">61</span>,
+  <span class="ident">LittleHornetLeafy</span> <span class="op">=</span> <span class="op">-</span><span class="number">60</span>,
+  <span class="ident">BigHornetHoney</span> <span class="op">=</span> <span class="op">-</span><span class="number">59</span>,
+  <span class="ident">LittleHornetHoney</span> <span class="op">=</span> <span class="op">-</span><span class="number">58</span>,
+  <span class="ident">BigHornetFatty</span> <span class="op">=</span> <span class="op">-</span><span class="number">57</span>,
+  <span class="ident">LittleHornetFatty</span> <span class="op">=</span> <span class="op">-</span><span class="number">56</span>,
+  <span class="ident">BigRainZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">55</span>,
+  <span class="ident">SmallRainZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">54</span>,
+  <span class="ident">BigPantlessSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">53</span>,
+  <span class="ident">SmallPantlessSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">52</span>,
+  <span class="ident">BigMisassembledSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">51</span>,
+  <span class="ident">SmallMisassembledSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">50</span>,
+  <span class="ident">BigHeadacheSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">49</span>,
+  <span class="ident">SmallHeadacheSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">48</span>,
+  <span class="ident">BigSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">47</span>,
+  <span class="ident">SmallSkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">46</span>,
+  <span class="ident">BigFemaleZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">45</span>,
+  <span class="ident">SmallFemaleZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">44</span>,
+  <span class="ident">DemonEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">43</span>,
+  <span class="ident">PurpleEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">42</span>,
+  <span class="ident">GreenEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">41</span>,
+  <span class="ident">DialatedEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">40</span>,
+  <span class="ident">SleepyEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">39</span>,
+  <span class="ident">CataractEye2</span> <span class="op">=</span> <span class="op">-</span><span class="number">38</span>,
+  <span class="ident">BigTwiggyZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">37</span>,
+  <span class="ident">SmallTwiggyZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">36</span>,
+  <span class="ident">BigSwampZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">35</span>,
+  <span class="ident">SmallSwampZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">34</span>,
+  <span class="ident">BigSlimedZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">33</span>,
+  <span class="ident">SmallSlimedZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">32</span>,
+  <span class="ident">BigPincushionZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">31</span>,
+  <span class="ident">SmallPincushionZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">30</span>,
+  <span class="ident">BigBaldZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">29</span>,
+  <span class="ident">SmallBaldZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">28</span>,
+  <span class="ident">BigZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">27</span>,
+  <span class="ident">SmallZombie</span> <span class="op">=</span> <span class="op">-</span><span class="number">26</span>,
+  <span class="ident">BigCrimslime</span> <span class="op">=</span> <span class="op">-</span><span class="number">25</span>,
+  <span class="ident">LittleCrimslime</span> <span class="op">=</span> <span class="op">-</span><span class="number">24</span>,
+  <span class="ident">BigCrimera</span> <span class="op">=</span> <span class="op">-</span><span class="number">23</span>,
+  <span class="ident">LittleCrimera</span> <span class="op">=</span> <span class="op">-</span><span class="number">22</span>,
+  <span class="ident">GiantMossHornet</span> <span class="op">=</span> <span class="op">-</span><span class="number">21</span>,
+  <span class="ident">BigMossHornet</span> <span class="op">=</span> <span class="op">-</span><span class="number">20</span>,
+  <span class="ident">LittleMossHornet</span> <span class="op">=</span> <span class="op">-</span><span class="number">19</span>,
+  <span class="ident">TinyMossHornet</span> <span class="op">=</span> <span class="op">-</span><span class="number">18</span>,
+  <span class="ident">BigStinger</span> <span class="op">=</span> <span class="op">-</span><span class="number">17</span>,
+  <span class="ident">LittleStinger</span> <span class="op">=</span> <span class="op">-</span><span class="number">16</span>,
+  <span class="ident">HeavySkeleton</span> <span class="op">=</span> <span class="op">-</span><span class="number">15</span>,
+  <span class="ident">BigBoned</span> <span class="op">=</span> <span class="op">-</span><span class="number">14</span>,
+  <span class="ident">ShortBones</span> <span class="op">=</span> <span class="op">-</span><span class="number">13</span>,
+  <span class="ident">BigEater</span> <span class="op">=</span> <span class="op">-</span><span class="number">12</span>,
+  <span class="ident">LittleEater</span> <span class="op">=</span> <span class="op">-</span><span class="number">11</span>,
+  <span class="ident">JungleSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">10</span>,
+  <span class="ident">YellowSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">9</span>,
+  <span class="ident">RedSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">8</span>,
+  <span class="ident">PurpleSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">7</span>,
+  <span class="ident">BlackSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">6</span>,
+  <span class="ident">BabySlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">5</span>,
+  <span class="ident">Pinky</span> <span class="op">=</span> <span class="op">-</span><span class="number">4</span>,
+  <span class="ident">GreenSlime</span> <span class="op">=</span> <span class="op">-</span><span class="number">3</span>,
+  <span class="ident">Slimer2</span> <span class="op">=</span> <span class="op">-</span><span class="number">2</span>,
+  <span class="ident">Slimeling</span> <span class="op">=</span> <span class="op">-</span><span class="number">1</span>,
+  <span class="ident">BlueSlime</span> <span class="op">=</span> <span class="number">1</span>,
+  <span class="ident">DemonEye</span> <span class="op">=</span> <span class="number">2</span>,
+  <span class="ident">Zombie</span> <span class="op">=</span> <span class="number">3</span>,
+  <span class="ident">EyeofCthulhu</span> <span class="op">=</span> <span class="number">4</span>,
+  <span class="ident">ServantofCthulhu</span> <span class="op">=</span> <span class="number">5</span>,
+  <span class="ident">EaterofSouls</span> <span class="op">=</span> <span class="number">6</span>,
+  <span class="ident">DevourerHead</span> <span class="op">=</span> <span class="number">7</span>,
+  <span class="ident">DevourerBody</span> <span class="op">=</span> <span class="number">8</span>,
+  <span class="ident">DevourerTail</span> <span class="op">=</span> <span class="number">9</span>,
+  <span class="ident">GiantWormHead</span> <span class="op">=</span> <span class="number">10</span>,
+  <span class="ident">GiantWormBody</span> <span class="op">=</span> <span class="number">11</span>,
+  <span class="ident">GiantWormTail</span> <span class="op">=</span> <span class="number">12</span>,
+  <span class="ident">EaterofWorldsHead</span> <span class="op">=</span> <span class="number">13</span>,
+  <span class="ident">EaterofWorldsBody</span> <span class="op">=</span> <span class="number">14</span>,
+  <span class="ident">EaterofWorldsTail</span> <span class="op">=</span> <span class="number">15</span>,
+  <span class="ident">MotherSlime</span> <span class="op">=</span> <span class="number">16</span>,
+  <span class="ident">Merchant</span> <span class="op">=</span> <span class="number">17</span>,
+  <span class="ident">Nurse</span> <span class="op">=</span> <span class="number">18</span>,
+  <span class="ident">ArmsDealer</span> <span class="op">=</span> <span class="number">19</span>,
+  <span class="ident">Dryad</span> <span class="op">=</span> <span class="number">20</span>,
+  <span class="ident">Skeleton</span> <span class="op">=</span> <span class="number">21</span>,
+  <span class="ident">Guide</span> <span class="op">=</span> <span class="number">22</span>,
+  <span class="ident">MeteorHead</span> <span class="op">=</span> <span class="number">23</span>,
+  <span class="ident">FireImp</span> <span class="op">=</span> <span class="number">24</span>,
+  <span class="ident">BurningSphere</span> <span class="op">=</span> <span class="number">25</span>,
+  <span class="ident">GoblinPeon</span> <span class="op">=</span> <span class="number">26</span>,
+  <span class="ident">GoblinThief</span> <span class="op">=</span> <span class="number">27</span>,
+  <span class="ident">GoblinWarrior</span> <span class="op">=</span> <span class="number">28</span>,
+  <span class="ident">GoblinSorcerer</span> <span class="op">=</span> <span class="number">29</span>,
+  <span class="ident">ChaosBall</span> <span class="op">=</span> <span class="number">30</span>,
+  <span class="ident">AngryBones</span> <span class="op">=</span> <span class="number">31</span>,
+  <span class="ident">DarkCaster</span> <span class="op">=</span> <span class="number">32</span>,
+  <span class="ident">WaterSphere</span> <span class="op">=</span> <span class="number">33</span>,
+  <span class="ident">CursedSkull</span> <span class="op">=</span> <span class="number">34</span>,
+  <span class="ident">SkeletronHead</span> <span class="op">=</span> <span class="number">35</span>,
+  <span class="ident">SkeletronHand</span> <span class="op">=</span> <span class="number">36</span>,
+  <span class="ident">OldMan</span> <span class="op">=</span> <span class="number">37</span>,
+  <span class="ident">Demolitionist</span> <span class="op">=</span> <span class="number">38</span>,
+  <span class="ident">BoneSerpentHead</span> <span class="op">=</span> <span class="number">39</span>,
+  <span class="ident">BoneSerpentBody</span> <span class="op">=</span> <span class="number">40</span>,
+  <span class="ident">BoneSerpentTail</span> <span class="op">=</span> <span class="number">41</span>,
+  <span class="ident">Hornet</span> <span class="op">=</span> <span class="number">42</span>,
+  <span class="ident">ManEater</span> <span class="op">=</span> <span class="number">43</span>,
+  <span class="ident">UndeadMiner</span> <span class="op">=</span> <span class="number">44</span>,
+  <span class="ident">Tim</span> <span class="op">=</span> <span class="number">45</span>,
+  <span class="ident">Bunny</span> <span class="op">=</span> <span class="number">46</span>,
+  <span class="ident">CorruptBunny</span> <span class="op">=</span> <span class="number">47</span>,
+  <span class="ident">Harpy</span> <span class="op">=</span> <span class="number">48</span>,
+  <span class="ident">CaveBat</span> <span class="op">=</span> <span class="number">49</span>,
+  <span class="ident">KingSlime</span> <span class="op">=</span> <span class="number">50</span>,
+  <span class="ident">JungleBat</span> <span class="op">=</span> <span class="number">51</span>,
+  <span class="ident">DoctorBones</span> <span class="op">=</span> <span class="number">52</span>,
+  <span class="ident">TheGroom</span> <span class="op">=</span> <span class="number">53</span>,
+  <span class="ident">Clothier</span> <span class="op">=</span> <span class="number">54</span>,
+  <span class="ident">Goldfish</span> <span class="op">=</span> <span class="number">55</span>,
+  <span class="ident">Snatcher</span> <span class="op">=</span> <span class="number">56</span>,
+  <span class="ident">CorruptGoldfish</span> <span class="op">=</span> <span class="number">57</span>,
+  <span class="ident">Piranha</span> <span class="op">=</span> <span class="number">58</span>,
+  <span class="ident">LavaSlime</span> <span class="op">=</span> <span class="number">59</span>,
+  <span class="ident">Hellbat</span> <span class="op">=</span> <span class="number">60</span>,
+  <span class="ident">Vulture</span> <span class="op">=</span> <span class="number">61</span>,
+  <span class="ident">Demon</span> <span class="op">=</span> <span class="number">62</span>,
+  <span class="ident">BlueJellyfish</span> <span class="op">=</span> <span class="number">63</span>,
+  <span class="ident">PinkJellyfish</span> <span class="op">=</span> <span class="number">64</span>,
+  <span class="ident">Shark</span> <span class="op">=</span> <span class="number">65</span>,
+  <span class="ident">VoodooDemon</span> <span class="op">=</span> <span class="number">66</span>,
+  <span class="ident">Crab</span> <span class="op">=</span> <span class="number">67</span>,
+  <span class="ident">DungeonGuardian</span> <span class="op">=</span> <span class="number">68</span>,
+  <span class="ident">Antlion</span> <span class="op">=</span> <span class="number">69</span>,
+  <span class="ident">SpikeBall</span> <span class="op">=</span> <span class="number">70</span>,
+  <span class="ident">DungeonSlime</span> <span class="op">=</span> <span class="number">71</span>,
+  <span class="ident">BlazingWheel</span> <span class="op">=</span> <span class="number">72</span>,
+  <span class="ident">GoblinScout</span> <span class="op">=</span> <span class="number">73</span>,
+  <span class="ident">Bird</span> <span class="op">=</span> <span class="number">74</span>,
+  <span class="ident">Pixie</span> <span class="op">=</span> <span class="number">75</span>,
+  <span class="ident">None2</span> <span class="op">=</span> <span class="number">76</span>,
+  <span class="ident">ArmoredSkeleton</span> <span class="op">=</span> <span class="number">77</span>,
+  <span class="ident">Mummy</span> <span class="op">=</span> <span class="number">78</span>,
+  <span class="ident">DarkMummy</span> <span class="op">=</span> <span class="number">79</span>,
+  <span class="ident">LightMummy</span> <span class="op">=</span> <span class="number">80</span>,
+  <span class="ident">CorruptSlime</span> <span class="op">=</span> <span class="number">81</span>,
+  <span class="ident">Wraith</span> <span class="op">=</span> <span class="number">82</span>,
+  <span class="ident">CursedHammer</span> <span class="op">=</span> <span class="number">83</span>,
+  <span class="ident">EnchantedSword</span> <span class="op">=</span> <span class="number">84</span>,
+  <span class="ident">Mimic</span> <span class="op">=</span> <span class="number">85</span>,
+  <span class="ident">Unicorn</span> <span class="op">=</span> <span class="number">86</span>,
+  <span class="ident">WyvernHead</span> <span class="op">=</span> <span class="number">87</span>,
+  <span class="ident">WyvernLegs</span> <span class="op">=</span> <span class="number">88</span>,
+  <span class="ident">WyvernBody</span> <span class="op">=</span> <span class="number">89</span>,
+  <span class="ident">WyvernBody2</span> <span class="op">=</span> <span class="number">90</span>,
+  <span class="ident">WyvernBody3</span> <span class="op">=</span> <span class="number">91</span>,
+  <span class="ident">WyvernTail</span> <span class="op">=</span> <span class="number">92</span>,
+  <span class="ident">GiantBat</span> <span class="op">=</span> <span class="number">93</span>,
+  <span class="ident">Corruptor</span> <span class="op">=</span> <span class="number">94</span>,
+  <span class="ident">DiggerHead</span> <span class="op">=</span> <span class="number">95</span>,
+  <span class="ident">DiggerBody</span> <span class="op">=</span> <span class="number">96</span>,
+  <span class="ident">DiggerTail</span> <span class="op">=</span> <span class="number">97</span>,
+  <span class="ident">SeekerHead</span> <span class="op">=</span> <span class="number">98</span>,
+  <span class="ident">SeekerBody</span> <span class="op">=</span> <span class="number">99</span>,
+  <span class="ident">SeekerTail</span> <span class="op">=</span> <span class="number">100</span>,
+  <span class="ident">Clinger</span> <span class="op">=</span> <span class="number">101</span>,
+  <span class="ident">AnglerFish</span> <span class="op">=</span> <span class="number">102</span>,
+  <span class="ident">GreenJellyfish</span> <span class="op">=</span> <span class="number">103</span>,
+  <span class="ident">Werewolf</span> <span class="op">=</span> <span class="number">104</span>,
+  <span class="ident">BoundGoblin</span> <span class="op">=</span> <span class="number">105</span>,
+  <span class="ident">BoundWizard</span> <span class="op">=</span> <span class="number">106</span>,
+  <span class="ident">GoblinTinkerer</span> <span class="op">=</span> <span class="number">107</span>,
+  <span class="ident">Wizard</span> <span class="op">=</span> <span class="number">108</span>,
+  <span class="ident">Clown</span> <span class="op">=</span> <span class="number">109</span>,
+  <span class="ident">SkeletonArcher</span> <span class="op">=</span> <span class="number">110</span>,
+  <span class="ident">GoblinArcher</span> <span class="op">=</span> <span class="number">111</span>,
+  <span class="ident">VileSpit</span> <span class="op">=</span> <span class="number">112</span>,
+  <span class="ident">WallofFlesh</span> <span class="op">=</span> <span class="number">113</span>,
+  <span class="ident">WallofFleshEye</span> <span class="op">=</span> <span class="number">114</span>,
+  <span class="ident">TheHungry</span> <span class="op">=</span> <span class="number">115</span>,
+  <span class="ident">TheHungryIi</span> <span class="op">=</span> <span class="number">116</span>,
+  <span class="ident">LeechHead</span> <span class="op">=</span> <span class="number">117</span>,
+  <span class="ident">LeechBody</span> <span class="op">=</span> <span class="number">118</span>,
+  <span class="ident">LeechTail</span> <span class="op">=</span> <span class="number">119</span>,
+  <span class="ident">ChaosElemental</span> <span class="op">=</span> <span class="number">120</span>,
+  <span class="ident">Slimer</span> <span class="op">=</span> <span class="number">121</span>,
+  <span class="ident">Gastropod</span> <span class="op">=</span> <span class="number">122</span>,
+  <span class="ident">BoundMechanic</span> <span class="op">=</span> <span class="number">123</span>,
+  <span class="ident">Mechanic</span> <span class="op">=</span> <span class="number">124</span>,
+  <span class="ident">Retinazer</span> <span class="op">=</span> <span class="number">125</span>,
+  <span class="ident">Spazmatism</span> <span class="op">=</span> <span class="number">126</span>,
+  <span class="ident">SkeletronPrime</span> <span class="op">=</span> <span class="number">127</span>,
+  <span class="ident">PrimeCannon</span> <span class="op">=</span> <span class="number">128</span>,
+  <span class="ident">PrimeSaw</span> <span class="op">=</span> <span class="number">129</span>,
+  <span class="ident">PrimeVice</span> <span class="op">=</span> <span class="number">130</span>,
+  <span class="ident">PrimeLaser</span> <span class="op">=</span> <span class="number">131</span>,
+  <span class="ident">BaldZombie</span> <span class="op">=</span> <span class="number">132</span>,
+  <span class="ident">WanderingEye</span> <span class="op">=</span> <span class="number">133</span>,
+  <span class="ident">TheDestroyer</span> <span class="op">=</span> <span class="number">134</span>,
+  <span class="ident">TheDestroyerBody</span> <span class="op">=</span> <span class="number">135</span>,
+  <span class="ident">TheDestroyerTail</span> <span class="op">=</span> <span class="number">136</span>,
+  <span class="ident">IlluminantBat</span> <span class="op">=</span> <span class="number">137</span>,
+  <span class="ident">IlluminantSlime</span> <span class="op">=</span> <span class="number">138</span>,
+  <span class="ident">Probe</span> <span class="op">=</span> <span class="number">139</span>,
+  <span class="ident">PossessedArmor</span> <span class="op">=</span> <span class="number">140</span>,
+  <span class="ident">ToxicSludge</span> <span class="op">=</span> <span class="number">141</span>,
+  <span class="ident">SantaClaus</span> <span class="op">=</span> <span class="number">142</span>,
+  <span class="ident">SnowmanGangsta</span> <span class="op">=</span> <span class="number">143</span>,
+  <span class="ident">MisterStabby</span> <span class="op">=</span> <span class="number">144</span>,
+  <span class="ident">SnowBalla</span> <span class="op">=</span> <span class="number">145</span>,
+  <span class="ident">None3</span> <span class="op">=</span> <span class="number">146</span>,
+  <span class="ident">IceSlime</span> <span class="op">=</span> <span class="number">147</span>,
+  <span class="ident">Penguin</span> <span class="op">=</span> <span class="number">148</span>,
+  <span class="ident">PenguinBlack</span> <span class="op">=</span> <span class="number">149</span>,
+  <span class="ident">IceBat</span> <span class="op">=</span> <span class="number">150</span>,
+  <span class="ident">Lavabat</span> <span class="op">=</span> <span class="number">151</span>,
+  <span class="ident">GiantFlyingFox</span> <span class="op">=</span> <span class="number">152</span>,
+  <span class="ident">GiantTortoise</span> <span class="op">=</span> <span class="number">153</span>,
+  <span class="ident">IceTortoise</span> <span class="op">=</span> <span class="number">154</span>,
+  <span class="ident">Wolf</span> <span class="op">=</span> <span class="number">155</span>,
+  <span class="ident">RedDevil</span> <span class="op">=</span> <span class="number">156</span>,
+  <span class="ident">Arapaima</span> <span class="op">=</span> <span class="number">157</span>,
+  <span class="ident">VampireBat</span> <span class="op">=</span> <span class="number">158</span>,
+  <span class="ident">Vampire</span> <span class="op">=</span> <span class="number">159</span>,
+  <span class="ident">Truffle</span> <span class="op">=</span> <span class="number">160</span>,
+  <span class="ident">ZombieEskimo</span> <span class="op">=</span> <span class="number">161</span>,
+  <span class="ident">Frankenstein</span> <span class="op">=</span> <span class="number">162</span>,
+  <span class="ident">BlackRecluse</span> <span class="op">=</span> <span class="number">163</span>,
+  <span class="ident">WallCreeper</span> <span class="op">=</span> <span class="number">164</span>,
+  <span class="ident">WallCreeperWall</span> <span class="op">=</span> <span class="number">165</span>,
+  <span class="ident">SwampThing</span> <span class="op">=</span> <span class="number">166</span>,
+  <span class="ident">UndeadViking</span> <span class="op">=</span> <span class="number">167</span>,
+  <span class="ident">CorruptPenguin</span> <span class="op">=</span> <span class="number">168</span>,
+  <span class="ident">IceElemental</span> <span class="op">=</span> <span class="number">169</span>,
+  <span class="ident">PigronCorruption</span> <span class="op">=</span> <span class="number">170</span>,
+  <span class="ident">PigronHallow</span> <span class="op">=</span> <span class="number">171</span>,
+  <span class="ident">RuneWizard</span> <span class="op">=</span> <span class="number">172</span>,
+  <span class="ident">Crimera</span> <span class="op">=</span> <span class="number">173</span>,
+  <span class="ident">Herpling</span> <span class="op">=</span> <span class="number">174</span>,
+  <span class="ident">AngryTrapper</span> <span class="op">=</span> <span class="number">175</span>,
+  <span class="ident">MossHornet</span> <span class="op">=</span> <span class="number">176</span>,
+  <span class="ident">Derpling</span> <span class="op">=</span> <span class="number">177</span>,
+  <span class="ident">Steampunker</span> <span class="op">=</span> <span class="number">178</span>,
+  <span class="ident">CrimsonAxe</span> <span class="op">=</span> <span class="number">179</span>,
+  <span class="ident">PigronCrimson</span> <span class="op">=</span> <span class="number">180</span>,
+  <span class="ident">FaceMonster</span> <span class="op">=</span> <span class="number">181</span>,
+  <span class="ident">FloatyGross</span> <span class="op">=</span> <span class="number">182</span>,
+  <span class="ident">Crimslime</span> <span class="op">=</span> <span class="number">183</span>,
+  <span class="ident">SpikedIceSlime</span> <span class="op">=</span> <span class="number">184</span>,
+  <span class="ident">SnowFlinx</span> <span class="op">=</span> <span class="number">185</span>,
+  <span class="ident">PincushionZombie</span> <span class="op">=</span> <span class="number">186</span>,
+  <span class="ident">SlimedZombie</span> <span class="op">=</span> <span class="number">187</span>,
+  <span class="ident">SwampZombie</span> <span class="op">=</span> <span class="number">188</span>,
+  <span class="ident">TwiggyZombie</span> <span class="op">=</span> <span class="number">189</span>,
+  <span class="ident">CataractEye</span> <span class="op">=</span> <span class="number">190</span>,
+  <span class="ident">SleepyEye</span> <span class="op">=</span> <span class="number">191</span>,
+  <span class="ident">DialatedEye</span> <span class="op">=</span> <span class="number">192</span>,
+  <span class="ident">GreenEye</span> <span class="op">=</span> <span class="number">193</span>,
+  <span class="ident">PurpleEye</span> <span class="op">=</span> <span class="number">194</span>,
+  <span class="ident">LostGirl</span> <span class="op">=</span> <span class="number">195</span>,
+  <span class="ident">Nymph</span> <span class="op">=</span> <span class="number">196</span>,
+  <span class="ident">ArmoredViking</span> <span class="op">=</span> <span class="number">197</span>,
+  <span class="ident">Lihzahrd</span> <span class="op">=</span> <span class="number">198</span>,
+  <span class="ident">LihzahrdCrawler</span> <span class="op">=</span> <span class="number">199</span>,
+  <span class="ident">FemaleZombie</span> <span class="op">=</span> <span class="number">200</span>,
+  <span class="ident">HeadacheSkeleton</span> <span class="op">=</span> <span class="number">201</span>,
+  <span class="ident">MisassembledSkeleton</span> <span class="op">=</span> <span class="number">202</span>,
+  <span class="ident">PantlessSkeleton</span> <span class="op">=</span> <span class="number">203</span>,
+  <span class="ident">SpikedJungleSlime</span> <span class="op">=</span> <span class="number">204</span>,
+  <span class="ident">Moth</span> <span class="op">=</span> <span class="number">205</span>,
+  <span class="ident">IcyMerman</span> <span class="op">=</span> <span class="number">206</span>,
+  <span class="ident">DyeTrader</span> <span class="op">=</span> <span class="number">207</span>,
+  <span class="ident">PartyGirl</span> <span class="op">=</span> <span class="number">208</span>,
+  <span class="ident">Cyborg</span> <span class="op">=</span> <span class="number">209</span>,
+  <span class="ident">Bee</span> <span class="op">=</span> <span class="number">210</span>,
+  <span class="ident">BeeSmall</span> <span class="op">=</span> <span class="number">211</span>,
+  <span class="ident">PirateDeckhand</span> <span class="op">=</span> <span class="number">212</span>,
+  <span class="ident">PirateCorsair</span> <span class="op">=</span> <span class="number">213</span>,
+  <span class="ident">PirateDeadeye</span> <span class="op">=</span> <span class="number">214</span>,
+  <span class="ident">PirateCrossbower</span> <span class="op">=</span> <span class="number">215</span>,
+  <span class="ident">PirateCaptain</span> <span class="op">=</span> <span class="number">216</span>,
+  <span class="ident">CochinealBeetle</span> <span class="op">=</span> <span class="number">217</span>,
+  <span class="ident">CyanBeetle</span> <span class="op">=</span> <span class="number">218</span>,
+  <span class="ident">LacBeetle</span> <span class="op">=</span> <span class="number">219</span>,
+  <span class="ident">SeaSnail</span> <span class="op">=</span> <span class="number">220</span>,
+  <span class="ident">Squid</span> <span class="op">=</span> <span class="number">221</span>,
+  <span class="ident">QueenBee</span> <span class="op">=</span> <span class="number">222</span>,
+  <span class="ident">ZombieRaincoat</span> <span class="op">=</span> <span class="number">223</span>,
+  <span class="ident">FlyingFish</span> <span class="op">=</span> <span class="number">224</span>,
+  <span class="ident">UmbrellaSlime</span> <span class="op">=</span> <span class="number">225</span>,
+  <span class="ident">FlyingSnake</span> <span class="op">=</span> <span class="number">226</span>,
+  <span class="ident">Painter</span> <span class="op">=</span> <span class="number">227</span>,
+  <span class="ident">WitchDoctor</span> <span class="op">=</span> <span class="number">228</span>,
+  <span class="ident">Pirate</span> <span class="op">=</span> <span class="number">229</span>,
+  <span class="ident">GoldfishWalker</span> <span class="op">=</span> <span class="number">230</span>,
+  <span class="ident">HornetFatty</span> <span class="op">=</span> <span class="number">231</span>,
+  <span class="ident">HornetHoney</span> <span class="op">=</span> <span class="number">232</span>,
+  <span class="ident">HornetLeafy</span> <span class="op">=</span> <span class="number">233</span>,
+  <span class="ident">HornetSpikey</span> <span class="op">=</span> <span class="number">234</span>,
+  <span class="ident">HornetStingy</span> <span class="op">=</span> <span class="number">235</span>,
+  <span class="ident">JungleCreeper</span> <span class="op">=</span> <span class="number">236</span>,
+  <span class="ident">JungleCreeperWall</span> <span class="op">=</span> <span class="number">237</span>,
+  <span class="ident">BlackRecluseWall</span> <span class="op">=</span> <span class="number">238</span>,
+  <span class="ident">BloodCrawler</span> <span class="op">=</span> <span class="number">239</span>,
+  <span class="ident">BloodCrawlerWall</span> <span class="op">=</span> <span class="number">240</span>,
+  <span class="ident">BloodFeeder</span> <span class="op">=</span> <span class="number">241</span>,
+  <span class="ident">BloodJelly</span> <span class="op">=</span> <span class="number">242</span>,
+  <span class="ident">IceGolem</span> <span class="op">=</span> <span class="number">243</span>,
+  <span class="ident">RainbowSlime</span> <span class="op">=</span> <span class="number">244</span>,
+  <span class="ident">Golem</span> <span class="op">=</span> <span class="number">245</span>,
+  <span class="ident">GolemHead</span> <span class="op">=</span> <span class="number">246</span>,
+  <span class="ident">GolemFistLeft</span> <span class="op">=</span> <span class="number">247</span>,
+  <span class="ident">GolemFistRight</span> <span class="op">=</span> <span class="number">248</span>,
+  <span class="ident">GolemHeadFree</span> <span class="op">=</span> <span class="number">249</span>,
+  <span class="ident">AngryNimbus</span> <span class="op">=</span> <span class="number">250</span>,
+  <span class="ident">Eyezor</span> <span class="op">=</span> <span class="number">251</span>,
+  <span class="ident">Parrot</span> <span class="op">=</span> <span class="number">252</span>,
+  <span class="ident">Reaper</span> <span class="op">=</span> <span class="number">253</span>,
+  <span class="ident">ZombieMushroom</span> <span class="op">=</span> <span class="number">254</span>,
+  <span class="ident">ZombieMushroomHat</span> <span class="op">=</span> <span class="number">255</span>,
+  <span class="ident">FungoFish</span> <span class="op">=</span> <span class="number">256</span>,
+  <span class="ident">AnomuraFungus</span> <span class="op">=</span> <span class="number">257</span>,
+  <span class="ident">MushiLadybug</span> <span class="op">=</span> <span class="number">258</span>,
+  <span class="ident">FungiBulb</span> <span class="op">=</span> <span class="number">259</span>,
+  <span class="ident">GiantFungiBulb</span> <span class="op">=</span> <span class="number">260</span>,
+  <span class="ident">FungiSpore</span> <span class="op">=</span> <span class="number">261</span>,
+  <span class="ident">Plantera</span> <span class="op">=</span> <span class="number">262</span>,
+  <span class="ident">PlanterasHook</span> <span class="op">=</span> <span class="number">263</span>,
+  <span class="ident">PlanterasTentacle</span> <span class="op">=</span> <span class="number">264</span>,
+  <span class="ident">Spore</span> <span class="op">=</span> <span class="number">265</span>,
+  <span class="ident">BrainofCthulhu</span> <span class="op">=</span> <span class="number">266</span>,
+  <span class="ident">Creeper</span> <span class="op">=</span> <span class="number">267</span>,
+  <span class="ident">IchorSticker</span> <span class="op">=</span> <span class="number">268</span>,
+  <span class="ident">RustyArmoredBonesAxe</span> <span class="op">=</span> <span class="number">269</span>,
+  <span class="ident">RustyArmoredBonesFlail</span> <span class="op">=</span> <span class="number">270</span>,
+  <span class="ident">RustyArmoredBonesSword</span> <span class="op">=</span> <span class="number">271</span>,
+  <span class="ident">RustyArmoredBonesSwordNoArmor</span> <span class="op">=</span> <span class="number">272</span>,
+  <span class="ident">BlueArmoredBones</span> <span class="op">=</span> <span class="number">273</span>,
+  <span class="ident">BlueArmoredBonesMace</span> <span class="op">=</span> <span class="number">274</span>,
+  <span class="ident">BlueArmoredBonesNoPants</span> <span class="op">=</span> <span class="number">275</span>,
+  <span class="ident">BlueArmoredBonesSword</span> <span class="op">=</span> <span class="number">276</span>,
+  <span class="ident">HellArmoredBones</span> <span class="op">=</span> <span class="number">277</span>,
+  <span class="ident">HellArmoredBonesSpikeShield</span> <span class="op">=</span> <span class="number">278</span>,
+  <span class="ident">HellArmoredBonesMace</span> <span class="op">=</span> <span class="number">279</span>,
+  <span class="ident">HellArmoredBonesSword</span> <span class="op">=</span> <span class="number">280</span>,
+  <span class="ident">RaggedCaster</span> <span class="op">=</span> <span class="number">281</span>,
+  <span class="ident">RaggedCasterOpenCoat</span> <span class="op">=</span> <span class="number">282</span>,
+  <span class="ident">Necromancer</span> <span class="op">=</span> <span class="number">283</span>,
+  <span class="ident">NecromancerArmored</span> <span class="op">=</span> <span class="number">284</span>,
+  <span class="ident">DiabolistRed</span> <span class="op">=</span> <span class="number">285</span>,
+  <span class="ident">DiabolistWhite</span> <span class="op">=</span> <span class="number">286</span>,
+  <span class="ident">BoneLee</span> <span class="op">=</span> <span class="number">287</span>,
+  <span class="ident">DungeonSpirit</span> <span class="op">=</span> <span class="number">288</span>,
+  <span class="ident">GiantCursedSkull</span> <span class="op">=</span> <span class="number">289</span>,
+  <span class="ident">Paladin</span> <span class="op">=</span> <span class="number">290</span>,
+  <span class="ident">SkeletonSniper</span> <span class="op">=</span> <span class="number">291</span>,
+  <span class="ident">TacticalSkeleton</span> <span class="op">=</span> <span class="number">292</span>,
+  <span class="ident">SkeletonCommando</span> <span class="op">=</span> <span class="number">293</span>,
+  <span class="ident">AngryBonesBig</span> <span class="op">=</span> <span class="number">294</span>,
+  <span class="ident">AngryBonesBigMuscle</span> <span class="op">=</span> <span class="number">295</span>,
+  <span class="ident">AngryBonesBigHelmet</span> <span class="op">=</span> <span class="number">296</span>,
+  <span class="ident">BirdBlue</span> <span class="op">=</span> <span class="number">297</span>,
+  <span class="ident">BirdRed</span> <span class="op">=</span> <span class="number">298</span>,
+  <span class="ident">Squirrel</span> <span class="op">=</span> <span class="number">299</span>,
+  <span class="ident">Mouse</span> <span class="op">=</span> <span class="number">300</span>,
+  <span class="ident">Raven</span> <span class="op">=</span> <span class="number">301</span>,
+  <span class="ident">SlimeMasked</span> <span class="op">=</span> <span class="number">302</span>,
+  <span class="ident">BunnySlimed</span> <span class="op">=</span> <span class="number">303</span>,
+  <span class="ident">HoppinJack</span> <span class="op">=</span> <span class="number">304</span>,
+  <span class="ident">Scarecrow1</span> <span class="op">=</span> <span class="number">305</span>,
+  <span class="ident">Scarecrow2</span> <span class="op">=</span> <span class="number">306</span>,
+  <span class="ident">Scarecrow3</span> <span class="op">=</span> <span class="number">307</span>,
+  <span class="ident">Scarecrow4</span> <span class="op">=</span> <span class="number">308</span>,
+  <span class="ident">Scarecrow5</span> <span class="op">=</span> <span class="number">309</span>,
+  <span class="ident">Scarecrow6</span> <span class="op">=</span> <span class="number">310</span>,
+  <span class="ident">Scarecrow7</span> <span class="op">=</span> <span class="number">311</span>,
+  <span class="ident">Scarecrow8</span> <span class="op">=</span> <span class="number">312</span>,
+  <span class="ident">Scarecrow9</span> <span class="op">=</span> <span class="number">313</span>,
+  <span class="ident">Scarecrow10</span> <span class="op">=</span> <span class="number">314</span>,
+  <span class="ident">HeadlessHorseman</span> <span class="op">=</span> <span class="number">315</span>,
+  <span class="ident">Ghost</span> <span class="op">=</span> <span class="number">316</span>,
+  <span class="ident">DemonEyeOwl</span> <span class="op">=</span> <span class="number">317</span>,
+  <span class="ident">DemonEyeSpaceship</span> <span class="op">=</span> <span class="number">318</span>,
+  <span class="ident">ZombieDoctor</span> <span class="op">=</span> <span class="number">319</span>,
+  <span class="ident">ZombieSuperman</span> <span class="op">=</span> <span class="number">320</span>,
+  <span class="ident">ZombiePixie</span> <span class="op">=</span> <span class="number">321</span>,
+  <span class="ident">SkeletonTopHat</span> <span class="op">=</span> <span class="number">322</span>,
+  <span class="ident">SkeletonAstonaut</span> <span class="op">=</span> <span class="number">323</span>,
+  <span class="ident">SkeletonAlien</span> <span class="op">=</span> <span class="number">324</span>,
+  <span class="ident">MourningWood</span> <span class="op">=</span> <span class="number">325</span>,
+  <span class="ident">Splinterling</span> <span class="op">=</span> <span class="number">326</span>,
+  <span class="ident">Pumpking</span> <span class="op">=</span> <span class="number">327</span>,
+  <span class="ident">PumpkingBlade</span> <span class="op">=</span> <span class="number">328</span>,
+  <span class="ident">Hellhound</span> <span class="op">=</span> <span class="number">329</span>,
+  <span class="ident">Poltergeist</span> <span class="op">=</span> <span class="number">330</span>,
+  <span class="ident">ZombieXmas</span> <span class="op">=</span> <span class="number">331</span>,
+  <span class="ident">ZombieSweater</span> <span class="op">=</span> <span class="number">332</span>,
+  <span class="ident">SlimeRibbonWhite</span> <span class="op">=</span> <span class="number">333</span>,
+  <span class="ident">SlimeRibbonYellow</span> <span class="op">=</span> <span class="number">334</span>,
+  <span class="ident">SlimeRibbonGreen</span> <span class="op">=</span> <span class="number">335</span>,
+  <span class="ident">SlimeRibbonRed</span> <span class="op">=</span> <span class="number">336</span>,
+  <span class="ident">BunnyXmas</span> <span class="op">=</span> <span class="number">337</span>,
+  <span class="ident">ZombieElf</span> <span class="op">=</span> <span class="number">338</span>,
+  <span class="ident">ZombieElfBeard</span> <span class="op">=</span> <span class="number">339</span>,
+  <span class="ident">ZombieElfGirl</span> <span class="op">=</span> <span class="number">340</span>,
+  <span class="ident">PresentMimic</span> <span class="op">=</span> <span class="number">341</span>,
+  <span class="ident">GingerbreadMan</span> <span class="op">=</span> <span class="number">342</span>,
+  <span class="ident">Yeti</span> <span class="op">=</span> <span class="number">343</span>,
+  <span class="ident">Everscream</span> <span class="op">=</span> <span class="number">344</span>,
+  <span class="ident">IceQueen</span> <span class="op">=</span> <span class="number">345</span>,
+  <span class="ident">SantaNk1</span> <span class="op">=</span> <span class="number">346</span>,
+  <span class="ident">ElfCopter</span> <span class="op">=</span> <span class="number">347</span>,
+  <span class="ident">Nutcracker</span> <span class="op">=</span> <span class="number">348</span>,
+  <span class="ident">NutcrackerSpinning</span> <span class="op">=</span> <span class="number">349</span>,
+  <span class="ident">ElfArcher</span> <span class="op">=</span> <span class="number">350</span>,
+  <span class="ident">Krampus</span> <span class="op">=</span> <span class="number">351</span>,
+  <span class="ident">Flocko</span> <span class="op">=</span> <span class="number">352</span>,
+  <span class="ident">Stylist</span> <span class="op">=</span> <span class="number">353</span>,
+  <span class="ident">WebbedStylist</span> <span class="op">=</span> <span class="number">354</span>,
+  <span class="ident">Firefly</span> <span class="op">=</span> <span class="number">355</span>,
+  <span class="ident">Butterfly</span> <span class="op">=</span> <span class="number">356</span>,
+  <span class="ident">Worm</span> <span class="op">=</span> <span class="number">357</span>,
+  <span class="ident">LightningBug</span> <span class="op">=</span> <span class="number">358</span>,
+  <span class="ident">Snail</span> <span class="op">=</span> <span class="number">359</span>,
+  <span class="ident">GlowingSnail</span> <span class="op">=</span> <span class="number">360</span>,
+  <span class="ident">Frog</span> <span class="op">=</span> <span class="number">361</span>,
+  <span class="ident">Duck</span> <span class="op">=</span> <span class="number">362</span>,
+  <span class="ident">Duck2</span> <span class="op">=</span> <span class="number">363</span>,
+  <span class="ident">DuckWhite</span> <span class="op">=</span> <span class="number">364</span>,
+  <span class="ident">DuckWhite2</span> <span class="op">=</span> <span class="number">365</span>,
+  <span class="ident">ScorpionBlack</span> <span class="op">=</span> <span class="number">366</span>,
+  <span class="ident">Scorpion</span> <span class="op">=</span> <span class="number">367</span>,
+  <span class="ident">TravellingMerchant</span> <span class="op">=</span> <span class="number">368</span>,
+  <span class="ident">Angler</span> <span class="op">=</span> <span class="number">369</span>,
+  <span class="ident">DukeFishron</span> <span class="op">=</span> <span class="number">370</span>,
+  <span class="ident">DetonatingBubble</span> <span class="op">=</span> <span class="number">371</span>,
+  <span class="ident">Sharkron</span> <span class="op">=</span> <span class="number">372</span>,
+  <span class="ident">Sharkron2</span> <span class="op">=</span> <span class="number">373</span>,
+  <span class="ident">TruffleWorm</span> <span class="op">=</span> <span class="number">374</span>,
+  <span class="ident">TruffleWormDigger</span> <span class="op">=</span> <span class="number">375</span>,
+  <span class="ident">SleepingAngler</span> <span class="op">=</span> <span class="number">376</span>,
+  <span class="ident">Grasshopper</span> <span class="op">=</span> <span class="number">377</span>,
+  <span class="ident">ChatteringTeethBomb</span> <span class="op">=</span> <span class="number">378</span>,
+  <span class="ident">CultistArcherBlue</span> <span class="op">=</span> <span class="number">379</span>,
+  <span class="ident">CultistArcherWhite</span> <span class="op">=</span> <span class="number">380</span>,
+  <span class="ident">BrainScrambler</span> <span class="op">=</span> <span class="number">381</span>,
+  <span class="ident">RayGunner</span> <span class="op">=</span> <span class="number">382</span>,
+  <span class="ident">MartianOfficer</span> <span class="op">=</span> <span class="number">383</span>,
+  <span class="ident">ForceBubble</span> <span class="op">=</span> <span class="number">384</span>,
+  <span class="ident">GrayGrunt</span> <span class="op">=</span> <span class="number">385</span>,
+  <span class="ident">MartianEngineer</span> <span class="op">=</span> <span class="number">386</span>,
+  <span class="ident">MartianTurret</span> <span class="op">=</span> <span class="number">387</span>,
+  <span class="ident">MartianDrone</span> <span class="op">=</span> <span class="number">388</span>,
+  <span class="ident">GigaZapper</span> <span class="op">=</span> <span class="number">389</span>,
+  <span class="ident">ScutlixRider</span> <span class="op">=</span> <span class="number">390</span>,
+  <span class="ident">Scutlix</span> <span class="op">=</span> <span class="number">391</span>,
+  <span class="ident">MartianSaucer</span> <span class="op">=</span> <span class="number">392</span>,
+  <span class="ident">MartianSaucerTurret</span> <span class="op">=</span> <span class="number">393</span>,
+  <span class="ident">MartianSaucerCannon</span> <span class="op">=</span> <span class="number">394</span>,
+  <span class="ident">MartianSaucerCore</span> <span class="op">=</span> <span class="number">395</span>,
+  <span class="ident">MoonLordHead</span> <span class="op">=</span> <span class="number">396</span>,
+  <span class="ident">MoonLordHand</span> <span class="op">=</span> <span class="number">397</span>,
+  <span class="ident">MoonLordCore</span> <span class="op">=</span> <span class="number">398</span>,
+  <span class="ident">MartianProbe</span> <span class="op">=</span> <span class="number">399</span>,
+  <span class="ident">MoonLordFreeEye</span> <span class="op">=</span> <span class="number">400</span>,
+  <span class="ident">MoonLordLeechBlob</span> <span class="op">=</span> <span class="number">401</span>,
+  <span class="ident">StardustWormHead</span> <span class="op">=</span> <span class="number">402</span>,
+  <span class="ident">StardustWormBody</span> <span class="op">=</span> <span class="number">403</span>,
+  <span class="ident">StardustWormTail</span> <span class="op">=</span> <span class="number">404</span>,
+  <span class="ident">StardustCellBig</span> <span class="op">=</span> <span class="number">405</span>,
+  <span class="ident">StardustCellSmall</span> <span class="op">=</span> <span class="number">406</span>,
+  <span class="ident">StardustJellyfishBig</span> <span class="op">=</span> <span class="number">407</span>,
+  <span class="ident">StardustJellyfishSmall</span> <span class="op">=</span> <span class="number">408</span>,
+  <span class="ident">StardustSpiderBig</span> <span class="op">=</span> <span class="number">409</span>,
+  <span class="ident">StardustSpiderSmall</span> <span class="op">=</span> <span class="number">410</span>,
+  <span class="ident">StardustSoldier</span> <span class="op">=</span> <span class="number">411</span>,
+  <span class="ident">SolarCrawltipedeHead</span> <span class="op">=</span> <span class="number">412</span>,
+  <span class="ident">SolarCrawltipedeBody</span> <span class="op">=</span> <span class="number">413</span>,
+  <span class="ident">SolarCrawltipedeTail</span> <span class="op">=</span> <span class="number">414</span>,
+  <span class="ident">SolarDrakomire</span> <span class="op">=</span> <span class="number">415</span>,
+  <span class="ident">SolarDrakomireRider</span> <span class="op">=</span> <span class="number">416</span>,
+  <span class="ident">SolarSroller</span> <span class="op">=</span> <span class="number">417</span>,
+  <span class="ident">SolarCorite</span> <span class="op">=</span> <span class="number">418</span>,
+  <span class="ident">SolarSolenian</span> <span class="op">=</span> <span class="number">419</span>,
+  <span class="ident">NebulaBrain</span> <span class="op">=</span> <span class="number">420</span>,
+  <span class="ident">NebulaHeadcrab</span> <span class="op">=</span> <span class="number">421</span>,
+  <span class="ident">NebulaBeast</span> <span class="op">=</span> <span class="number">423</span>,
+  <span class="ident">NebulaSoldier</span> <span class="op">=</span> <span class="number">424</span>,
+  <span class="ident">VortexRifleman</span> <span class="op">=</span> <span class="number">425</span>,
+  <span class="ident">VortexHornetQueen</span> <span class="op">=</span> <span class="number">426</span>,
+  <span class="ident">VortexHornet</span> <span class="op">=</span> <span class="number">427</span>,
+  <span class="ident">VortexLarva</span> <span class="op">=</span> <span class="number">428</span>,
+  <span class="ident">VortexSoldier</span> <span class="op">=</span> <span class="number">429</span>,
+  <span class="ident">ArmedZombie</span> <span class="op">=</span> <span class="number">430</span>,
+  <span class="ident">ArmedZombieEskimo</span> <span class="op">=</span> <span class="number">431</span>,
+  <span class="ident">ArmedZombiePincussion</span> <span class="op">=</span> <span class="number">432</span>,
+  <span class="ident">ArmedZombieSlimed</span> <span class="op">=</span> <span class="number">433</span>,
+  <span class="ident">ArmedZombieSwamp</span> <span class="op">=</span> <span class="number">434</span>,
+  <span class="ident">ArmedZombieTwiggy</span> <span class="op">=</span> <span class="number">435</span>,
+  <span class="ident">ArmedZombieCenx</span> <span class="op">=</span> <span class="number">436</span>,
+  <span class="ident">CultistTablet</span> <span class="op">=</span> <span class="number">437</span>,
+  <span class="ident">CultistDevote</span> <span class="op">=</span> <span class="number">438</span>,
+  <span class="ident">CultistBoss</span> <span class="op">=</span> <span class="number">439</span>,
+  <span class="ident">CultistBossClone</span> <span class="op">=</span> <span class="number">440</span>,
+  <span class="ident">GoldBird</span> <span class="op">=</span> <span class="number">442</span>,
+  <span class="ident">GoldBunny</span> <span class="op">=</span> <span class="number">443</span>,
+  <span class="ident">GoldButterfly</span> <span class="op">=</span> <span class="number">444</span>,
+  <span class="ident">GoldFrog</span> <span class="op">=</span> <span class="number">445</span>,
+  <span class="ident">GoldGrasshopper</span> <span class="op">=</span> <span class="number">446</span>,
+  <span class="ident">GoldMouse</span> <span class="op">=</span> <span class="number">447</span>,
+  <span class="ident">GoldWorm</span> <span class="op">=</span> <span class="number">448</span>,
+  <span class="ident">BoneThrowingSkeleton</span> <span class="op">=</span> <span class="number">449</span>,
+  <span class="ident">BoneThrowingSkeleton2</span> <span class="op">=</span> <span class="number">450</span>,
+  <span class="ident">BoneThrowingSkeleton3</span> <span class="op">=</span> <span class="number">451</span>,
+  <span class="ident">BoneThrowingSkeleton4</span> <span class="op">=</span> <span class="number">452</span>,
+  <span class="ident">SkeletonMerchant</span> <span class="op">=</span> <span class="number">453</span>,
+  <span class="ident">CultistDragonHead</span> <span class="op">=</span> <span class="number">454</span>,
+  <span class="ident">CultistDragonBody1</span> <span class="op">=</span> <span class="number">455</span>,
+  <span class="ident">CultistDragonBody2</span> <span class="op">=</span> <span class="number">456</span>,
+  <span class="ident">CultistDragonBody3</span> <span class="op">=</span> <span class="number">457</span>,
+  <span class="ident">CultistDragonBody4</span> <span class="op">=</span> <span class="number">458</span>,
+  <span class="ident">CultistDragonTail</span> <span class="op">=</span> <span class="number">459</span>,
+  <span class="ident">Butcher</span> <span class="op">=</span> <span class="number">460</span>,
+  <span class="ident">CreatureFromTheDeep</span> <span class="op">=</span> <span class="number">461</span>,
+  <span class="ident">Fritz</span> <span class="op">=</span> <span class="number">462</span>,
+  <span class="ident">Nailhead</span> <span class="op">=</span> <span class="number">463</span>,
+  <span class="ident">CrimsonBunny</span> <span class="op">=</span> <span class="number">464</span>,
+  <span class="ident">CrimsonGoldfish</span> <span class="op">=</span> <span class="number">465</span>,
+  <span class="ident">Psycho</span> <span class="op">=</span> <span class="number">466</span>,
+  <span class="ident">DeadlySphere</span> <span class="op">=</span> <span class="number">467</span>,
+  <span class="ident">DrManFly</span> <span class="op">=</span> <span class="number">468</span>,
+  <span class="ident">ThePossessed</span> <span class="op">=</span> <span class="number">469</span>,
+  <span class="ident">CrimsonPenguin</span> <span class="op">=</span> <span class="number">470</span>,
+  <span class="ident">GoblinSummoner</span> <span class="op">=</span> <span class="number">471</span>,
+  <span class="ident">ShadowFlameApparition</span> <span class="op">=</span> <span class="number">472</span>,
+  <span class="ident">BigMimicCorruption</span> <span class="op">=</span> <span class="number">473</span>,
+  <span class="ident">BigMimicCrimson</span> <span class="op">=</span> <span class="number">474</span>,
+  <span class="ident">BigMimicHallow</span> <span class="op">=</span> <span class="number">475</span>,
+  <span class="ident">BigMimicJungle</span> <span class="op">=</span> <span class="number">476</span>,
+  <span class="ident">Mothron</span> <span class="op">=</span> <span class="number">477</span>,
+  <span class="ident">MothronEgg</span> <span class="op">=</span> <span class="number">478</span>,
+  <span class="ident">MothronSpawn</span> <span class="op">=</span> <span class="number">479</span>,
+  <span class="ident">Medusa</span> <span class="op">=</span> <span class="number">480</span>,
+  <span class="ident">GreekSkeleton</span> <span class="op">=</span> <span class="number">481</span>,
+  <span class="ident">GraniteGolem</span> <span class="op">=</span> <span class="number">482</span>,
+  <span class="ident">GraniteFlyer</span> <span class="op">=</span> <span class="number">483</span>,
+  <span class="ident">EnchantedNightcrawler</span> <span class="op">=</span> <span class="number">484</span>,
+  <span class="ident">Grubby</span> <span class="op">=</span> <span class="number">485</span>,
+  <span class="ident">Sluggy</span> <span class="op">=</span> <span class="number">486</span>,
+  <span class="ident">Buggy</span> <span class="op">=</span> <span class="number">487</span>,
+  <span class="ident">TargetDummy</span> <span class="op">=</span> <span class="number">488</span>,
+  <span class="ident">BloodZombie</span> <span class="op">=</span> <span class="number">489</span>,
+  <span class="ident">Drippler</span> <span class="op">=</span> <span class="number">490</span>,
+  <span class="ident">PirateShip</span> <span class="op">=</span> <span class="number">491</span>,
+  <span class="ident">PirateShipCannon</span> <span class="op">=</span> <span class="number">492</span>,
+  <span class="ident">LunarTowerStardust</span> <span class="op">=</span> <span class="number">493</span>,
+  <span class="ident">Crawdad</span> <span class="op">=</span> <span class="number">494</span>,
+  <span class="ident">Crawdad2</span> <span class="op">=</span> <span class="number">495</span>,
+  <span class="ident">GiantShelly</span> <span class="op">=</span> <span class="number">496</span>,
+  <span class="ident">GiantShelly2</span> <span class="op">=</span> <span class="number">497</span>,
+  <span class="ident">Salamander</span> <span class="op">=</span> <span class="number">498</span>,
+  <span class="ident">Salamander2</span> <span class="op">=</span> <span class="number">499</span>,
+  <span class="ident">Salamander3</span> <span class="op">=</span> <span class="number">500</span>,
+  <span class="ident">Salamander4</span> <span class="op">=</span> <span class="number">501</span>,
+  <span class="ident">Salamander5</span> <span class="op">=</span> <span class="number">502</span>,
+  <span class="ident">Salamander6</span> <span class="op">=</span> <span class="number">503</span>,
+  <span class="ident">Salamander7</span> <span class="op">=</span> <span class="number">504</span>,
+  <span class="ident">Salamander8</span> <span class="op">=</span> <span class="number">505</span>,
+  <span class="ident">Salamander9</span> <span class="op">=</span> <span class="number">506</span>,
+  <span class="ident">LunarTowerNebula</span> <span class="op">=</span> <span class="number">507</span>,
+  <span class="ident">LunarTowerVortex</span> <span class="op">=</span> <span class="number">422</span>,
+  <span class="ident">TaxCollector</span> <span class="op">=</span> <span class="number">441</span>,
+  <span class="ident">WalkingAntlion</span> <span class="op">=</span> <span class="number">508</span>,
+  <span class="ident">FlyingAntlion</span> <span class="op">=</span> <span class="number">509</span>,
+  <span class="ident">DuneSplicerHead</span> <span class="op">=</span> <span class="number">510</span>,
+  <span class="ident">DuneSplicerBody</span> <span class="op">=</span> <span class="number">511</span>,
+  <span class="ident">DuneSplicerTail</span> <span class="op">=</span> <span class="number">512</span>,
+  <span class="ident">TombCrawlerHead</span> <span class="op">=</span> <span class="number">513</span>,
+  <span class="ident">TombCrawlerBody</span> <span class="op">=</span> <span class="number">514</span>,
+  <span class="ident">TombCrawlerTail</span> <span class="op">=</span> <span class="number">515</span>,
+  <span class="ident">SolarFlare</span> <span class="op">=</span> <span class="number">516</span>,
+  <span class="ident">LunarTowerSolar</span> <span class="op">=</span> <span class="number">517</span>,
+  <span class="ident">SolarSpearman</span> <span class="op">=</span> <span class="number">518</span>,
+  <span class="ident">SolarGoop</span> <span class="op">=</span> <span class="number">519</span>,
+  <span class="ident">MartianWalker</span> <span class="op">=</span> <span class="number">520</span>,
+  <span class="ident">AncientCultistSquidhead</span> <span class="op">=</span> <span class="number">521</span>,
+  <span class="ident">AncientLight</span> <span class="op">=</span> <span class="number">522</span>,
+  <span class="ident">AncientDoom</span> <span class="op">=</span> <span class="number">523</span>,
+  <span class="ident">DesertGhoul</span> <span class="op">=</span> <span class="number">524</span>,
+  <span class="ident">DesertGhoulCorruption</span> <span class="op">=</span> <span class="number">525</span>,
+  <span class="ident">DesertGhoulCrimson</span> <span class="op">=</span> <span class="number">526</span>,
+  <span class="ident">DesertGhoulHallow</span> <span class="op">=</span> <span class="number">527</span>,
+  <span class="ident">DesertLamiaLight</span> <span class="op">=</span> <span class="number">528</span>,
+  <span class="ident">DesertLamiaDark</span> <span class="op">=</span> <span class="number">529</span>,
+  <span class="ident">DesertScorpionWalk</span> <span class="op">=</span> <span class="number">530</span>,
+  <span class="ident">DesertScorpionWall</span> <span class="op">=</span> <span class="number">531</span>,
+  <span class="ident">DesertBeast</span> <span class="op">=</span> <span class="number">532</span>,
+  <span class="ident">DesertDjinn</span> <span class="op">=</span> <span class="number">533</span>,
+  <span class="ident">DemonTaxCollector</span> <span class="op">=</span> <span class="number">534</span>,
+  <span class="ident">SlimeSpiked</span> <span class="op">=</span> <span class="number">535</span>,
+  <span class="ident">TheBride</span> <span class="op">=</span> <span class="number">536</span>,
+  <span class="ident">SandSlime</span> <span class="op">=</span> <span class="number">537</span>,
+  <span class="ident">SquirrelRed</span> <span class="op">=</span> <span class="number">538</span>,
+  <span class="ident">SquirrelGold</span> <span class="op">=</span> <span class="number">539</span>,
+  <span class="ident">PartyBunny</span> <span class="op">=</span> <span class="number">540</span>,
+  <span class="ident">SandElemental</span> <span class="op">=</span> <span class="number">541</span>,
+  <span class="ident">SandShark</span> <span class="op">=</span> <span class="number">542</span>,
+  <span class="ident">SandsharkCorrupt</span> <span class="op">=</span> <span class="number">543</span>,
+  <span class="ident">SandsharkCrimson</span> <span class="op">=</span> <span class="number">544</span>,
+  <span class="ident">SandsharkHallow</span> <span class="op">=</span> <span class="number">545</span>,
+  <span class="ident">Tumbleweed</span> <span class="op">=</span> <span class="number">546</span>,
+  <span class="ident">Dd2attackerTest</span> <span class="op">=</span> <span class="number">547</span>,
+  <span class="ident">Dd2eterniaCrystal</span> <span class="op">=</span> <span class="number">548</span>,
+  <span class="ident">Dd2lanePortal</span> <span class="op">=</span> <span class="number">549</span>,
+  <span class="ident">Dd2bartender</span> <span class="op">=</span> <span class="number">550</span>,
+  <span class="ident">Dd2betsy</span> <span class="op">=</span> <span class="number">551</span>,
+  <span class="ident">Dd2goblinT1</span> <span class="op">=</span> <span class="number">552</span>,
+  <span class="ident">Dd2goblinT2</span> <span class="op">=</span> <span class="number">553</span>,
+  <span class="ident">Dd2goblinT3</span> <span class="op">=</span> <span class="number">554</span>,
+  <span class="ident">Dd2goblinBomberT1</span> <span class="op">=</span> <span class="number">555</span>,
+  <span class="ident">Dd2goblinBomberT2</span> <span class="op">=</span> <span class="number">556</span>,
+  <span class="ident">Dd2goblinBomberT3</span> <span class="op">=</span> <span class="number">557</span>,
+  <span class="ident">Dd2wyvernT1</span> <span class="op">=</span> <span class="number">558</span>,
+  <span class="ident">Dd2wyvernT2</span> <span class="op">=</span> <span class="number">559</span>,
+  <span class="ident">Dd2wyvernT3</span> <span class="op">=</span> <span class="number">560</span>,
+  <span class="ident">Dd2javelinstT1</span> <span class="op">=</span> <span class="number">561</span>,
+  <span class="ident">Dd2javelinstT2</span> <span class="op">=</span> <span class="number">562</span>,
+  <span class="ident">Dd2javelinstT3</span> <span class="op">=</span> <span class="number">563</span>,
+  <span class="ident">Dd2darkMageT1</span> <span class="op">=</span> <span class="number">564</span>,
+  <span class="ident">Dd2darkMageT3</span> <span class="op">=</span> <span class="number">565</span>,
+  <span class="ident">Dd2skeletonT1</span> <span class="op">=</span> <span class="number">566</span>,
+  <span class="ident">Dd2skeletonT3</span> <span class="op">=</span> <span class="number">567</span>,
+  <span class="ident">Dd2witherBeastT2</span> <span class="op">=</span> <span class="number">568</span>,
+  <span class="ident">Dd2witherBeastT3</span> <span class="op">=</span> <span class="number">569</span>,
+  <span class="ident">Dd2drakinT2</span> <span class="op">=</span> <span class="number">570</span>,
+  <span class="ident">Dd2drakinT3</span> <span class="op">=</span> <span class="number">571</span>,
+  <span class="ident">Dd2koboldWalkerT2</span> <span class="op">=</span> <span class="number">572</span>,
+  <span class="ident">Dd2koboldWalkerT3</span> <span class="op">=</span> <span class="number">573</span>,
+  <span class="ident">Dd2koboldFlyerT2</span> <span class="op">=</span> <span class="number">574</span>,
+  <span class="ident">Dd2koboldFlyerT3</span> <span class="op">=</span> <span class="number">575</span>,
+  <span class="ident">Dd2ogreT2</span> <span class="op">=</span> <span class="number">576</span>,
+  <span class="ident">Dd2ogreT3</span> <span class="op">=</span> <span class="number">577</span>,
+  <span class="ident">Dd2lightningBugT3</span> <span class="op">=</span> <span class="number">578</span>,
+  <span class="ident">BartenderUnconscious</span> <span class="op">=</span> <span class="number">579</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TryFromCtx</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Endian</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EntityType</span> {
+  <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">ScrollError</span>;
+
+  <span class="kw">fn</span> <span class="ident">try_from_ctx</span>(
+    <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>],
+    <span class="kw">_</span>: <span class="ident">Endian</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="self">Self</span>, <span class="ident">usize</span>), <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="ident">raw</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">gread_with</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>(<span class="ident">offset</span>, <span class="ident">LE</span>)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>((<span class="self">Self</span>::<span class="ident">from_i32</span>(<span class="ident">raw</span>).<span class="ident">unwrap</span>(), <span class="kw-2">*</span><span class="ident">offset</span>))
+  }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TryIntoCtx</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">EntityType</span> {
+  <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">ScrollError</span>;
+
+  <span class="kw">fn</span> <span class="ident">try_into_ctx</span>(
+    <span class="self">self</span>,
+    <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>],
+    <span class="kw">_</span>: <span class="ident">Endian</span>,
+  ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="self">Self</span>::<span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">i32</span>;
+    <span class="ident">buf</span>.<span class="ident">gwrite_with</span>(<span class="ident">value</span>, <span class="ident">offset</span>, <span class="ident">LE</span>)<span class="question-mark">?</span>;
+    <span class="macro">assert</span><span class="macro">!</span>(
+      <span class="kw-2">*</span><span class="ident">offset</span> <span class="op">=</span><span class="op">=</span> <span class="ident">EntityType</span>::<span class="ident">size_with</span>(<span class="kw-2">&amp;</span><span class="ident">LE</span>),
+      <span class="string">&quot;EntityType size mismatch&quot;</span>
+    );
+    <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">offset</span>)
+  }
+}
+
+<span class="kw">impl</span> <span class="ident">SizeWith</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EntityType</span> {
+  <span class="kw">fn</span> <span class="ident">size_with</span>(<span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+    <span class="ident">i32</span>::<span class="ident">size_with</span>(<span class="kw-2">&amp;</span><span class="ident">LE</span>)
+  }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">test_entity_type</span> {
+  <span class="kw">use</span> <span class="kw">super</span>::{
+    <span class="ident">EntityType</span>,
+    <span class="ident">Pread</span>,
+    <span class="ident">Pwrite</span>,
+  };
+
+  <span class="attribute">#[<span class="ident">test</span>]</span>
+  <span class="kw">fn</span> <span class="ident">test_entity_type_rw</span>() {
+    <span class="kw">let</span> <span class="ident">entity_type</span> <span class="op">=</span> <span class="ident">EntityType</span>::<span class="ident">AncientCultistSquidhead</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">4</span>];
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">4</span>, <span class="ident">buf</span>.<span class="ident">pwrite</span>(<span class="kw-2">&amp;</span><span class="ident">entity_type</span>, <span class="number">0</span>).<span class="ident">unwrap</span>());
+    <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">entity_type</span>, <span class="ident">buf</span>.<span class="ident">pread</span>::<span class="op">&lt;</span><span class="ident">EntityType</span><span class="op">&gt;</span>(<span class="number">0</span>).<span class="ident">unwrap</span>());
+  }
+}
+</pre></div>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "wld";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

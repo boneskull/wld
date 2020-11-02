@@ -76,7 +76,7 @@ impl SizeWith<Block> for Block {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[repr(C)]
 pub struct BlockCtx<'a> {
-  /// From [`TileHeader::has_extended_block_id`]\(crate::models::TileHeader::has_extended_block_id).
+  /// From [`TileHeader::has_extended_block_id`](crate::models::TileHeader::has_extended_block_id).
   pub has_extended_block_id: bool,
   /// From [`Properties::tile_frame_importances`](crate::models::Properties::tile_frame_importances).
   pub tile_frame_importances: &'a VariableTBitVec,
